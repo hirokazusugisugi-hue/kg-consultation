@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>無料経営相談 ご利用ガイド | 関西学院大学 中小企業経営診断研究会</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* ===== Reset & Base ===== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --navy: #0F2350;
+      --navy-light: #1a3a7a;
+      --navy-pale: #e8ecf4;
+      --accent-gold: #c9a84c;
+      --accent-gold-light: #f5efd6;
+      --bg-warm: #fafaf8;
+      --bg-section-1: #f0f4fa;
+      --bg-section-2: #fdf9f0;
+      --bg-section-3: #f0faf4;
+      --bg-section-4: #faf0f0;
+      --bg-section-5: #f4f0fa;
+      --text-primary: #1a1a1a;
+      --text-secondary: #4a4a4a;
+      --text-muted: #7a7a7a;
+      --border-light: #e0e0e0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+      color: var(--text-primary);
+      background-color: var(--bg-warm);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== Layout ===== */
+    .page-wrapper {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ===== Header ===== */
+    .header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: #fff;
+      padding: 48px 20px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .header-inner {
+      position: relative;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .header-icon {
+      font-size: 2.4rem;
+      margin-bottom: 16px;
+      opacity: 0.9;
+    }
+
+    .header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+
+    .header-subtitle {
+      font-size: 0.95rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      opacity: 0.85;
+    }
+
+    .header-line {
+      width: 60px;
+      height: 3px;
+      background: var(--accent-gold);
+      margin: 20px auto 0;
+      border-radius: 2px;
+    }
+
+    /* ===== Section ===== */
+    .section {
+      margin: 32px 0;
+      padding: 32px 28px;
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--navy-pale);
+    }
+
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: var(--navy);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.04em;
+    }
+
+    .section-icon {
+      color: var(--navy);
+      font-size: 1.1rem;
+      opacity: 0.7;
+      margin-left: auto;
+    }
+
+    /* ===== Steps ===== */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .step-card {
+      display: flex;
+      gap: 16px;
+      padding: 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      transition: box-shadow 0.2s;
+      position: relative;
+    }
+
+    .step-card:nth-child(1) { background: var(--bg-section-1); border-color: #c8d6ef; }
+    .step-card:nth-child(2) { background: var(--bg-section-2); border-color: #efe0c0; }
+    .step-card:nth-child(3) { background: var(--bg-section-3); border-color: #c0efd0; }
+    .step-card:nth-child(4) { background: var(--bg-section-5); border-color: #d0c0ef; }
+
+    /* Connector line between steps */
+    .step-card:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 35px;
+      bottom: -20px;
+      width: 2px;
+      height: 20px;
+      background: var(--border-light);
+    }
+
+    .step-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 6px;
+    }
+
+    .step-badge-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1;
+      flex-direction: column;
+    }
+
+    .step-badge-number .step-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.05em;
+      opacity: 0.8;
+    }
+
+    .step-badge-number .step-num {
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .step-badge-icon {
+      font-size: 1rem;
+      color: var(--navy);
+      opacity: 0.5;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-content h3 .fa-solid,
+    .step-content h3 .fa-regular {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .step-content p {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+    }
+
+    .step-flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .step-flow-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.7);
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .step-flow-arrow {
+      color: var(--accent-gold);
+      font-size: 0.75rem;
+    }
+
+    /* ===== Comparison Table ===== */
+    .comparison-table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -8px;
+      padding: 0 8px;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.9rem;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+    }
+
+    .comparison-table thead th {
+      background: var(--navy);
+      color: #fff;
+      font-weight: 600;
+      padding: 14px 16px;
+      text-align: center;
+      letter-spacing: 0.04em;
+      font-size: 0.88rem;
+    }
+
+    .comparison-table thead th:first-child {
+      background: #1a2d5a;
+      text-align: left;
+      width: 100px;
+    }
+
+    .comparison-table thead th i {
+      display: block;
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+      opacity: 0.8;
+    }
+
+    .comparison-table tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+      text-align: center;
+    }
+
+    .comparison-table tbody td:first-child {
+      font-weight: 600;
+      color: var(--navy);
+      text-align: left;
+      background: var(--navy-pale);
+      white-space: nowrap;
+    }
+
+    .comparison-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .comparison-table tbody tr:nth-child(even) td:not(:first-child) {
+      background: #fafbfd;
+    }
+
+    /* ===== Info Card ===== */
+    .info-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .info-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .info-list li .fa-solid,
+    .info-list li .fa-regular {
+      color: var(--navy);
+      font-size: 0.85rem;
+      margin-top: 5px;
+      flex-shrink: 0;
+      opacity: 0.7;
+      width: 18px;
+      text-align: center;
+    }
+
+    /* ===== Notice Cards ===== */
+    .notice-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .notice-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      padding: 12px 16px;
+      background: #fffdf5;
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--accent-gold);
+    }
+
+    .notice-list li .fa-solid {
+      color: var(--accent-gold);
+      font-size: 0.8rem;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .notice-list li strong {
+      color: var(--navy);
+    }
+
+    /* ===== Contact ===== */
+    .contact-box {
+      text-align: center;
+      padding: 28px 20px;
+      background: var(--navy-pale);
+      border-radius: var(--radius-md);
+      border: 1px solid #c8d6ef;
+    }
+
+    .contact-box .contact-icon {
+      font-size: 2rem;
+      color: var(--navy);
+      opacity: 0.6;
+      margin-bottom: 12px;
+    }
+
+    .contact-box p {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .contact-box .contact-email {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.02em;
+    }
+
+    .contact-box .contact-email a {
+      color: var(--navy);
+      text-decoration: none;
+      border-bottom: 1px solid var(--navy-light);
+      padding-bottom: 2px;
+    }
+
+    .contact-box .contact-org {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+
+    /* ===== Footer ===== */
+    .footer {
+      text-align: center;
+      padding: 28px 20px 40px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .footer-divider {
+      width: 40px;
+      height: 2px;
+      background: var(--border-light);
+      margin: 0 auto 16px;
+      border-radius: 1px;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 600px) {
+      .header {
+        padding: 36px 16px 32px;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+        letter-spacing: 0.06em;
+      }
+
+      .section {
+        margin: 20px 0;
+        padding: 24px 18px;
+      }
+
+      .step-card {
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .step-card::after {
+        display: none;
+      }
+
+      .step-badge {
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      .step-badge-number {
+        width: 40px;
+        height: 40px;
+      }
+
+      .step-badge-number .step-num {
+        font-size: 1rem;
+      }
+
+      .step-flow-item {
+        font-size: 0.8rem;
+      }
+
+      .comparison-table {
+        font-size: 0.82rem;
+      }
+
+      .comparison-table thead th,
+      .comparison-table tbody td {
+        padding: 10px 10px;
+      }
+    }
+
+    /* ===== Print Styles ===== */
+    @media print {
+      @page {
+        size: A4;
+        margin: 15mm 12mm;
+      }
+
+      html {
+        font-size: 11pt;
+      }
+
+      body {
+        background: #fff;
+        color: #000;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page-wrapper {
+        max-width: 100%;
+        padding: 0;
+      }
+
+      .header {
+        background: var(--navy) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        padding: 28px 16px 24px;
+        break-after: avoid;
+      }
+
+      .header h1 {
+        font-size: 1.6rem;
+      }
+
+      .section {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        margin: 16px 0;
+        padding: 20px;
+        break-inside: avoid;
+      }
+
+      .step-card {
+        break-inside: avoid;
+      }
+
+      .step-card::after {
+        display: none;
+      }
+
+      .comparison-table thead th {
+        background: var(--navy) !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .comparison-table tbody td:first-child {
+        background: #eef1f7 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .notice-list li {
+        break-inside: avoid;
+      }
+
+      .contact-box {
+        background: #eef1f7 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .footer {
+        padding: 16px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-icon"><i class="fa-solid fa-handshake"></i></div>
+      <h1>無料経営相談 ご利用ガイド</h1>
+      <p class="header-subtitle">関西学院大学 中小企業経営診断研究会</p>
+      <div class="header-line"></div>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+
+    <!-- ===== Section 1: ご相談の流れ ===== -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">1</span>
+        <h2 class="section-title">ご相談の流れ（4ステップ）</h2>
+        <i class="fa-solid fa-route section-icon"></i>
+      </div>
+
+      <div class="steps">
+
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div class="step-badge">
+            <div class="step-badge-number">
+              <span class="step-label">STEP</span>
+              <span class="step-num">1</span>
+            </div>
+          </div>
+          <div class="step-content">
+            <h3><i class="fa-solid fa-globe"></i> ホームページにアクセス</h3>
+            <p>LPにアクセスして「ご予約」ボタンをクリックしてください。</p>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div class="step-badge">
+            <div class="step-badge-number">
+              <span class="step-label">STEP</span>
+              <span class="step-num">2</span>
+            </div>
+          </div>
+          <div class="step-content">
+            <h3><i class="fa-solid fa-pen-to-square"></i> 予約フォームに入力</h3>
+            <p>下記の順にフォームへ入力し、予約を完了してください。</p>
+            <div class="step-flow">
+              <span class="step-flow-item"><i class="fa-solid fa-display"></i> 相談方法を選択</span>
+              <i class="fa-solid fa-chevron-right step-flow-arrow"></i>
+              <span class="step-flow-item"><i class="fa-regular fa-calendar"></i> 希望日を選択</span>
+              <i class="fa-solid fa-chevron-right step-flow-arrow"></i>
+              <span class="step-flow-item"><i class="fa-regular fa-clock"></i> 時間帯を選択</span>
+              <i class="fa-solid fa-chevron-right step-flow-arrow"></i>
+              <span class="step-flow-item"><i class="fa-solid fa-user"></i> お名前・会社名等を入力</span>
+              <i class="fa-solid fa-chevron-right step-flow-arrow"></i>
+              <span class="step-flow-item"><i class="fa-solid fa-comment-dots"></i> 相談内容を記入</span>
+              <i class="fa-solid fa-chevron-right step-flow-arrow"></i>
+              <span class="step-flow-item"><i class="fa-solid fa-paper-plane"></i> 「予約を送信する」をクリック</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <div class="step-badge">
+            <div class="step-badge-number">
+              <span class="step-label">STEP</span>
+              <span class="step-num">3</span>
+            </div>
+          </div>
+          <div class="step-content">
+            <h3><i class="fa-solid fa-envelope"></i> 確認メールを受信</h3>
+            <p>登録メールアドレスに確認メールが届きます。メール内の<strong>「相談同意書」リンク</strong>から同意手続きをお願いします。</p>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step-card">
+          <div class="step-badge">
+            <div class="step-badge-number">
+              <span class="step-label">STEP</span>
+              <span class="step-num">4</span>
+            </div>
+          </div>
+          <div class="step-content">
+            <h3><i class="fa-solid fa-calendar-check"></i> 相談当日</h3>
+            <p>
+              <strong>対面の場合：</strong>梅田キャンパス（大阪梅田）にお越しください。<br>
+              <strong>オンラインの場合：</strong>事前にお送りするZoomリンクからご参加ください。
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== Section 2: 相談方法について ===== -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">2</span>
+        <h2 class="section-title">相談方法について</h2>
+        <i class="fa-solid fa-building-columns section-icon"></i>
+      </div>
+
+      <div class="comparison-table-wrapper">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>項目</th>
+              <th>
+                <i class="fa-solid fa-building"></i>
+                対面（梅田キャンパス）
+              </th>
+              <th>
+                <i class="fa-solid fa-video"></i>
+                オンライン（Zoom）
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>場所</td>
+              <td>関西学院大学<br>梅田キャンパス</td>
+              <td>ご自宅・オフィス等</td>
+            </tr>
+            <tr>
+              <td>対応日</td>
+              <td>土曜・日曜</td>
+              <td>火・金・土・日</td>
+            </tr>
+            <tr>
+              <td>時間帯</td>
+              <td>12:00〜18:00</td>
+              <td>19:00〜20:30（平日）<br>12:00〜18:00（休日）</td>
+            </tr>
+            <tr>
+              <td>必要なもの</td>
+              <td>特になし</td>
+              <td>PC・スマホ<br>（カメラ・マイク付き）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== Section 3: 同意書について ===== -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">3</span>
+        <h2 class="section-title">同意書について</h2>
+        <i class="fa-solid fa-file-signature section-icon"></i>
+      </div>
+
+      <ul class="info-list">
+        <li>
+          <i class="fa-solid fa-envelope-open-text"></i>
+          <span>ご予約後、メールで同意書確認のリンクをお送りします。</span>
+        </li>
+        <li>
+          <i class="fa-solid fa-file-lines"></i>
+          <span>同意書の内容（守秘義務・免責事項・研究教育利用等）をご確認ください。</span>
+        </li>
+        <li>
+          <i class="fa-solid fa-square-check"></i>
+          <span>チェックボックスにチェックし、署名欄にお名前を入力して送信してください。</span>
+        </li>
+        <li>
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span><strong>同意書への同意は相談実施の前提となります。</strong></span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== Section 4: ご注意事項 ===== -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">4</span>
+        <h2 class="section-title">ご注意事項</h2>
+        <i class="fa-solid fa-triangle-exclamation section-icon"></i>
+      </div>
+
+      <ul class="notice-list">
+        <li>
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>予約可能な日程は<strong>2ヶ月先まで</strong>です。</span>
+        </li>
+        <li>
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>キャンセル・日程変更は<strong>メール</strong>でご連絡ください。</span>
+        </li>
+        <li>
+          <i class="fa-solid fa-bolt"></i>
+          <span>当日受付をご希望の場合は、備考欄に受付コード<strong>「9999」</strong>をご入力ください。</span>
+        </li>
+        <li>
+          <i class="fa-solid fa-yen-sign"></i>
+          <span>相談は<strong>無料</strong>です（費用は一切かかりません）。</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== Section 5: お問い合わせ ===== -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">5</span>
+        <h2 class="section-title">お問い合わせ</h2>
+        <i class="fa-solid fa-headset section-icon"></i>
+      </div>
+
+      <div class="contact-box">
+        <div class="contact-icon"><i class="fa-regular fa-envelope"></i></div>
+        <p>ご不明な点がございましたら、お気軽にお問い合わせください。</p>
+        <p class="contact-email">
+          <i class="fa-solid fa-at" style="opacity:0.5; font-size:0.9rem;"></i>
+          <a href="mailto:kgibaconsultant@gmail.com">kgibaconsultant@gmail.com</a>
+        </p>
+        <p class="contact-org">関西学院大学 中小企業経営診断研究会</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="footer-divider"></div>
+    <p>本ガイドは関西学院大学 中小企業経営診断研究会が提供する無料経営相談サービスのご利用案内です。</p>
+  </footer>
+
+</body>
+</html>

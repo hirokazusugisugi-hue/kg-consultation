@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>システム全体構成図 | 無料経営相談予約システム</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* ===== Reset & Base ===== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --navy: #0F2350;
+      --navy-light: #1a3a7a;
+      --navy-pale: #e8ecf4;
+      --accent-gold: #c9a84c;
+      --accent-gold-light: #f5efd6;
+      --bg-warm: #fafaf8;
+      --bg-section-1: #f0f4fa;
+      --bg-section-2: #fdf9f0;
+      --bg-section-3: #f0faf4;
+      --bg-section-4: #faf0f0;
+      --bg-section-5: #f4f0fa;
+      --bg-section-6: #f0f8fa;
+      --bg-section-7: #faf5f0;
+      --bg-section-8: #f5f0fa;
+      --text-primary: #1a1a1a;
+      --text-secondary: #4a4a4a;
+      --text-muted: #7a7a7a;
+      --border-light: #e0e0e0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --green: #1b7a3d;
+      --green-pale: #e8f5ed;
+      --red: #c0392b;
+      --red-pale: #fdecea;
+      --orange: #e67e22;
+      --orange-pale: #fef5e7;
+      --blue: #2980b9;
+      --blue-pale: #eaf3fb;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+      color: var(--text-primary);
+      background-color: var(--bg-warm);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== Layout ===== */
+    .page-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ===== Header ===== */
+    .header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: #fff;
+      padding: 48px 20px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .header-inner {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header-icon {
+      font-size: 2.4rem;
+      margin-bottom: 16px;
+      opacity: 0.9;
+    }
+
+    .header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+
+    .header-subtitle {
+      font-size: 0.95rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      opacity: 0.85;
+    }
+
+    .header-line {
+      width: 60px;
+      height: 3px;
+      background: var(--accent-gold);
+      margin: 20px auto 0;
+      border-radius: 2px;
+    }
+
+    .header-meta {
+      margin-top: 16px;
+      font-size: 0.82rem;
+      opacity: 0.65;
+      letter-spacing: 0.04em;
+    }
+
+    /* ===== TOC ===== */
+    .toc {
+      margin: 32px 0;
+      padding: 28px 32px;
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    .toc-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--navy-pale);
+    }
+
+    .toc-title i {
+      font-size: 0.95rem;
+      opacity: 0.7;
+    }
+
+    .toc-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 24px;
+    }
+
+    .toc-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toc-list li a {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      transition: color 0.15s;
+    }
+
+    .toc-list li a:hover {
+      color: var(--navy);
+    }
+
+    .toc-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      background: var(--navy);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ===== Section ===== */
+    .section {
+      margin: 32px 0;
+      padding: 32px 28px;
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--navy-pale);
+    }
+
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: var(--navy);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.04em;
+    }
+
+    .section-icon {
+      color: var(--navy);
+      font-size: 1.1rem;
+      opacity: 0.7;
+      margin-left: auto;
+    }
+
+    .section-desc {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      margin-bottom: 24px;
+    }
+
+    /* ===== Architecture Diagram ===== */
+    .arch-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      align-items: center;
+      padding: 24px 0;
+    }
+
+    .arch-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      width: 100%;
+      flex-wrap: nowrap;
+    }
+
+    .arch-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      border: 2px solid;
+      text-align: center;
+      min-width: 160px;
+      max-width: 220px;
+      position: relative;
+      background: #fff;
+    }
+
+    .arch-box-icon {
+      font-size: 1.6rem;
+      opacity: 0.85;
+    }
+
+    .arch-box-label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .arch-box-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .arch-box.lp {
+      border-color: var(--blue);
+      background: var(--blue-pale);
+    }
+    .arch-box.lp .arch-box-icon,
+    .arch-box.lp .arch-box-label { color: var(--blue); }
+
+    .arch-box.gas {
+      border-color: var(--navy);
+      background: var(--navy-pale);
+    }
+    .arch-box.gas .arch-box-icon,
+    .arch-box.gas .arch-box-label { color: var(--navy); }
+
+    .arch-box.sheet {
+      border-color: var(--green);
+      background: var(--green-pale);
+    }
+    .arch-box.sheet .arch-box-icon,
+    .arch-box.sheet .arch-box-label { color: var(--green); }
+
+    .arch-box.forms {
+      border-color: #8e44ad;
+      background: #f5eef8;
+    }
+    .arch-box.forms .arch-box-icon,
+    .arch-box.forms .arch-box-label { color: #8e44ad; }
+
+    .arch-box.gmail {
+      border-color: var(--red);
+      background: var(--red-pale);
+    }
+    .arch-box.gmail .arch-box-icon,
+    .arch-box.gmail .arch-box-label { color: var(--red); }
+
+    .arch-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+
+    .arch-arrow-h {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+
+    .arch-arrow-h .arrow-line {
+      width: 36px;
+      height: 2px;
+      background: var(--text-muted);
+      position: relative;
+    }
+
+    .arch-arrow-h .arrow-line::before,
+    .arch-arrow-h .arrow-line::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border: 2px solid var(--text-muted);
+      border-radius: 0;
+    }
+
+    .arch-arrow-h.bidi .arrow-line::before {
+      left: -4px;
+      transform: translateY(-50%) rotate(-135deg);
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .arch-arrow-h.bidi .arrow-line::after {
+      right: -4px;
+      transform: translateY(-50%) rotate(45deg);
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .arch-arrow-v {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 0;
+      color: var(--text-muted);
+    }
+
+    .arch-arrow-v .arrow-line-v {
+      width: 2px;
+      height: 24px;
+      background: var(--text-muted);
+      position: relative;
+    }
+
+    .arch-arrow-v .arrow-line-v::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid var(--text-muted);
+    }
+
+    .arch-arrow-v.bidi .arrow-line-v::before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 6px solid var(--text-muted);
+    }
+
+    .arch-sub-row {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      width: 100%;
+    }
+
+    .arch-sub-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Component description list */
+    .component-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .component-list li {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      background: #fafbfd;
+    }
+
+    .component-list li .comp-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      width: 24px;
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    .component-list li strong {
+      color: var(--navy);
+    }
+
+    /* Sheet tabs */
+    .sheet-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .sheet-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: #fff;
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+    }
+
+    .sheet-tab i {
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+
+    /* ===== File Tree ===== */
+    .file-tree {
+      font-family: "SF Mono", "Consolas", "Liberation Mono", "Menlo", monospace;
+      font-size: 0.82rem;
+      line-height: 1.9;
+      background: #1e2433;
+      color: #c8d0e0;
+      padding: 24px 28px;
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .file-tree .dir {
+      color: #68b5f7;
+      font-weight: 600;
+    }
+
+    .file-tree .file {
+      color: #c8d0e0;
+    }
+
+    .file-tree .comment {
+      color: #6a7a8e;
+    }
+
+    .file-tree .highlight {
+      color: #f0c674;
+    }
+
+    /* ===== Flow Diagram ===== */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--navy-pale);
+      background: #fff;
+      width: 100%;
+      max-width: 560px;
+      position: relative;
+    }
+
+    .flow-step.active {
+      border-color: var(--navy);
+      background: var(--navy-pale);
+    }
+
+    .flow-step.gas-process {
+      border-color: var(--accent-gold);
+      background: var(--accent-gold-light);
+      border-style: dashed;
+    }
+
+    .flow-step.success {
+      border-color: var(--green);
+      background: var(--green-pale);
+    }
+
+    .flow-step-icon {
+      font-size: 1.1rem;
+      color: var(--navy);
+      flex-shrink: 0;
+      width: 28px;
+      text-align: center;
+    }
+
+    .flow-step.gas-process .flow-step-icon {
+      color: #b8860b;
+    }
+
+    .flow-step.success .flow-step-icon {
+      color: var(--green);
+    }
+
+    .flow-step-text {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .flow-step-text strong {
+      color: var(--navy);
+    }
+
+    .flow-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2px 0;
+    }
+
+    .flow-connector .connector-line {
+      width: 2px;
+      height: 18px;
+      background: var(--border-light);
+    }
+
+    .flow-connector .connector-arrow {
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid var(--border-light);
+    }
+
+    .flow-connector.branch .connector-line {
+      background: var(--accent-gold);
+    }
+
+    .flow-connector.branch .connector-arrow {
+      border-top-color: var(--accent-gold);
+    }
+
+    .flow-branch-group {
+      width: 100%;
+      max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 2px dashed var(--accent-gold);
+      background: var(--accent-gold-light);
+    }
+
+    .flow-branch-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #b8860b;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-branch-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      padding: 4px 0;
+    }
+
+    .flow-branch-item i {
+      color: #b8860b;
+      margin-top: 3px;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+
+    /* Status flow */
+    .status-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 12px 0;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .status-badge.s-pending {
+      background: #fef3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    .status-badge.s-nda {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .status-badge.s-doc {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-badge.s-confirmed {
+      background: var(--navy-pale);
+      color: var(--navy);
+      border: 1px solid #c8d6ef;
+    }
+
+    .status-badge.s-done {
+      background: var(--green-pale);
+      color: var(--green);
+      border: 1px solid #a8ddb5;
+    }
+
+    .status-arrow {
+      display: inline-flex;
+      align-items: center;
+      padding: 0 6px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* ===== Timeline ===== */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 20px;
+      bottom: 20px;
+      width: 2px;
+      background: var(--navy-pale);
+    }
+
+    .timeline-event {
+      position: relative;
+      padding: 0 0 28px 24px;
+    }
+
+    .timeline-event:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -24px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--navy);
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px var(--navy-pale);
+      z-index: 1;
+    }
+
+    .timeline-date {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .timeline-date .date-label {
+      background: var(--navy);
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .timeline-func {
+      font-family: "SF Mono", "Consolas", "Liberation Mono", "Menlo", monospace;
+      font-size: 0.78rem;
+      color: var(--navy-light);
+      background: var(--navy-pale);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+
+    .timeline-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .timeline-items li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    .timeline-items li i {
+      color: var(--navy);
+      font-size: 0.7rem;
+      margin-top: 5px;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    /* ===== Score ===== */
+    .score-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .score-card {
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      text-align: center;
+    }
+
+    .score-card.shindanshi {
+      background: var(--navy-pale);
+      border-color: #c8d6ef;
+    }
+
+    .score-card.observer {
+      background: var(--bg-section-2);
+      border-color: #efe0c0;
+    }
+
+    .score-role {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .score-detail {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .score-point {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .score-point span {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .score-condition {
+      margin-top: 16px;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      background: var(--green-pale);
+      border: 1px solid #a8ddb5;
+    }
+
+    .score-condition-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .score-condition p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    .score-examples {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .score-example {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    .score-example.ok {
+      background: var(--green-pale);
+      border-color: #a8ddb5;
+    }
+
+    .score-example.ng {
+      background: var(--red-pale);
+      border-color: #f5c6cb;
+    }
+
+    .score-example-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .score-example.ok .score-example-icon { color: var(--green); }
+    .score-example.ng .score-example-icon { color: var(--red); }
+
+    .score-example-text {
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .score-example-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    /* ===== API Table ===== */
+    .api-table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -8px;
+      padding: 0 8px;
+    }
+
+    .api-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.85rem;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+    }
+
+    .api-table thead th {
+      background: var(--navy);
+      color: #fff;
+      font-weight: 600;
+      padding: 12px 16px;
+      text-align: left;
+      letter-spacing: 0.04em;
+      font-size: 0.82rem;
+    }
+
+    .api-table tbody td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+    }
+
+    .api-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .api-table tbody tr:nth-child(even) {
+      background: #fafbfd;
+    }
+
+    .api-table .method-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: "SF Mono", "Consolas", monospace;
+      letter-spacing: 0.03em;
+    }
+
+    .api-table .method-get {
+      background: var(--green-pale);
+      color: var(--green);
+      border: 1px solid #a8ddb5;
+    }
+
+    .api-table .method-post {
+      background: var(--orange-pale);
+      color: #c67000;
+      border: 1px solid #ffd8a8;
+    }
+
+    .api-endpoint {
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 0.78rem;
+      color: var(--navy-light);
+      background: var(--navy-pale);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .api-response {
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: #1e2433;
+      border-radius: var(--radius-sm);
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 0.8rem;
+      color: #c8d0e0;
+    }
+
+    /* ===== Info Box ===== */
+    .info-box {
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      border-left: 4px solid;
+      margin: 16px 0;
+    }
+
+    .info-box.info {
+      background: var(--blue-pale);
+      border-color: var(--blue);
+    }
+
+    .info-box.warning {
+      background: var(--orange-pale);
+      border-color: var(--orange);
+    }
+
+    .info-box-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-box.info .info-box-title { color: var(--blue); }
+    .info-box.warning .info-box-title { color: var(--orange); }
+
+    .info-box p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* Security list */
+    .security-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .security-list li {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      background: #fafbfd;
+      border: 1px solid var(--border-light);
+    }
+
+    .security-list li i {
+      color: var(--navy);
+      font-size: 0.95rem;
+      margin-top: 2px;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+
+    .security-list li strong {
+      color: var(--navy);
+    }
+
+    .security-tag {
+      display: inline-block;
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 0.75rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: var(--navy-pale);
+      color: var(--navy-light);
+    }
+
+    /* ===== Footer ===== */
+    .footer {
+      text-align: center;
+      padding: 28px 20px 40px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .footer-divider {
+      width: 40px;
+      height: 2px;
+      background: var(--border-light);
+      margin: 0 auto 16px;
+      border-radius: 1px;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 700px) {
+      .header {
+        padding: 36px 16px 32px;
+      }
+
+      .header h1 {
+        font-size: 1.4rem;
+        letter-spacing: 0.06em;
+      }
+
+      .section {
+        margin: 20px 0;
+        padding: 24px 16px;
+      }
+
+      .toc-list {
+        grid-template-columns: 1fr;
+      }
+
+      .arch-row {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .arch-arrow {
+        transform: rotate(90deg);
+        padding: 4px 0;
+      }
+
+      .arch-box {
+        min-width: 200px;
+      }
+
+      .arch-sub-row {
+        flex-direction: column;
+        gap: 0;
+        align-items: center;
+      }
+
+      .score-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-flow {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .status-arrow {
+        transform: rotate(90deg);
+      }
+
+      .file-tree {
+        font-size: 0.75rem;
+        padding: 16px 12px;
+      }
+
+      .flow-step {
+        padding: 10px 14px;
+      }
+
+      .timeline {
+        padding-left: 24px;
+      }
+    }
+
+    /* ===== Print ===== */
+    @media print {
+      @page {
+        size: A4;
+        margin: 12mm 10mm;
+      }
+
+      html {
+        font-size: 10pt;
+      }
+
+      body {
+        background: #fff;
+        color: #000;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page-wrapper {
+        max-width: 100%;
+        padding: 0;
+      }
+
+      .header {
+        background: var(--navy) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        padding: 24px 16px 20px;
+        break-after: avoid;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .toc {
+        break-after: avoid;
+      }
+
+      .section {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        margin: 12px 0;
+        padding: 16px;
+        break-inside: avoid;
+      }
+
+      .arch-box,
+      .flow-step,
+      .flow-branch-group,
+      .timeline-event {
+        break-inside: avoid;
+      }
+
+      .file-tree {
+        background: #1e2433 !important;
+        color: #c8d0e0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .api-table thead th {
+        background: var(--navy) !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .footer {
+        padding: 12px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-icon"><i class="fa-solid fa-diagram-project"></i></div>
+      <h1>無料経営相談予約システム</h1>
+      <p class="header-subtitle">システム全体構成図</p>
+      <div class="header-line"></div>
+      <p class="header-meta">関西学院大学 中小企業経営診断研究会</p>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+
+    <!-- ===== Table of Contents ===== -->
+    <nav class="toc">
+      <div class="toc-title">
+        <i class="fa-solid fa-list"></i>
+        目次
+      </div>
+      <ol class="toc-list">
+        <li><a href="#sec1"><span class="toc-num">1</span> システム構成</a></li>
+        <li><a href="#sec2"><span class="toc-num">2</span> ファイル構成</a></li>
+        <li><a href="#sec3"><span class="toc-num">3</span> 相談者の予約フロー</a></li>
+        <li><a href="#sec4"><span class="toc-num">4</span> メンバー日程調整フロー</a></li>
+        <li><a href="#sec5"><span class="toc-num">5</span> スコア計算ロジック</a></li>
+        <li><a href="#sec6"><span class="toc-num">6</span> API仕様</a></li>
+        <li><a href="#sec7"><span class="toc-num">7</span> 2ヶ月制限ロジック</a></li>
+        <li><a href="#sec8"><span class="toc-num">8</span> セキュリティ</a></li>
+      </ol>
+    </nav>
+
+    <!-- ===== Section 1: システム構成 ===== -->
+    <section class="section" id="sec1">
+      <div class="section-header">
+        <span class="section-number">1</span>
+        <h2 class="section-title">システム構成</h2>
+        <i class="fa-solid fa-server section-icon"></i>
+      </div>
+
+      <p class="section-desc">本システムは、LP（ランディングページ）を入口として、Google Apps Script（GAS）をバックエンドに、Google Spreadsheetをデータベースとして利用する予約管理基盤です。</p>
+
+      <!-- Architecture Diagram -->
+      <div class="arch-diagram">
+
+        <!-- Main Row: LP <-> GAS <-> Spreadsheet -->
+        <div class="arch-row">
+          <div class="arch-box lp">
+            <i class="fa-solid fa-globe arch-box-icon"></i>
+            <div class="arch-box-label">LP</div>
+            <div class="arch-box-sub">index14.html<br>相談者向け予約画面</div>
+          </div>
+
+          <div class="arch-arrow">
+            <div class="arch-arrow-h bidi">
+              <div class="arrow-line"></div>
+            </div>
+          </div>
+
+          <div class="arch-box gas">
+            <i class="fa-solid fa-code arch-box-icon"></i>
+            <div class="arch-box-label">GAS Web App</div>
+            <div class="arch-box-sub">doGet / doPost<br>バックエンド処理</div>
+          </div>
+
+          <div class="arch-arrow">
+            <div class="arch-arrow-h bidi">
+              <div class="arrow-line"></div>
+            </div>
+          </div>
+
+          <div class="arch-box sheet">
+            <i class="fa-solid fa-table arch-box-icon"></i>
+            <div class="arch-box-label">Google Spreadsheet</div>
+            <div class="arch-box-sub">データベース</div>
+            <div class="sheet-tabs">
+              <span class="sheet-tab"><i class="fa-solid fa-calendar-check"></i>予約管理</span>
+              <span class="sheet-tab"><i class="fa-solid fa-users"></i>メンバーマスタ</span>
+              <span class="sheet-tab"><i class="fa-solid fa-clock"></i>日程設定</span>
+              <span class="sheet-tab"><i class="fa-solid fa-bullhorn"></i>お知らせ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vertical connectors -->
+        <div class="arch-sub-row">
+          <div class="arch-sub-col" style="flex:1;">
+            <!-- empty spacer for LP column -->
+          </div>
+          <div class="arch-sub-col" style="flex:1;">
+            <div class="arch-arrow-v bidi">
+              <div class="arrow-line-v"></div>
+            </div>
+          </div>
+          <div class="arch-sub-col" style="flex:1;">
+            <!-- empty spacer for Spreadsheet column -->
+          </div>
+        </div>
+
+        <!-- Sub Row: Forms and Gmail -->
+        <div class="arch-sub-row">
+          <div class="arch-sub-col">
+            <div class="arch-box forms">
+              <i class="fa-brands fa-google arch-box-icon"></i>
+              <div class="arch-box-label">Google Forms</div>
+              <div class="arch-box-sub">メンバー向け<br>日程調整アンケート</div>
+            </div>
+          </div>
+          <div class="arch-sub-col" style="padding: 0 20px;">
+            <div class="arch-box gmail">
+              <i class="fa-solid fa-envelope arch-box-icon"></i>
+              <div class="arch-box-label">Gmail</div>
+              <div class="arch-box-sub">確認・通知<br>自動メール送信</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Component descriptions -->
+      <ul class="component-list">
+        <li>
+          <i class="fa-solid fa-globe comp-icon" style="color: var(--blue);"></i>
+          <div><strong>LP（ランディングページ）</strong> &mdash; 相談者向けの予約受付画面。HTML/CSS/JSで構成し、GAS Web App APIと非同期通信（fetch）を行う。カレンダーUI、フォーム入力、NDA同意リンクを含む。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-code comp-icon" style="color: var(--navy);"></i>
+          <div><strong>GAS Web App</strong> &mdash; Google Apps Scriptで構築したバックエンド。予約処理、日程管理、メール送信、フォーム自動生成、NDA認証を実行。<code>doGet</code>/<code>doPost</code>をエンドポイントとして公開。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-table comp-icon" style="color: var(--green);"></i>
+          <div><strong>Google Spreadsheet</strong> &mdash; データベースとして機能。4つのシート（予約管理・メンバーマスタ・日程設定・お知らせ）で予約情報、メンバー情報、日程情報、お知らせデータを管理。</div>
+        </li>
+        <li>
+          <i class="fa-brands fa-google comp-icon" style="color: #8e44ad;"></i>
+          <div><strong>Google Forms</strong> &mdash; メンバー向け日程調整アンケート。GASが毎月自動生成し、オプトアウト形式で各メンバーの参加可否を収集。回答はGASが自動処理してスプレッドシートに反映。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-envelope comp-icon" style="color: var(--red);"></i>
+          <div><strong>Gmail</strong> &mdash; 確認メール・NDA同意リンク・リマインダー・管理者通知を自動送信。GASの<code>GmailApp</code>/<code>MailApp</code>を利用。</div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== Section 2: ファイル構成 ===== -->
+    <section class="section" id="sec2">
+      <div class="section-header">
+        <span class="section-number">2</span>
+        <h2 class="section-title">ファイル構成</h2>
+        <i class="fa-solid fa-folder-tree section-icon"></i>
+      </div>
+
+      <div class="file-tree"><span class="dir">claude-code-demo/</span>
+├── <span class="highlight">index14.html</span>          <span class="comment"># LP（ランディングページ）</span>
+├── <span class="file">nda_preview.html</span>      <span class="comment"># NDA同意書プレビュー</span>
+├── <span class="file">consent_form.pdf</span>      <span class="comment"># 相談同意書PDF</span>
+├── <span class="file">open_news_admin.html</span>  <span class="comment"># お知らせ管理リンクページ</span>
+├── <span class="dir">images/</span>               <span class="comment"># 画像・音声ファイル</span>
+├── <span class="dir">docs/</span>                 <span class="comment"># ドキュメント</span>
+│   ├── <span class="file">guide_consultee.html</span>    <span class="comment"># 相談者向けガイド</span>
+│   ├── <span class="file">manual_admin.html</span>       <span class="comment"># 管理者マニュアル</span>
+│   ├── <span class="highlight">system_overview.html</span>    <span class="comment"># 本ドキュメント</span>
+│   └── <span class="file">form_polling_v2_requirements.md</span>  <span class="comment"># 要件定義</span>
+└── <span class="dir">gas/</span>                  <span class="comment"># Google Apps Script</span>
+    ├── <span class="file">config.gs</span>         <span class="comment"># 設定（スプレッドシートID、メール、API設定）</span>
+    ├── <span class="highlight">main.gs</span>           <span class="comment"># メインルーティング（doGet/doPost）</span>
+    ├── <span class="file">schedule.gs</span>       <span class="comment"># 日程生成・取得API</span>
+    ├── <span class="file">form_polling.gs</span>   <span class="comment"># メンバー向けGoogleフォーム自動化</span>
+    ├── <span class="file">members.gs</span>        <span class="comment"># メンバーマスタ管理・スコア計算</span>
+    ├── <span class="file">nda.gs</span>            <span class="comment"># NDA同意ページ生成・処理</span>
+    ├── <span class="file">news.gs</span>           <span class="comment"># お知らせ管理（CRUD+管理画面）</span>
+    ├── <span class="file">spreadsheet.gs</span>    <span class="comment"># スプレッドシート操作</span>
+    ├── <span class="file">notification.gs</span>   <span class="comment"># LINE・メール通知</span>
+    ├── <span class="file">templates.gs</span>      <span class="comment"># メールテンプレート</span>
+    └── <span class="file">triggers.gs</span>       <span class="comment"># 時限トリガー設定</span></div>
+    </section>
+
+    <!-- ===== Section 3: 相談者の予約フロー ===== -->
+    <section class="section" id="sec3">
+      <div class="section-header">
+        <span class="section-number">3</span>
+        <h2 class="section-title">相談者の予約フロー</h2>
+        <i class="fa-solid fa-route section-icon"></i>
+      </div>
+
+      <p class="section-desc">相談者がLPにアクセスしてから予約が確定するまでの一連の処理フローです。</p>
+
+      <div class="flow">
+
+        <!-- Step 1 -->
+        <div class="flow-step">
+          <i class="fa-solid fa-globe flow-step-icon"></i>
+          <div class="flow-step-text"><strong>LP アクセス</strong></div>
+        </div>
+
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flow-step">
+          <i class="fa-solid fa-display flow-step-icon"></i>
+          <div class="flow-step-text"><strong>相談方法選択</strong>（対面 / Zoom）</div>
+        </div>
+
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flow-step">
+          <i class="fa-regular fa-calendar flow-step-icon"></i>
+          <div class="flow-step-text"><strong>カレンダーで日付選択</strong><br>GAS APIから予約可能日を取得して表示</div>
+        </div>
+
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="flow-step">
+          <i class="fa-regular fa-clock flow-step-icon"></i>
+          <div class="flow-step-text"><strong>時間帯選択</strong></div>
+        </div>
+
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="flow-step">
+          <i class="fa-solid fa-pen-to-square flow-step-icon"></i>
+          <div class="flow-step-text"><strong>フォーム入力</strong>（氏名・会社名・メール・企業URL・相談テーマ等）</div>
+        </div>
+
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="flow-step active">
+          <i class="fa-solid fa-paper-plane flow-step-icon"></i>
+          <div class="flow-step-text"><strong>送信</strong> &mdash; GAS doPost へ JSON POST</div>
+        </div>
+
+        <div class="flow-connector branch">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+
+        <!-- GAS Internal Processing -->
+        <div class="flow-branch-group">
+          <div class="flow-branch-title">
+            <i class="fa-solid fa-cogs"></i>
+            GAS 内部処理
+          </div>
+          <div class="flow-branch-item">
+            <i class="fa-solid fa-circle"></i>
+            <span>スプレッドシート「予約管理」シートに記録</span>
+          </div>
+          <div class="flow-branch-item">
+            <i class="fa-solid fa-circle"></i>
+            <span>日程設定シートの該当枠を「予約済み」に更新</span>
+          </div>
+          <div class="flow-branch-item">
+            <i class="fa-solid fa-circle"></i>
+            <span>NDAトークン生成（SHA-256ハッシュ）</span>
+          </div>
+          <div class="flow-branch-item">
+            <i class="fa-solid fa-circle"></i>
+            <span>相談者に確認メール送信（NDA同意リンク付き）</span>
+          </div>
+          <div class="flow-branch-item">
+            <i class="fa-solid fa-circle"></i>
+            <span>管理者に通知メール送信</span>
+          </div>
+          <div class="flow-branch-item">
+            <i class="fa-solid fa-circle"></i>
+            <span>LINE通知（設定済みの場合）</span>
+          </div>
+        </div>
+
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+
+        <!-- Step 7 -->
+        <div class="flow-step">
+          <i class="fa-solid fa-file-signature flow-step-icon"></i>
+          <div class="flow-step-text"><strong>相談者がNDA同意ページで同意</strong><br>メール内のリンクからアクセス</div>
+        </div>
+
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+
+        <!-- Status Flow -->
+        <div class="flow-step success">
+          <i class="fa-solid fa-check-circle flow-step-icon"></i>
+          <div class="flow-step-text"><strong>ステータス遷移</strong></div>
+        </div>
+
+      </div>
+
+      <!-- Status badges -->
+      <div style="margin-top: 16px;">
+        <div class="status-flow">
+          <span class="status-badge s-pending"><i class="fa-solid fa-clock" style="font-size:0.7rem;"></i> 仮予約</span>
+          <span class="status-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="status-badge s-nda"><i class="fa-solid fa-file-signature" style="font-size:0.7rem;"></i> NDA同意済</span>
+          <span class="status-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="status-badge s-doc"><i class="fa-solid fa-file-lines" style="font-size:0.7rem;"></i> 書類受領</span>
+          <span class="status-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="status-badge s-confirmed"><i class="fa-solid fa-calendar-check" style="font-size:0.7rem;"></i> 確定</span>
+          <span class="status-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+          <span class="status-badge s-done"><i class="fa-solid fa-circle-check" style="font-size:0.7rem;"></i> 完了</span>
+        </div>
+      </div>
+
+      <div class="info-box info" style="margin-top: 20px;">
+        <div class="info-box-title"><i class="fa-solid fa-info-circle"></i> 当日受付について</div>
+        <p>備考欄に受付コード <strong>「9999」</strong> を入力した場合、当日受付フラグが自動設定されます。スプレッドシートの「当日受付フラグ」列（W列）に記録されます。</p>
+      </div>
+    </section>
+
+    <!-- ===== Section 4: メンバー日程調整フロー ===== -->
+    <section class="section" id="sec4">
+      <div class="section-header">
+        <span class="section-number">4</span>
+        <h2 class="section-title">メンバー日程調整フロー（月次自動化）</h2>
+        <i class="fa-solid fa-calendar-days section-icon"></i>
+      </div>
+
+      <p class="section-desc">毎月自動実行される日程調整の流れです。オプトアウト形式のGoogleフォームを活用し、メンバーの参加可否を効率的に収集します。</p>
+
+      <div class="timeline">
+
+        <!-- Event 1: 毎月25日 -->
+        <div class="timeline-event">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">
+            <span class="date-label">毎月25日</span>
+            <span class="timeline-func">runFirstPolling()</span>
+          </div>
+          <ul class="timeline-items">
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>翌々月の日程候補を自動生成<br>
+                <span style="font-size:0.8rem; color:var(--text-muted);">第1/3 土日: 14:00 / 16:00 / 18:00、第2/4 金: 19:00 / 20:30</span>
+              </span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>全メンバーをデフォルト登録（全員参加可能として初期設定）</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>Googleフォーム（オプトアウト形式）を自動作成</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>全メンバーにフォームURLをメール送信</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>管理者に通知メール送信</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Event 2: 翌月15日 -->
+        <div class="timeline-event">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">
+            <span class="date-label">翌月15日</span>
+            <span class="timeline-func">runReminderPolling()</span>
+          </div>
+          <ul class="timeline-items">
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>確認+追加フォームを自動作成</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>未回答者にはリマインダーメール送信</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>回答済み者には確認メール送信</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>管理者に通知メール送信</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Event 3: 翌月21日 -->
+        <div class="timeline-event">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">
+            <span class="date-label">翌月21日</span>
+            <span class="timeline-func">finalizeSchedule()</span>
+          </div>
+          <ul class="timeline-items">
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>スコア不足枠（4点未満 かつ 特別対応なし）を自動クローズ</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>予約済み枠がクローズ対象の場合、警告メールを送信</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>管理者に確定レポート送信</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chevron-right"></i>
+              <span>LPのカレンダーに予約可能な枠のみ表示開始</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="info-box warning" style="margin-top: 20px;">
+        <div class="info-box-title"><i class="fa-solid fa-triangle-exclamation"></i> オプトアウト形式について</div>
+        <p>初期状態では全メンバーが「参加可能」として登録されます。参加<strong>できない</strong>枠のみをフォームで回答する方式のため、未回答者は全枠参加可能として扱われます。これにより回答負担を軽減し、フォーム回答率の影響を最小化しています。</p>
+      </div>
+    </section>
+
+    <!-- ===== Section 5: スコア計算ロジック ===== -->
+    <section class="section" id="sec5">
+      <div class="section-header">
+        <span class="section-number">5</span>
+        <h2 class="section-title">スコア計算ロジック</h2>
+        <i class="fa-solid fa-calculator section-icon"></i>
+      </div>
+
+      <p class="section-desc">各日程枠に対して、参加可能なメンバーのスコアを合算し、予約可能かどうかを判定します。</p>
+
+      <!-- Score cards -->
+      <div class="score-grid">
+        <div class="score-card shindanshi">
+          <div class="score-role"><i class="fa-solid fa-user-tie" style="margin-right: 6px; opacity:0.6;"></i>診断士</div>
+          <div class="score-detail">1期 / 2期</div>
+          <div class="score-point">2 <span>ポイント</span></div>
+        </div>
+        <div class="score-card observer">
+          <div class="score-role"><i class="fa-solid fa-user" style="margin-right: 6px; opacity:0.6;"></i>オブザーバー</div>
+          <div class="score-detail">3期 / 4期</div>
+          <div class="score-point">1 <span>ポイント</span></div>
+        </div>
+      </div>
+
+      <!-- Condition -->
+      <div class="score-condition">
+        <div class="score-condition-title">
+          <i class="fa-solid fa-check-circle"></i>
+          予約可能条件
+        </div>
+        <p>
+          <strong>条件A:</strong> 合計 <strong>4ポイント以上</strong><br>
+          <strong>条件B:</strong> 合計 <strong>2ポイント以上</strong> かつ <strong>特別対応フラグ</strong>あり
+        </p>
+      </div>
+
+      <!-- Examples -->
+      <div class="score-examples">
+        <div class="score-example ok">
+          <span class="score-example-icon"><i class="fa-solid fa-circle-check"></i></span>
+          <span class="score-example-text">診断士 2名</span>
+          <span class="score-example-note">4pt &mdash; 予約可能</span>
+        </div>
+        <div class="score-example ok">
+          <span class="score-example-icon"><i class="fa-solid fa-circle-check"></i></span>
+          <span class="score-example-text">診断士 1名 + オブザーバー 2名</span>
+          <span class="score-example-note">4pt &mdash; 予約可能</span>
+        </div>
+        <div class="score-example ok">
+          <span class="score-example-icon"><i class="fa-solid fa-circle-check"></i></span>
+          <span class="score-example-text">オブザーバー 4名</span>
+          <span class="score-example-note">4pt &mdash; 予約可能</span>
+        </div>
+        <div class="score-example ng">
+          <span class="score-example-icon"><i class="fa-solid fa-circle-xmark"></i></span>
+          <span class="score-example-text">診断士 1名のみ</span>
+          <span class="score-example-note">2pt &mdash; 予約不可 <span style="font-size:0.72rem;">（特別対応なら可）</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Section 6: API仕様 ===== -->
+    <section class="section" id="sec6">
+      <div class="section-header">
+        <span class="section-number">6</span>
+        <h2 class="section-title">API仕様</h2>
+        <i class="fa-solid fa-plug section-icon"></i>
+      </div>
+
+      <p class="section-desc">GAS Web Appが公開するAPIエンドポイントの一覧です。ベースURLは GAS Web App のデプロイURLです。</p>
+
+      <div class="api-table-wrapper">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th style="width: 32%;">エンドポイント</th>
+              <th style="width: 12%;">メソッド</th>
+              <th>説明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="api-endpoint">?action=schedule&amp;method=visit</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>対面の予約可能日程を取得</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=schedule&amp;method=zoom</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>Zoomの予約可能日程を取得</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=news</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>お知らせ一覧を取得（LP表示用）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=news-admin</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>お知らせ管理画面を表示（HTML返却）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=nda&amp;token=xxx</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>NDA同意ページを表示（トークン認証）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=nda-submit</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>NDA同意処理を実行</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">（本体URL）</span></td>
+              <td><span class="method-badge method-post">POST</span></td>
+              <td>予約申込処理（JSON形式で送信）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="api-response" style="margin-top: 16px;">
+<span style="color: #6a7a8e;">// レスポンス形式（JSON）</span>
+{
+  <span style="color: #f0c674;">"success"</span>: <span style="color: #81c784;">true</span>,
+  <span style="color: #f0c674;">"data"</span>: { ... }
+}
+
+<span style="color: #6a7a8e;">// エラー時</span>
+{
+  <span style="color: #f0c674;">"success"</span>: <span style="color: #e57373;">false</span>,
+  <span style="color: #f0c674;">"error"</span>: <span style="color: #81c784;">"エラーメッセージ"</span>
+}</div>
+    </section>
+
+    <!-- ===== Section 7: 2ヶ月制限ロジック ===== -->
+    <section class="section" id="sec7">
+      <div class="section-header">
+        <span class="section-number">7</span>
+        <h2 class="section-title">2ヶ月制限ロジック</h2>
+        <i class="fa-solid fa-hourglass-half section-icon"></i>
+      </div>
+
+      <p class="section-desc">予約可能日程は現在日から2ヶ月先までに制限されています。サーバー側とクライアント側の両方で制御を行い、一貫性を担保しています。</p>
+
+      <ul class="component-list">
+        <li>
+          <i class="fa-solid fa-server comp-icon" style="color: var(--navy);"></i>
+          <div>
+            <strong>GAS側（schedule.gs &mdash; getAvailableSchedule）</strong><br>
+            現在日から2ヶ月先までの枠のみをフィルタリングして返却します。これがプライマリの制御ロジックです。
+          </div>
+        </li>
+        <li>
+          <i class="fa-solid fa-globe comp-icon" style="color: var(--blue);"></i>
+          <div>
+            <strong>LP側（index14.html &mdash; useDefaultSchedule）</strong><br>
+            GAS APIの取得に失敗した場合のフォールバック処理でも、同様に2ヶ月制限を適用します。サーバー障害時でも不正な日程が表示されないよう保護しています。
+          </div>
+        </li>
+      </ul>
+
+      <div class="info-box info" style="margin-top: 16px;">
+        <div class="info-box-title"><i class="fa-solid fa-info-circle"></i> 二重制御の意義</div>
+        <p>GAS側での制御を主とし、LP側はフォールバック用の補助的制御です。API通信が正常な場合、LP側の制限は実質的に機能しません。API障害時のみクライアント側の制限が働きます。</p>
+      </div>
+    </section>
+
+    <!-- ===== Section 8: セキュリティ ===== -->
+    <section class="section" id="sec8">
+      <div class="section-header">
+        <span class="section-number">8</span>
+        <h2 class="section-title">セキュリティ</h2>
+        <i class="fa-solid fa-shield-halved section-icon"></i>
+      </div>
+
+      <p class="section-desc">システム全体で適用されているセキュリティ対策の概要です。</p>
+
+      <ul class="security-list">
+        <li>
+          <i class="fa-solid fa-key"></i>
+          <div>
+            <strong>NDA同意認証</strong><br>
+            トークンベース認証を採用。申込ID + メールアドレスから <span class="security-tag">SHA-256</span> ハッシュを生成し、URLパラメータとして付与。第三者がURLを推測して同意ページにアクセスすることを防止します。
+          </div>
+        </li>
+        <li>
+          <i class="fa-solid fa-lock"></i>
+          <div>
+            <strong>排他制御</strong><br>
+            Googleフォーム回答処理において <span class="security-tag">LockService</span> による排他制御を実施。複数メンバーが同時にフォームを回答した場合のデータ競合（レースコンディション）を防止します。
+          </div>
+        </li>
+        <li>
+          <i class="fa-solid fa-envelope-circle-check"></i>
+          <div>
+            <strong>メンバー認証</strong><br>
+            メールアドレスベースの認証を使用。メンバーマスタに登録済みのメールアドレスと照合し、正規メンバーのみがフォーム回答・日程調整に参加できます。
+          </div>
+        </li>
+        <li>
+          <i class="fa-solid fa-globe-lock"></i>
+          <div>
+            <strong>APIアクセス制限</strong><br>
+            GAS Web Appのデプロイ設定により、アクセス範囲を制御。公開APIエンドポイントは必要最小限のアクション（schedule, news, nda）のみを受け付けます。
+          </div>
+        </li>
+      </ul>
+    </section>
+
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="footer-divider"></div>
+    <p>無料経営相談予約システム &mdash; システム全体構成図</p>
+    <p>関西学院大学 中小企業経営診断研究会</p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 1.0 &mdash; 2026-02-11</p>
+  </footer>
+
+</body>
+</html>

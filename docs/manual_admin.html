@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>無料経営相談システム 管理者マニュアル</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  /* ===== Reset & Base ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0F2350;
+    --navy-light: #1a3a6e;
+    --navy-bg: #f0f3f8;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --border: #d1d5db;
+    --text: #1f2937;
+    --text-light: #6b7280;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --mono-bg: #f8f9fa;
+    --mono-border: #e2e6ea;
+  }
+
+  html { font-size: 14px; scroll-behavior: smooth; }
+
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    color: var(--text);
+    line-height: 1.8;
+    background: #f5f5f5;
+  }
+
+  /* ===== Print Styles ===== */
+  @media print {
+    body { background: #fff; font-size: 11pt; }
+    .page-wrapper { box-shadow: none; max-width: 100%; margin: 0; padding: 20mm; }
+    .toc { break-after: page; }
+    h2 { break-before: page; }
+    h2:first-of-type { break-before: auto; }
+    table { break-inside: avoid; }
+    .flowchart-step { break-inside: avoid; }
+    .no-print { display: none !important; }
+    a { color: var(--navy) !important; text-decoration: none !important; }
+    a::after { content: " (" attr(href) ")"; font-size: 9pt; color: #666; }
+    .toc a::after { content: none; }
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm 20mm;
+  }
+
+  /* ===== Page Layout ===== */
+  .page-wrapper {
+    max-width: 860px;
+    margin: 30px auto;
+    background: #fff;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    padding: 60px 70px;
+  }
+
+  /* ===== Cover ===== */
+  .cover {
+    text-align: center;
+    padding: 60px 0 50px;
+    border-bottom: 4px solid var(--navy);
+    margin-bottom: 50px;
+  }
+
+  .cover-icon {
+    font-size: 48px;
+    color: var(--navy);
+    margin-bottom: 20px;
+  }
+
+  .cover h1 {
+    font-size: 28px;
+    color: var(--navy);
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    font-weight: 800;
+  }
+
+  .cover .subtitle {
+    font-size: 16px;
+    color: var(--text-light);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .cover .doc-type {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 6px 28px;
+    background: var(--navy);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ===== Table of Contents ===== */
+  .toc {
+    background: var(--navy-bg);
+    border: 1px solid #d0d8e8;
+    border-radius: 8px;
+    padding: 36px 40px;
+    margin-bottom: 50px;
+  }
+
+  .toc h2 {
+    font-size: 18px;
+    color: var(--navy);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toc h2 i { font-size: 16px; }
+
+  .toc ol {
+    list-style: none;
+    counter-reset: toc-counter;
+  }
+
+  .toc > ol > li {
+    counter-increment: toc-counter;
+    margin-bottom: 8px;
+  }
+
+  .toc > ol > li > a {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    color: var(--navy);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+
+  .toc > ol > li > a:hover {
+    background: #dce3f0;
+  }
+
+  .toc > ol > li > a::before {
+    content: counter(toc-counter) ".";
+    display: inline-block;
+    width: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    flex-shrink: 0;
+  }
+
+  /* ===== Section Headings ===== */
+  h2 {
+    font-size: 22px;
+    color: var(--navy);
+    padding: 14px 0 14px 20px;
+    margin: 50px 0 24px;
+    border-left: 5px solid var(--navy);
+    background: linear-gradient(90deg, var(--navy-bg) 0%, transparent 100%);
+    border-radius: 0 6px 6px 0;
+  }
+
+  h2 i {
+    margin-right: 10px;
+    font-size: 20px;
+  }
+
+  h3 {
+    font-size: 17px;
+    color: var(--navy-light);
+    margin: 30px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  h3 i {
+    margin-right: 8px;
+    font-size: 15px;
+    color: var(--accent);
+  }
+
+  h4 {
+    font-size: 15px;
+    color: var(--text);
+    margin: 20px 0 10px;
+    font-weight: 700;
+  }
+
+  /* ===== Paragraphs & Lists ===== */
+  p { margin-bottom: 14px; }
+
+  ul, ol {
+    margin: 10px 0 18px 24px;
+  }
+
+  li { margin-bottom: 6px; }
+
+  /* ===== Tables ===== */
+  .table-wrapper {
+    overflow-x: auto;
+    margin: 16px 0 24px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  thead th:first-child { border-radius: 6px 0 0 0; }
+  thead th:last-child { border-radius: 0 6px 0 0; }
+
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tbody tr:hover { background: #f9fafb; }
+
+  tbody tr:last-child td:first-child { border-radius: 0 0 0 6px; }
+  tbody tr:last-child td:last-child { border-radius: 0 0 6px 0; }
+
+  /* ===== URL / Code Blocks ===== */
+  .url-cell {
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+    font-size: 11px;
+    word-break: break-all;
+    background: var(--mono-bg);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--mono-border);
+    display: inline-block;
+    max-width: 380px;
+    user-select: all;
+    cursor: text;
+  }
+
+  code {
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+    font-size: 12px;
+    background: var(--mono-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--mono-border);
+    color: #c7254e;
+  }
+
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 18px 22px;
+    border-radius: 8px;
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin: 14px 0 20px;
+    user-select: all;
+  }
+
+  pre code {
+    background: none;
+    border: none;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* ===== Flowchart ===== */
+  .flowchart {
+    margin: 20px 0 30px;
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .flowchart::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--navy), var(--accent), var(--success));
+    border-radius: 2px;
+  }
+
+  .flowchart-step {
+    position: relative;
+    margin-bottom: 28px;
+    padding: 18px 22px;
+    background: #fff;
+    border: 1px solid #e2e6ea;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .flowchart-step::before {
+    content: "";
+    position: absolute;
+    left: -30px;
+    top: 22px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--navy);
+  }
+
+  .flowchart-step.auto::before { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .flowchart-step.result::before { background: var(--success); box-shadow: 0 0 0 2px var(--success); }
+
+  .flowchart-step .step-date {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .flowchart-step .step-date .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 10px;
+  }
+
+  .flowchart-step ul {
+    margin: 6px 0 0 18px;
+    font-size: 13px;
+  }
+
+  .flowchart-step li { margin-bottom: 4px; }
+
+  /* ===== Info Boxes ===== */
+  .info-box {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 16px 0 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .info-box i { font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+
+  .info-box.note {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+  }
+
+  .info-box.warning {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+  }
+
+  .info-box.danger {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+  }
+
+  .info-box.success {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+  }
+
+  /* ===== Status Flow ===== */
+  .status-flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 16px 0 20px;
+    padding: 16px 20px;
+    background: var(--navy-bg);
+    border-radius: 8px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .status-badge.provisional { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .status-badge.nda { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+  .status-badge.docs { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
+  .status-badge.confirmed { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+  .status-badge.done { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+  .status-badge.cancel { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+  .status-arrow {
+    color: var(--text-light);
+    font-size: 14px;
+  }
+
+  /* ===== Column Layout ===== */
+  .column-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    margin: 12px 0 20px;
+    font-size: 13px;
+  }
+
+  .column-list .col-id {
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
+  }
+
+  /* ===== Score Box ===== */
+  .score-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, var(--navy-bg), #e8edf5);
+    border: 1px solid #c5cfe0;
+    border-radius: 8px;
+    margin: 10px 0 16px;
+    font-size: 13px;
+  }
+
+  .score-box .score-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .score-box .score-value {
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--navy);
+  }
+
+  /* ===== Step List ===== */
+  .step-list {
+    counter-reset: step-counter;
+    list-style: none;
+    margin: 14px 0 20px;
+    padding: 0;
+  }
+
+  .step-list li {
+    counter-increment: step-counter;
+    padding: 10px 14px 10px 48px;
+    position: relative;
+    margin-bottom: 8px;
+    background: #f9fafb;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+  }
+
+  .step-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 12px;
+    top: 10px;
+    width: 26px;
+    height: 26px;
+    background: var(--navy);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ===== Trigger Table ===== */
+  .trigger-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
+  .trigger-item .trigger-name {
+    font-family: "SFMono-Regular", "Consolas", monospace;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 13px;
+    min-width: 180px;
+  }
+
+  .trigger-item .trigger-schedule {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+
+  /* ===== Footer ===== */
+  .doc-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 2px solid var(--navy);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-light);
+  }
+
+  .doc-footer .version {
+    font-weight: 600;
+    color: var(--navy);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ===== Cover ===== -->
+  <div class="cover">
+    <div class="cover-icon"><i class="fas fa-cogs"></i></div>
+    <h1>無料経営相談システム<br>管理者マニュアル</h1>
+    <p class="subtitle">関西学院大学 中小企業経営診断研究会</p>
+    <span class="doc-type"><i class="fas fa-shield-halved"></i>&ensp;管理者向けドキュメント</span>
+  </div>
+
+  <!-- ===== Table of Contents ===== -->
+  <nav class="toc">
+    <h2><i class="fas fa-list-ol"></i> 目次</h2>
+    <ol>
+      <li><a href="#sec1">システム概要</a></li>
+      <li><a href="#sec2">重要なURL一覧</a></li>
+      <li><a href="#sec3">月次運用フロー（自動化済み）</a></li>
+      <li><a href="#sec4">スプレッドシートの構成</a></li>
+      <li><a href="#sec5">お知らせ管理</a></li>
+      <li><a href="#sec6">予約の管理</a></li>
+      <li><a href="#sec7">メンバー管理</a></li>
+      <li><a href="#sec8">トリガーの確認・管理</a></li>
+      <li><a href="#sec9">GASコードの更新手順</a></li>
+      <li><a href="#sec10">トラブルシューティング</a></li>
+      <li><a href="#sec11">設定変更（config.gs）</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===== 1. システム概要 ===== -->
+  <h2 id="sec1"><i class="fas fa-info-circle"></i> 1. システム概要</h2>
+
+  <p>本システムは <strong>Google Apps Script（GAS）</strong> を基盤とした予約管理システムです。以下の4つのコンポーネントが連携して動作します。</p>
+
+  <ul>
+    <li><strong>LP（ランディングページ）</strong> &mdash; 相談者からの予約を受付するWebフォーム</li>
+    <li><strong>Googleフォーム</strong> &mdash; メンバーの参加可能日を自動収集</li>
+    <li><strong>スプレッドシート</strong> &mdash; 予約・日程・メンバーを一元管理</li>
+    <li><strong>GAS</strong> &mdash; 上記すべてを連携し、メール通知・ステータス管理を自動実行</li>
+  </ul>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>毎月の日程生成、メンバーへのフォーム送信、スコア判定、予約受付処理はすべて自動化されています。管理者は主にスプレッドシート上のステータス管理と確認作業を行います。</div>
+  </div>
+
+  <!-- ===== 2. 重要なURL一覧 ===== -->
+  <h2 id="sec2"><i class="fas fa-link"></i> 2. 重要なURL一覧</h2>
+
+  <p>システム運用に必要な主要URLの一覧です。ブックマークに登録してください。</p>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>URL</th>
+          <th>用途</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>ウェブアプリ</strong></td>
+          <td><span class="url-cell">https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec</span></td>
+          <td>APIエンドポイント</td>
+        </tr>
+        <tr>
+          <td><strong>GASエディタ</strong></td>
+          <td><span class="url-cell">https://script.google.com/d/1GCCYhyzkuSzJuOfapiUWzgHHoaq39pAIV7k1zo6M-GBiPvdX78dEB0Uu/edit</span></td>
+          <td>コード編集</td>
+        </tr>
+        <tr>
+          <td><strong>お知らせ管理</strong></td>
+          <td><span class="url-cell">上記ウェブアプリURL + ?action=news-admin</span></td>
+          <td>ニュース管理画面</td>
+        </tr>
+        <tr>
+          <td><strong>スプレッドシート</strong></td>
+          <td><span class="url-cell">https://docs.google.com/spreadsheets/d/1tD6-0WVXsud8_APnR4IxlI7yR085I47WoTjiFZ8oFBc/edit</span></td>
+          <td>データ管理</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div>URLをクリックしてもアクセスできない場合は、Googleアカウントの権限を確認してください。アクセス権は管理者から付与されます。</div>
+  </div>
+
+  <!-- ===== 3. 月次運用フロー ===== -->
+  <h2 id="sec3"><i class="fas fa-rotate"></i> 3. 月次運用フロー（自動化済み）</h2>
+
+  <p>以下のフローは毎月自動的に実行されます。管理者による手動操作は不要です。</p>
+
+  <div class="flowchart">
+
+    <!-- 25日 -->
+    <div class="flowchart-step auto">
+      <div class="step-date">
+        <i class="fas fa-calendar-day"></i> 毎月25日
+        <span class="badge">自動実行</span>
+      </div>
+      <ul>
+        <li>翌々月の日程候補を自動生成</li>
+        <li>全メンバーをデフォルト登録（全員参加可能として初期化）</li>
+        <li>オプトアウトフォームを自動作成</li>
+        <li>全メンバーにメール送信（参加できない日をチェックするフォーム）</li>
+        <li>管理者に通知メールを送信</li>
+      </ul>
+    </div>
+
+    <!-- 翌月15日 -->
+    <div class="flowchart-step auto">
+      <div class="step-date">
+        <i class="fas fa-calendar-day"></i> 翌月15日
+        <span class="badge">自動実行</span>
+      </div>
+      <ul>
+        <li>確認フォームを自動作成</li>
+        <li>全メンバーに2回目のメール送信（確認＋追加参加可能日の登録）</li>
+      </ul>
+    </div>
+
+    <!-- 翌月21日 -->
+    <div class="flowchart-step auto">
+      <div class="step-date">
+        <i class="fas fa-calendar-day"></i> 翌月21日
+        <span class="badge">自動実行</span>
+      </div>
+      <ul>
+        <li>スコア不足の枠を自動クローズ</li>
+        <li>予約済み枠があれば警告メールを管理者に送信</li>
+        <li>管理者に確定レポートを送信</li>
+      </ul>
+    </div>
+
+    <!-- 以降 -->
+    <div class="flowchart-step result">
+      <div class="step-date">
+        <i class="fas fa-check-circle"></i> 以降（予約受付開始）
+      </div>
+      <ul>
+        <li>LPに予約可能日程が自動表示</li>
+        <li>相談者が予約 &rarr; 自動処理（確認メール送信・スプレッドシート記録）</li>
+        <li>管理者に通知メールが届く</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="info-box success">
+    <i class="fas fa-circle-check"></i>
+    <div>すべてのフローはGASトリガーで自動実行されます。トリガーの設定状況は <a href="#sec8">8. トリガーの確認・管理</a> を参照してください。</div>
+  </div>
+
+  <!-- ===== 4. スプレッドシートの構成 ===== -->
+  <h2 id="sec4"><i class="fas fa-table"></i> 4. スプレッドシートの構成</h2>
+
+  <!-- 4.1 予約管理シート -->
+  <h3><i class="fas fa-clipboard-list"></i> 4.1 予約管理シート</h3>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>タイムスタンプ</span>
+    <span class="col-id">B列</span><span>申込ID</span>
+    <span class="col-id">C列</span><span>お名前</span>
+    <span class="col-id">D列</span><span>貴社名</span>
+    <span class="col-id">E列</span><span>メールアドレス</span>
+    <span class="col-id">F列</span><span>電話番号</span>
+    <span class="col-id">G列</span><span>役職</span>
+    <span class="col-id">H列</span><span>業種</span>
+    <span class="col-id">I列</span><span>相談テーマ</span>
+    <span class="col-id">J列</span><span>相談内容</span>
+    <span class="col-id">K列</span><span>希望日時1</span>
+    <span class="col-id">L列</span><span>希望日時2</span>
+    <span class="col-id">M列</span><span>相談方法</span>
+    <span class="col-id">N列</span><span>ステータス</span>
+    <span class="col-id">O列</span><span>担当者</span>
+    <span class="col-id">P列</span><span>確定日時</span>
+    <span class="col-id">Q列</span><span>ZoomURL</span>
+    <span class="col-id">R列</span><span>ヒアリングシート</span>
+    <span class="col-id">S列</span><span>備考</span>
+    <span class="col-id">T列</span><span>NDA同意</span>
+    <span class="col-id">U列</span><span>NDA同意日時</span>
+    <span class="col-id">V列</span><span>企業URL</span>
+    <span class="col-id">W列</span><span>当日受付フラグ</span>
+  </div>
+
+  <h4><i class="fas fa-arrow-right"></i> ステータスの流れ</h4>
+
+  <div class="status-flow">
+    <span class="status-badge provisional">仮予約</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge nda">NDA同意済</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge docs">書類受領</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge confirmed">確定</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge done">完了</span>
+    <span style="margin: 0 4px; color: var(--text-light);">/</span>
+    <span class="status-badge cancel">キャンセル</span>
+  </div>
+
+  <!-- 4.2 メンバーマスタシート -->
+  <h3><i class="fas fa-users"></i> 4.2 メンバーマスタシート</h3>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>氏名</span>
+    <span class="col-id">B列</span><span>期</span>
+    <span class="col-id">C列</span><span>資格</span>
+    <span class="col-id">D列</span><span>区分</span>
+    <span class="col-id">E列</span><span>メールアドレス</span>
+    <span class="col-id">F列</span><span>LINE ID</span>
+    <span class="col-id">G列</span><span>備考</span>
+  </div>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div><strong>重要:</strong> E列のメールアドレスが空のメンバーにはGoogleフォームが送信されません。新メンバー追加時は必ずメールアドレスを入力してください。</div>
+  </div>
+
+  <!-- 4.3 日程設定シート -->
+  <h3><i class="fas fa-calendar-alt"></i> 4.3 日程設定シート</h3>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>日付</span>
+    <span class="col-id">B列</span><span>時間帯</span>
+    <span class="col-id">C列</span><span>対応可否</span>
+    <span class="col-id">D列</span><span>対応方法</span>
+    <span class="col-id">E列</span><span>担当者</span>
+    <span class="col-id">F列</span><span>予約状況</span>
+    <span class="col-id">G列</span><span>備考</span>
+    <span class="col-id">H列</span><span>参加メンバー</span>
+    <span class="col-id">I列</span><span>配置点数</span>
+    <span class="col-id">J列</span><span>特別対応</span>
+    <span class="col-id">K列</span><span>予約可能判定</span>
+  </div>
+
+  <h4><i class="fas fa-calculator"></i> スコア計算ルール</h4>
+
+  <div class="score-box">
+    <div class="score-item">
+      <span>診断士（1期/2期）</span>
+      <span class="score-value">= 2点</span>
+    </div>
+    <div class="score-item">
+      <span>オブザーバー（3期/4期）</span>
+      <span class="score-value">= 1点</span>
+    </div>
+  </div>
+
+  <p><strong>予約可能条件:</strong></p>
+  <ul>
+    <li>合計 <strong>4点以上</strong>、または</li>
+    <li>合計 <strong>2点以上</strong> かつ <strong>特別対応フラグ</strong> が有効</li>
+  </ul>
+
+  <!-- 4.4 お知らせシート -->
+  <h3><i class="fas fa-bullhorn"></i> 4.4 お知らせシート</h3>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>日付</span>
+    <span class="col-id">B列</span><span>内容</span>
+    <span class="col-id">C列</span><span>表示フラグ（TRUE / FALSE）</span>
+    <span class="col-id">D列</span><span>作成日時</span>
+  </div>
+
+  <!-- ===== 5. お知らせ管理 ===== -->
+  <h2 id="sec5"><i class="fas fa-bullhorn"></i> 5. お知らせ管理</h2>
+
+  <ol class="step-list">
+    <li>ウェブアプリURL + <code>?action=news-admin</code> にアクセスします</li>
+    <li>「お知らせ追加」フォームから <strong>日付</strong> と <strong>内容</strong> を入力して追加します</li>
+    <li>一覧から <strong>表示/非表示の切替</strong> や <strong>削除</strong> が可能です</li>
+    <li>LPのニュースバーに最新のお知らせが <strong>自動表示</strong> されます</li>
+  </ol>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>お知らせの表示/非表示はスプレッドシートのC列（表示フラグ）でも直接制御できます。<code>TRUE</code> で表示、<code>FALSE</code> で非表示です。</div>
+  </div>
+
+  <!-- ===== 6. 予約の管理 ===== -->
+  <h2 id="sec6"><i class="fas fa-calendar-check"></i> 6. 予約の管理</h2>
+
+  <!-- 6.1 新規予約 -->
+  <h3><i class="fas fa-bell"></i> 6.1 新規予約が入った場合</h3>
+
+  <ul>
+    <li>管理者メールに <strong>通知</strong> が届きます</li>
+    <li>スプレッドシートの予約管理シートに <strong>自動記録</strong> されます</li>
+    <li>ステータスは <span class="status-badge provisional">仮予約</span> として登録されます</li>
+    <li>相談者にはNDA同意リンク付きの <strong>確認メール</strong> が自動送信されます</li>
+  </ul>
+
+  <!-- 6.2 予約確定 -->
+  <h3><i class="fas fa-check-double"></i> 6.2 予約確定の流れ</h3>
+
+  <ol class="step-list">
+    <li>相談者がNDA同意を完了 &rarr; ステータスが <span class="status-badge nda">NDA同意済</span> に自動更新されます</li>
+    <li>管理者がヒアリングシート受領を確認 &rarr; ステータスを <span class="status-badge docs">書類受領</span> に手動変更します</li>
+    <li>日程・担当者を確定 &rarr; ステータスを <span class="status-badge confirmed">確定</span> に変更します</li>
+    <li>Zoomで実施する場合は <strong>Q列にZoomURL</strong> を入力します</li>
+  </ol>
+
+  <!-- 6.3 当日受付 -->
+  <h3><i class="fas fa-bolt"></i> 6.3 当日受付</h3>
+
+  <ul>
+    <li>備考欄にコード <code>9999</code> が含まれている場合、<strong>当日受付</strong> として処理されます</li>
+    <li>W列に <code>TRUE</code> が自動記録されます</li>
+  </ul>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>当日受付コードは <code>config.gs</code> の <code>WALK_IN_CODE</code> で変更可能です。デフォルト値は <code>9999</code> です。</div>
+  </div>
+
+  <!-- ===== 7. メンバー管理 ===== -->
+  <h2 id="sec7"><i class="fas fa-user-gear"></i> 7. メンバー管理</h2>
+
+  <p>メンバーの追加・編集はスプレッドシートの <strong>メンバーマスタシート</strong> で行います。</p>
+
+  <ul>
+    <li>新メンバー追加時は <strong>E列にメールアドレスを必ず入力</strong> してください</li>
+    <li><strong>区分（D列）:</strong> 「診断士」または「オブザーバー」のいずれかを入力</li>
+    <li><strong>期（B列）:</strong> 1期〜4期</li>
+  </ul>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div>メールアドレスが空の場合、そのメンバーにはGoogleフォーム（参加可否アンケート）が送信されません。フォームが届かないという問合せがあった場合はまずE列を確認してください。</div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>区分</th>
+          <th>期</th>
+          <th>スコア</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>診断士</strong></td>
+          <td>1期 / 2期</td>
+          <td><strong>2点</strong></td>
+          <td>経験豊富なメンバー。相談対応の主担当</td>
+        </tr>
+        <tr>
+          <td><strong>オブザーバー</strong></td>
+          <td>3期 / 4期</td>
+          <td><strong>1点</strong></td>
+          <td>研修中のメンバー。サポート役として参加</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 8. トリガーの確認・管理 ===== -->
+  <h2 id="sec8"><i class="fas fa-clock"></i> 8. トリガーの確認・管理</h2>
+
+  <p>GASエディタを開き、左メニューの「トリガー」（<i class="fas fa-clock"></i> 時計アイコン）をクリックして確認します。</p>
+
+  <p><strong>以下の3つのトリガーが登録されていることを確認してください:</strong></p>
+
+  <div style="margin: 16px 0 20px;">
+    <div class="trigger-item">
+      <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> runFirstPolling</span>
+      <span class="trigger-schedule"><i class="fas fa-calendar" style="margin-right: 4px;"></i> 毎月25日 10:00</span>
+    </div>
+    <div class="trigger-item">
+      <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> runReminderPolling</span>
+      <span class="trigger-schedule"><i class="fas fa-calendar" style="margin-right: 4px;"></i> 毎月15日 10:00</span>
+    </div>
+    <div class="trigger-item">
+      <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> finalizeSchedule</span>
+      <span class="trigger-schedule"><i class="fas fa-calendar" style="margin-right: 4px;"></i> 毎月21日 10:00</span>
+    </div>
+  </div>
+
+  <div class="info-box danger">
+    <i class="fas fa-circle-exclamation"></i>
+    <div><strong>トリガーが消えた場合:</strong> GASエディタで <code>setupAllTriggers()</code> 関数を実行してください。これにより3つのトリガーが再設定されます。</div>
+  </div>
+
+  <!-- ===== 9. GASコードの更新手順 ===== -->
+  <h2 id="sec9"><i class="fas fa-code"></i> 9. GASコードの更新手順</h2>
+
+  <ol class="step-list">
+    <li>ローカル環境でコードを修正します</li>
+    <li>ターミナルで以下のコマンドを実行します
+      <pre><code>clasp push --force</code></pre>
+    </li>
+    <li>GASエディタを開き、メニューから <strong>デプロイ &rarr; デプロイを管理</strong> を選択します</li>
+    <li>鉛筆アイコン（<i class="fas fa-pencil"></i>）をクリックし、バージョンを <strong>「新しいバージョン」</strong> に変更します</li>
+    <li><strong>「デプロイ」</strong> をクリックして完了です</li>
+  </ol>
+
+  <div class="info-box success">
+    <i class="fas fa-circle-check"></i>
+    <div>デプロイを更新しても <strong>URLは変わりません</strong>。LP側の変更は不要です。</div>
+  </div>
+
+  <!-- ===== 10. トラブルシューティング ===== -->
+  <h2 id="sec10"><i class="fas fa-wrench"></i> 10. トラブルシューティング</h2>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 24%;">症状</th>
+          <th style="width: 24%;">原因</th>
+          <th>対処法</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>LPにスケジュールが表示されない</td>
+          <td>API未応答 or 予約可能枠なし</td>
+          <td>スプレッドシートの日程設定シートで <strong>K列が「○」の行</strong> があるか確認してください</td>
+        </tr>
+        <tr>
+          <td>メンバーにフォームが届かない</td>
+          <td>メールアドレス未設定</td>
+          <td>メンバーマスタの <strong>E列</strong> にメールアドレスを入力してください</td>
+        </tr>
+        <tr>
+          <td>予約メールが届かない</td>
+          <td>GmailApp送信制限</td>
+          <td>GASエディタの <strong>実行ログ</strong> を確認してください。日次送信上限に達している場合は翌日まで待つ必要があります</td>
+        </tr>
+        <tr>
+          <td>ニュースが表示されない</td>
+          <td>表示フラグがFALSE</td>
+          <td><strong>お知らせ管理画面</strong> で表示フラグを「表示」に切り替えてください</td>
+        </tr>
+        <tr>
+          <td>トリガーが動かない</td>
+          <td>トリガー未設定</td>
+          <td>GASエディタで <code>setupAllTriggers()</code> を実行してください</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>GASの実行ログは、GASエディタの左メニュー「実行数」（<i class="fas fa-list"></i>）から確認できます。エラーが発生している場合は赤い表示で記録されています。</div>
+  </div>
+
+  <!-- ===== 11. 設定変更 ===== -->
+  <h2 id="sec11"><i class="fas fa-sliders"></i> 11. 設定変更（config.gs）</h2>
+
+  <p><code>config.gs</code> ファイルで以下の主要な設定項目を変更できます。</p>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>設定項目</th>
+          <th>説明</th>
+          <th>デフォルト値</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ADMIN_EMAILS</code></td>
+          <td>管理者メールアドレス（通知送信先）</td>
+          <td>設定済み</td>
+        </tr>
+        <tr>
+          <td><code>SENDER_NAME</code></td>
+          <td>メール送信元の表示名</td>
+          <td>設定済み</td>
+        </tr>
+        <tr>
+          <td><code>FORM_POLLING</code></td>
+          <td>アンケート（フォーム）送信日程の設定</td>
+          <td>25日 / 15日</td>
+        </tr>
+        <tr>
+          <td><code>WALK_IN_CODE</code></td>
+          <td>当日受付の識別コード</td>
+          <td><code>9999</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div><code>config.gs</code> を変更した場合は、必ず <a href="#sec9">9. GASコードの更新手順</a> に従ってデプロイを更新してください。</div>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="doc-footer">
+    <div>
+      <span class="version">Version 1.0</span>&emsp;|&emsp;2025年6月 作成
+    </div>
+    <div>
+      <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会
+    </div>
+  </footer>
+
+</div><!-- /.page-wrapper -->
+
+</body>
+</html>
