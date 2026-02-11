@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お知らせ | 関西学院大学 中小企業経営診断研究会</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&family=Cinzel:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --kgu-blue: #0F2350;
+            --kgu-blue-deep: #080e24;
+            --kgu-gold: #C5A15A;
+            --kgu-gold-light: #e0c878;
+            --kgu-gold-dim: rgba(197,161,90,0.08);
+            --text-main: #1a1a1a;
+            --text-light: #666;
+            --text-muted: #999;
+            --white: #ffffff;
+            --off-white: #fafafa;
+            --bg-light: #f5f5f7;
+            --border-light: rgba(0,0,0,0.06);
+            --font-serif: 'Noto Serif JP', serif;
+            --font-sans: 'Noto Sans JP', sans-serif;
+            --font-motto: 'Cinzel', serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.8;
+            color: var(--text-main);
+            background-color: var(--white);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; transition: all 0.3s; }
+        ::selection { background: var(--kgu-gold); color: var(--white); }
+
+        .container { width: 90%; max-width: 900px; margin: 0 auto; }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem clamp(1.5rem, 5vw, 4rem);
+            background-color: rgba(255,255,255,0.97);
+            border-bottom: 1px solid var(--border-light);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-logo { display: flex; align-items: center; gap: 14px; }
+        .header-logo img { height: 32px; }
+        .logo-text { font-size: 0.8rem; font-weight: 500; color: var(--text-light); }
+
+        .back-link {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--kgu-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s;
+        }
+        .back-link:hover {
+            background: var(--kgu-blue);
+            color: #fff;
+            border-color: var(--kgu-blue);
+        }
+
+        /* PAGE HERO */
+        .page-hero {
+            background: var(--kgu-blue);
+            color: #fff;
+            padding: 5rem 0 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 400px; height: 400px;
+            border-radius: 50%;
+            border: 1px solid rgba(197,161,90,0.1);
+        }
+
+        .page-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -150px; left: -50px;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            border: 1px solid rgba(197,161,90,0.06);
+        }
+
+        .page-hero .eyebrow {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.25em;
+            color: var(--kgu-gold);
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .page-hero h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(1.8rem, 4vw, 2.2rem);
+            font-weight: 900;
+            margin-top: 0.5rem;
+            position: relative;
+        }
+
+        /* NEWS LIST */
+        .news-section {
+            padding: 4rem 0 6rem;
+        }
+
+        .news-year-block { margin-bottom: 3rem; }
+
+        .news-year {
+            font-family: var(--font-motto);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--kgu-blue);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--kgu-gold);
+            letter-spacing: 0.05em;
+        }
+
+        .news-item {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-light);
+            transition: all 0.3s;
+            align-items: baseline;
+        }
+
+        .news-item:hover {
+            background: var(--off-white);
+            padding-left: 1rem;
+            border-radius: 8px;
+        }
+
+        .news-date {
+            font-weight: 700;
+            color: var(--kgu-blue);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            width: 110px;
+        }
+
+        .news-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+            border-radius: 3px;
+        }
+
+        .news-label.info { background: var(--kgu-blue); color: #fff; }
+        .news-label.recruit { background: var(--kgu-gold); color: var(--kgu-blue-deep); }
+        .news-label.web { background: var(--bg-light); color: var(--text-main); border: 1px solid var(--border-light); }
+        .news-label.event { background: #2ecc71; color: #fff; }
+
+        .news-content { flex: 1; }
+
+        .news-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* LOADING */
+        .loading {
+            text-align: center;
+            padding: 3rem 0;
+            color: var(--text-muted);
+        }
+
+        .loading-spinner {
+            width: 32px; height: 32px;
+            border: 3px solid var(--border-light);
+            border-top-color: var(--kgu-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-msg {
+            text-align: center;
+            padding: 3rem 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: var(--kgu-blue-deep);
+            padding: 2.5rem 0;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            font-size: 0.7rem;
+        }
+
+        @media (max-width: 600px) {
+            .news-item { flex-direction: column; gap: 0.5rem; }
+            .news-date { width: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="index14.html" class="header-logo">
+            <img src="logo.svg" alt="関西学院大学" onerror="this.style.display='none'">
+            <span class="logo-text">中小企業経営診断研究会</span>
+        </a>
+        <a href="index14.html" class="back-link"><i class="fas fa-arrow-left"></i> トップに戻る</a>
+    </header>
+
+    <section class="page-hero">
+        <div class="container">
+            <span class="eyebrow">News & Topics</span>
+            <h1>お知らせ</h1>
+        </div>
+    </section>
+
+    <section class="news-section">
+        <div class="container" id="newsContainer">
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+                <p>読み込み中...</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            &copy; Kwansei Gakuin University. All Rights Reserved.
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec';
+
+        async function loadNews() {
+            const container = document.getElementById('newsContainer');
+            const loading = document.getElementById('loadingIndicator');
+
+            try {
+                const response = await fetch(API_URL + '?action=news');
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('JSONパースエラー');
+                }
+
+                loading.style.display = 'none';
+
+                if (!data.success || !data.news || data.news.length === 0) {
+                    container.innerHTML = '<div class="empty-msg">現在お知らせはありません。</div>';
+                    return;
+                }
+
+                // 年ごとにグループ化
+                const grouped = {};
+                data.news.forEach(function(item) {
+                    const year = item.date.substring(0, 4);
+                    if (!grouped[year]) grouped[year] = [];
+                    grouped[year].push(item);
+                });
+
+                let html = '';
+                const years = Object.keys(grouped).sort().reverse();
+
+                years.forEach(function(year) {
+                    html += '<div class="news-year-block">';
+                    html += '<h2 class="news-year">' + year + '</h2>';
+
+                    grouped[year].forEach(function(item) {
+                        const label = detectLabel(item.content);
+                        html += '<div class="news-item">';
+                        html += '<div class="news-date">' + escapeHtml(item.date) + '</div>';
+                        html += '<span class="news-label ' + label.cls + '">' + label.text + '</span>';
+                        html += '<div class="news-content">';
+                        html += '<div class="news-title">' + escapeHtml(item.content) + '</div>';
+                        html += '</div>';
+                        html += '</div>';
+                    });
+
+                    html += '</div>';
+                });
+
+                container.innerHTML = html;
+
+            } catch (e) {
+                loading.style.display = 'none';
+                container.innerHTML = '<div class="empty-msg">お知らせの読み込みに失敗しました。</div>';
+                console.log('ニュース読み込みエラー:', e.message);
+            }
+        }
+
+        function detectLabel(content) {
+            if (content.includes('募集') || content.includes('受付') || content.includes('予約')) {
+                return { cls: 'recruit', text: '募集' };
+            }
+            if (content.includes('イベント') || content.includes('開催') || content.includes('セミナー')) {
+                return { cls: 'event', text: 'イベント' };
+            }
+            if (content.includes('サイト') || content.includes('ページ') || content.includes('公開') || content.includes('Web')) {
+                return { cls: 'web', text: 'Web' };
+            }
+            return { cls: 'info', text: 'お知らせ' };
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        loadNews();
+    </script>
+
+</body>
+</html>
