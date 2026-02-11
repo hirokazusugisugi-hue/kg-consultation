@@ -290,10 +290,14 @@ function getAvailableSchedule(method) {
       timeStr = String(time);
     }
 
-    available[dateKey].push({
-      time: timeStr,
-      staff: staff || ''
-    });
+    // 同じ時間帯の重複を除去
+    var isDuplicate = available[dateKey].some(function(s) { return s.time === timeStr; });
+    if (!isDuplicate) {
+      available[dateKey].push({
+        time: timeStr,
+        staff: staff || ''
+      });
+    }
   }
 
   return available;

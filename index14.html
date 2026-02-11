@@ -2198,7 +2198,7 @@
     </section>
 
     <!-- NEWS BAR -->
-    <a href="news.html" class="news-bar">
+    <a href="#" class="news-bar" id="newsBarLink">
         <div class="news-bar-inner">
             <span class="news-badge">News</span>
             <span class="news-text">2026.04.01 — 無料経営相談の本格運用を開始しました。4月度の相談予約枠を公開中（限定3社）。</span>
@@ -3288,6 +3288,24 @@
                     if (newsTextEl) {
                         newsTextEl.textContent = latest.date + ' — ' + latest.content;
                     }
+                    // 複数ニュースがある場合、クリックでトグル表示
+                    if (data.news.length > 1) {
+                        let newsIndex = 0;
+                        const newsBar = document.getElementById('newsBarLink');
+                        if (newsBar) {
+                            newsBar.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                newsIndex = (newsIndex + 1) % data.news.length;
+                                const item = data.news[newsIndex];
+                                newsTextEl.textContent = item.date + ' — ' + item.content;
+                            });
+                        }
+                    }
+                }
+                // 一覧を見るリンクを無効化（ニュース1件の場合）
+                const newsBar = document.getElementById('newsBarLink');
+                if (newsBar) {
+                    newsBar.addEventListener('click', function(e) { e.preventDefault(); });
                 }
             } catch (e) {
                 console.log('ニュース取得スキップ');
