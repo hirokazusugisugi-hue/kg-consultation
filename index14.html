@@ -1,0 +1,3700 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無料経営相談 | 関西学院大学 中小企業経営診断研究会</title>
+    <meta name="description" content="「Mastery for Service」の実践。関西学院大学 経営戦略研究科（IBA）中小企業診断士養成課程の分科会による、中小企業向け無料経営相談プロジェクト。">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&family=Cinzel:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --kgu-blue: #0F2350;
+            --kgu-blue-deep: #080e24;
+            --kgu-gold: #C5A15A;
+            --kgu-gold-light: #e0c878;
+            --kgu-gold-dim: rgba(197,161,90,0.08);
+            --text-main: #1a1a1a;
+            --text-light: #666;
+            --text-muted: #999;
+            --white: #ffffff;
+            --off-white: #fafafa;
+            --bg-light: #f5f5f7;
+            --border-light: rgba(0,0,0,0.06);
+            --font-serif: 'Noto Serif JP', serif;
+            --font-sans: 'Noto Sans JP', sans-serif;
+            --font-motto: 'Cinzel', serif;
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 30px rgba(0,0,0,0.06);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.08);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; font-size: 16px; }
+
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.9;
+            color: var(--text-main);
+            background-color: var(--white);
+            overflow-x: hidden;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        a { text-decoration: none; color: inherit; transition: all 0.3s var(--ease-out-expo); }
+
+        ::selection { background: var(--kgu-blue); color: var(--white); }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 clamp(1.5rem, 5vw, 4rem);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ── SCROLL ANIMATIONS ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+        }
+        .reveal-left.visible { opacity: 1; transform: translateX(0); }
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(30px);
+            transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+        }
+        .reveal-right.visible { opacity: 1; transform: translateX(0); }
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem clamp(1.5rem, 5vw, 4rem);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            background-color: rgba(255,255,255,0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            transition: all 0.4s var(--ease-out-expo);
+        }
+
+        .header.scrolled {
+            padding: 0.8rem clamp(1.5rem, 5vw, 4rem);
+            background-color: rgba(255,255,255,0.95);
+            box-shadow: 0 1px 0 var(--border-light);
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo-img {
+            height: 28px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-sub { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.02em; font-weight: 400; white-space: nowrap; }
+
+        .nav-list { display: flex; gap: 1.8rem; list-style: none; align-items: center; }
+        .nav-list a {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-light);
+            letter-spacing: 0.02em;
+            position: relative;
+            padding: 0.3rem 0;
+        }
+        .nav-list a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1.5px;
+            background: var(--kgu-blue);
+            transition: width 0.3s var(--ease-out-expo);
+        }
+        .nav-list a:hover { color: var(--text-main); }
+        .nav-list a:hover::after { width: 100%; }
+
+        .nav-cta a {
+            background: var(--kgu-blue);
+            color: #fff !important;
+            padding: 0.55rem 1.4rem !important;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.08em;
+            transition: all 0.3s var(--ease-out-expo);
+            box-shadow: 0 2px 12px rgba(15,35,80,0.2);
+        }
+        .nav-cta a::after { display: none !important; }
+        .nav-cta a:hover {
+            background: #1a3a6a;
+            color: #fff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(15,35,80,0.3);
+        }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            background: linear-gradient(180deg, var(--bg-light) 0%, var(--white) 100%);
+            padding: 8rem 0 6rem;
+        }
+
+        .hero-bg {
+            display: none;
+        }
+
+        .hero-overlay {
+            display: none;
+        }
+
+        /* Decorative elements - minimal geometric */
+        .hero-circle {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid var(--border-light);
+            pointer-events: none;
+        }
+        .hero-circle-1 { width: 800px; height: 800px; top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: 0.5; }
+        .hero-circle-2 { width: 600px; height: 600px; top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: 0.3; }
+        .hero-circle-3 { display: none; }
+
+        .hero-crest {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            height: 320px;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .hero-crest img { width: 100%; height: 100%; object-fit: contain; }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: var(--text-main);
+            max-width: 800px;
+            padding: 0 2rem;
+        }
+
+        .motto {
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            color: var(--kgu-blue);
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .motto::before, .motto::after {
+            display: none;
+        }
+
+        .hero-title {
+            font-family: var(--font-sans);
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+            animation: slideUp 0.8s ease-out 0.1s both;
+            color: var(--text-main);
+        }
+
+        .hero-title .highlight {
+            background: linear-gradient(135deg, var(--kgu-blue) 0%, #1a4a8a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-free-tag {
+            margin-bottom: 1.8rem;
+            animation: slideUp 0.8s ease-out 0.15s both;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .hero-free-tag::before,
+        .hero-free-tag::after {
+            content: '';
+            width: 40px;
+            height: 1px;
+            background: var(--kgu-gold);
+        }
+
+        .free-label {
+            display: inline-block;
+            color: var(--kgu-gold);
+            font-family: var(--font-serif);
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            line-height: 2;
+            margin-bottom: 2.5rem;
+            font-weight: 400;
+            color: var(--text-light);
+            animation: slideUp 0.8s ease-out 0.2s both;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            margin-bottom: 3rem;
+            animation: slideUp 0.8s ease-out 0.25s both;
+        }
+
+        .hero-feature {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hero-feature i {
+            color: var(--kgu-blue);
+            font-size: 0.8rem;
+        }
+
+        .hero-cta {
+            animation: slideUp 0.8s ease-out 0.3s both;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+            background: var(--kgu-blue);
+            border: none;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s var(--ease-out-expo);
+            border-radius: 100px;
+        }
+
+        .btn::before {
+            display: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(15,35,80,0.25);
+        }
+
+        .hero-scroll {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+            animation: bounce 2.5s infinite;
+        }
+
+        .hero-scroll .line {
+            width: 1px;
+            height: 30px;
+            background: linear-gradient(180deg, var(--text-muted), transparent);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+
+        /* ── NEWS TICKER ── */
+        .news-bar {
+            background: var(--off-white);
+            color: var(--text-main);
+            padding: 1rem 0;
+            overflow: hidden;
+            position: relative;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .news-bar-inner {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 clamp(1.5rem, 5vw, 4rem);
+        }
+
+        .news-badge {
+            background: var(--kgu-blue);
+            color: #fff;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.3rem 0.8rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            border-radius: 100px;
+        }
+
+        .news-text {
+            font-size: 0.85rem;
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-light);
+        }
+
+        /* ── ABOUT SPLIT ── */
+        .about-section {
+            padding: clamp(80px, 12vw, 160px) 0;
+            background: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-section::before {
+            display: none;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(3rem, 6vw, 6rem);
+            align-items: start;
+        }
+
+        .about-left h2 {
+            font-family: var(--font-sans);
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.3;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .about-left .eyebrow {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--kgu-blue);
+            margin-bottom: 1.2rem;
+            display: block;
+        }
+
+        .about-left p {
+            color: var(--text-light);
+            font-size: 1rem;
+            line-height: 2;
+            font-weight: 400;
+        }
+
+        .about-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .about-card {
+            background: var(--off-white);
+            padding: 1.8rem 2rem;
+            border-radius: 16px;
+            transition: all 0.4s var(--ease-out-expo);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+
+        .about-card::before {
+            display: none;
+        }
+
+        .about-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: transparent;
+        }
+
+        .about-card h3 {
+            font-size: 1rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+
+        .about-card p {
+            font-size: 0.88rem;
+            color: var(--text-light);
+            line-height: 1.7;
+            margin-bottom: 0.8rem;
+        }
+
+        .about-card a {
+            font-size: 0.8rem;
+            color: var(--kgu-blue);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .about-card a:hover { gap: 0.5rem; }
+
+        /* ── SERVICE ── */
+        .service-section {
+            padding: clamp(80px, 12vw, 160px) 0;
+            background: var(--bg-light);
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: clamp(3rem, 6vw, 5rem);
+        }
+
+        .section-header .section-crest {
+            width: 32px;
+            height: 32px;
+            opacity: 0.2;
+            margin: 0 auto 0.8rem;
+            display: block;
+        }
+
+        .section-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--kgu-blue);
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .section-title {
+            font-family: var(--font-sans);
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            color: var(--text-main);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .section-desc {
+            margin-top: 1.2rem;
+            font-size: 0.88rem;
+            color: var(--text-light);
+            line-height: 2;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .service-card {
+            padding: 1.5rem;
+            background: var(--white);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s var(--ease-out-expo);
+        }
+
+        .service-card::after {
+            display: none;
+        }
+
+        .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: transparent;
+        }
+
+        .service-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--kgu-blue);
+            transition: all 0.3s var(--ease-out-expo);
+            flex-shrink: 0;
+        }
+
+        .service-card:hover .service-icon {
+            background: var(--kgu-blue);
+            color: #fff;
+        }
+
+        .service-text { flex: 1; }
+
+        .service-card h3 {
+            font-size: 1rem;
+            color: var(--text-main);
+            margin-bottom: 0.3rem;
+            font-weight: 700;
+        }
+
+        .service-card p {
+            font-size: 0.88rem;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        /* ── FAQ ── */
+        .faq-section {
+            padding: clamp(80px, 12vw, 160px) 0;
+            background: var(--white);
+        }
+
+        .faq-container { max-width: 700px; margin: 0 auto; }
+
+        .faq-item {
+            border-bottom: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 1.5rem 0;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            transition: color 0.3s;
+        }
+
+        .faq-question:hover { color: var(--kgu-blue); }
+
+        .faq-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s var(--ease-out-expo);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .faq-item.active .faq-icon {
+            background: var(--kgu-blue);
+            color: #fff;
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s var(--ease-out-expo), padding 0.5s;
+            color: var(--text-light);
+            line-height: 1.9;
+            font-size: 0.9rem;
+            padding: 0 0 0 0;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 300px;
+            padding-bottom: 1.5rem;
+        }
+
+        /* ── ACCESS ── */
+        .access-section {
+            padding: clamp(80px, 12vw, 160px) 0;
+            background: var(--bg-light);
+        }
+
+        .access-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .access-info h3 {
+            font-family: var(--font-sans);
+            font-size: 1.2rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .access-address {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .access-routes { list-style: none; }
+
+        .access-route {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .route-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: var(--kgu-blue);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .route-info strong {
+            display: block;
+            font-size: 0.88rem;
+            color: var(--text-main);
+            margin-bottom: 0.2rem;
+            font-weight: 600;
+        }
+
+        .route-info span {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .access-note {
+            margin-top: 1.5rem;
+            padding: 1rem 1.2rem;
+            background: #fff5f5;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            color: #c0392b;
+            line-height: 1.6;
+        }
+
+        .access-map {
+            height: 100%;
+            min-height: 400px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .access-map iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+        /* ── CONTACT ── */
+        .contact-section {
+            padding: clamp(80px, 12vw, 160px) 0;
+            background: var(--white);
+            color: var(--text-main);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-section::before {
+            display: none;
+        }
+
+        .contact-section::after {
+            display: none;
+        }
+
+        .contact-section .section-title { color: var(--text-main); }
+        .contact-section .section-eyebrow { color: var(--kgu-blue); }
+
+        .form-box {
+            background: var(--off-white);
+            padding: clamp(2rem, 5vw, 3.5rem);
+            color: var(--text-main);
+            max-width: 700px;
+            margin: 0 auto;
+            border-radius: 24px;
+            position: relative;
+            border: 1px solid var(--border-light);
+        }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+        .form-row .form-group { margin-bottom: 0; flex: 1; }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            font-size: 0.85rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-light);
+            background: var(--white);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            color: var(--text-main);
+            transition: all 0.3s var(--ease-out-expo);
+            outline: none;
+            border-radius: 12px;
+        }
+
+        .form-control:focus {
+            border-color: var(--kgu-blue);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(15,35,80,0.08);
+        }
+
+        .form-notice {
+            background: var(--white);
+            padding: 1rem 1.2rem;
+            font-size: 0.8rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            color: var(--text-light);
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+        }
+
+        .form-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--kgu-blue);
+            color: #fff;
+            border: none;
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: all 0.4s var(--ease-out-expo);
+            border-radius: 12px;
+        }
+
+        .form-btn::before {
+            display: none;
+        }
+
+        .form-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(15,35,80,0.2);
+        }
+        .form-btn span { position: relative; z-index: 1; }
+
+        /* ── SUBMISSION RESULT MODAL ── */
+        .submit-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .submit-modal-overlay.active { display: flex; }
+
+        .submit-modal {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            animation: modalIn 0.4s var(--ease-out-expo);
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .submit-modal .modal-icon {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin: 0 auto 1.2rem;
+            font-size: 1.5rem;
+        }
+        .submit-modal .modal-icon.success { background: #e8f8ef; color: #2ecc71; }
+        .submit-modal .modal-icon.error { background: #fde8e8; color: #e74c3c; }
+
+        .submit-modal h3 {
+            font-family: var(--font-sans);
+            font-size: 1.2rem;
+            color: var(--text-main);
+            margin-bottom: 0.8rem;
+            font-weight: 700;
+        }
+
+        .submit-modal p {
+            font-size: 0.88rem;
+            color: var(--text-light);
+            line-height: 1.8;
+            margin-bottom: 0.6rem;
+        }
+
+        .submit-modal .modal-details {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin: 1.2rem 0;
+            text-align: left;
+            font-size: 0.82rem;
+            line-height: 2;
+        }
+
+        .submit-modal .modal-close-btn {
+            display: inline-block;
+            background: var(--kgu-blue);
+            color: #fff;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.8rem;
+            transition: all 0.3s var(--ease-out-expo);
+            transition: background 0.3s;
+        }
+        .submit-modal .modal-close-btn:hover { background: var(--kgu-gold); }
+
+        /* ── CALENDAR DATE PICKER ── */
+        .calendar-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-month {
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .calendar-nav button {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-light);
+            background: var(--white);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            transition: all 0.3s var(--ease-out-expo);
+            border-radius: 8px;
+        }
+
+        .calendar-nav button:hover {
+            border-color: var(--kgu-blue);
+            background: rgba(15,35,80,0.03);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 0.5rem 0;
+            letter-spacing: 0.03em;
+        }
+
+        .calendar-day-header.sun { color: #e74c3c; }
+        .calendar-day-header.sat { color: #2980b9; }
+
+        .calendar-day {
+            text-align: center;
+            padding: 0.6rem 0;
+            font-size: 0.82rem;
+            color: var(--text-light);
+            cursor: default;
+            transition: all 0.2s var(--ease-out-expo);
+            position: relative;
+            border-radius: 8px;
+        }
+
+        .calendar-day.empty { visibility: hidden; }
+
+        .calendar-day.available {
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 600;
+            background: var(--bg-light);
+        }
+
+        .calendar-day.available:hover {
+            background: var(--kgu-blue);
+            color: #fff;
+        }
+
+        .calendar-day.selected {
+            background: var(--kgu-blue);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .calendar-day.past {
+            color: var(--border-light);
+        }
+
+        .calendar-legend {
+            display: flex;
+            gap: 1.2rem;
+            margin-top: 0.8rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .calendar-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            flex-shrink: 0;
+            border-radius: 3px;
+        }
+
+        .legend-dot.available { background: var(--bg-light); }
+        .legend-dot.selected { background: var(--kgu-blue); }
+
+        /* Time slot selection */
+        .time-slot-section {
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .time-slot-section.active { display: block; }
+
+        .selected-date-display {
+            font-weight: 600;
+            color: var(--kgu-blue);
+            font-size: 0.88rem;
+            margin-bottom: 1rem;
+            padding: 0.6rem 1rem;
+            background: rgba(15,35,80,0.05);
+            display: inline-block;
+            border-radius: 8px;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .time-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.7rem;
+            border: 1px solid var(--border-light);
+            background: var(--white);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: all 0.3s var(--ease-out-expo);
+            border-radius: 10px;
+        }
+
+        .time-slot input[type="radio"] { display: none; }
+
+        .time-slot:hover {
+            border-color: var(--kgu-blue);
+            background: rgba(15,35,80,0.02);
+        }
+
+        .time-slot.selected {
+            border-color: var(--kgu-blue);
+            background: var(--kgu-blue);
+            color: #fff;
+        }
+
+        /* Consultation method */
+        .method-section { margin-bottom: 1.5rem; }
+
+        .method-options {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .method-option {
+            flex: 1;
+            padding: 1.2rem;
+            border: 1px solid var(--border-light);
+            background: var(--white);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s var(--ease-out-expo);
+            border-radius: 14px;
+        }
+
+        .method-option input[type="radio"] { display: none; }
+
+        .method-option i {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: block;
+            transition: color 0.3s;
+        }
+
+        .method-option .method-name {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: block;
+            margin-bottom: 0.2rem;
+            transition: color 0.3s;
+        }
+
+        .method-option .method-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .method-option:hover {
+            border-color: var(--kgu-blue);
+            background: rgba(15,35,80,0.02);
+        }
+
+        .method-option.selected {
+            border-color: var(--kgu-blue);
+            background: var(--kgu-blue);
+        }
+
+        .method-option.selected i,
+        .method-option.selected .method-name {
+            color: #fff;
+        }
+
+        .method-option.selected .method-desc { color: rgba(255,255,255,0.7); }
+
+        /* ── ACCESS PHOTOS ── */
+        .access-hero {
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.1);
+        }
+
+        .building-photo {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .building-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            background: linear-gradient(transparent, rgba(15,35,80,0.85));
+            color: #fff;
+        }
+
+        .caption-title {
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .access-maps-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .map-item {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            border: 1px solid rgba(15,35,80,0.1);
+            background: var(--white);
+            transition: all 0.3s;
+        }
+
+        .map-item:hover {
+            border-color: var(--kgu-gold);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .map-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: contain;
+            padding: 0.8rem;
+            background: #fff;
+        }
+
+        .map-item-label {
+            display: block;
+            padding: 0.6rem;
+            background: var(--kgu-blue);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .map-item-label i {
+            margin-right: 0.3rem;
+            font-size: 0.7rem;
+        }
+
+        /* Voice Input */
+        .textarea-with-voice {
+            position: relative;
+        }
+
+        .textarea-with-voice textarea {
+            padding-right: 50px;
+        }
+
+        .voice-input-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--kgu-gold);
+            background: var(--white);
+            color: var(--kgu-gold);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-input-btn:hover {
+            background: var(--kgu-gold);
+            color: var(--white);
+        }
+
+        .voice-input-btn.recording {
+            background: #e74c3c;
+            border-color: #e74c3c;
+            color: var(--white);
+            animation: pulse-recording 1s infinite;
+        }
+
+        @keyframes pulse-recording {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .voice-status {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+            min-height: 1.2rem;
+        }
+
+        .voice-status.recording {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .voice-status.error {
+            color: #e74c3c;
+        }
+
+        /* Image Modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.92);
+            backdrop-filter: blur(5px);
+        }
+
+        .image-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: #fff;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--kgu-gold);
+        }
+
+        .modal-caption {
+            text-align: center;
+            color: #fff;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .maps-grid { grid-template-columns: 1fr; }
+            .building-photo { height: 250px; }
+            .map-card img { height: 200px; }
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            background: var(--text-main);
+            padding: 3rem 0 2rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-logo-img {
+            height: 24px;
+            width: auto;
+            margin-bottom: 0.8rem;
+            filter: brightness(0) invert(1);
+            display: block;
+        }
+
+        .footer-brand p {
+            font-size: 0.75rem;
+            line-height: 1.8;
+            font-weight: 300;
+            letter-spacing: 0.04em;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            font-size: 0.72rem;
+            letter-spacing: 0.02em;
+            color: rgba(255,255,255,0.5);
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover { color: #fff; }
+
+        .footer-copy {
+            text-align: center;
+            font-size: 0.68rem;
+            color: rgba(255,255,255,0.35);
+        }
+
+        /* ── NEWS MORE ── */
+        .news-more {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--kgu-gold-light);
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+            margin-left: auto;
+            transition: color 0.3s;
+        }
+        a.news-bar:hover .news-more { color: #fff; }
+
+        /* ── BGM PLAYER ── */
+        .bgm-player {
+            position: fixed;
+            bottom: 1.2rem;
+            right: 1.2rem;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 0.4rem 0.8rem;
+            border-radius: 100px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s var(--ease-out-expo);
+            opacity: 0.7;
+            border: 1px solid var(--border-light);
+        }
+
+        .bgm-player:hover {
+            opacity: 1;
+        }
+
+        .bgm-toggle {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: none;
+            background: var(--kgu-blue);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+            transition: all 0.3s var(--ease-out-expo);
+        }
+
+        .bgm-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .bgm-toggle.playing {
+            background: var(--kgu-blue);
+            color: #fff;
+        }
+
+        .bgm-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .bgm-volume {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 45px;
+            height: 3px;
+            background: var(--border-light);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .bgm-volume::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--kgu-blue);
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .bgm-label { display: none; }
+            .bgm-volume { width: 35px; }
+        }
+
+        /* ── PARTICLE CANVAS ── */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9997;
+        }
+
+        /* ── MEMBERS SECTION ── */
+        .members-section {
+            padding: clamp(80px, 12vw, 160px) 0;
+            background: var(--bg-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .members-section::before {
+            display: none;
+        }
+
+        .members-section::after {
+            display: none;
+        }
+
+        .generation-block { margin-bottom: 3rem; }
+        .generation-block:last-child { margin-bottom: 0; }
+
+        .gen-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .gen-badge {
+            background: var(--kgu-blue);
+            color: #fff;
+            font-family: var(--font-sans);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.4rem 1rem;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+            border-radius: 100px;
+        }
+
+        .gen-title {
+            font-family: var(--font-sans);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .gen-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: auto;
+            font-weight: 500;
+        }
+
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .member-card {
+            background: var(--white);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s var(--ease-out-expo);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+        }
+
+        .member-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: transparent;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--kgu-blue);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .member-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+        }
+
+        .member-specialty {
+            font-size: 0.72rem;
+            color: var(--kgu-blue);
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            margin-bottom: 0.6rem;
+        }
+
+        .member-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+
+        .member-tag {
+            font-size: 0.65rem;
+            padding: 0.25rem 0.6rem;
+            background: var(--bg-light);
+            color: var(--text-light);
+            border: none;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .member-tag.cert {
+            background: rgba(15,35,80,0.08);
+            color: var(--kgu-blue);
+            font-weight: 600;
+        }
+
+        .member-tag.role {
+            background: rgba(197,161,90,0.15);
+            color: #8a7340;
+            font-weight: 600;
+        }
+
+        .member-tag.skill {
+            background: rgba(26,111,168,0.1);
+            color: #1a6fa8;
+            font-weight: 600;
+        }
+
+        .member-skills {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .member-skills-label {
+            display: block;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+
+        /* Observer members (3期生/4期生) */
+        .observer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+        }
+
+        .observer-card {
+            background: var(--white);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: all 0.3s var(--ease-out-expo);
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+        }
+
+        .observer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+            border-color: transparent;
+        }
+
+        .observer-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--bg-light);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            flex-shrink: 0;
+        }
+
+        .observer-name {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        /* ── CONSULTATION FLOW SECTION ── */
+        .flow-section {
+            padding: clamp(80px, 12vw, 160px) 0;
+            background: var(--white);
+        }
+
+        .flow-intro {
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            text-align: center;
+        }
+
+        .flow-intro p {
+            font-size: 1rem;
+            color: var(--text-light);
+            line-height: 2;
+        }
+
+        .concern-list {
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            background: var(--off-white);
+            border-radius: 16px;
+            padding: 2.5rem;
+        }
+
+        .concern-list h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .concern-list h3 i {
+            color: var(--kgu-blue);
+        }
+
+        .concern-list ul {
+            list-style: none;
+        }
+
+        .concern-list li {
+            font-size: 1.05rem;
+            color: var(--text-light);
+            padding: 0.65rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .concern-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--kgu-blue);
+            border-radius: 50%;
+        }
+
+        .can-do-section {
+            max-width: 700px;
+            margin: 0 auto 3rem;
+        }
+
+        .can-do-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .can-do-item {
+            background: var(--off-white);
+            border-radius: 12px;
+            padding: 1.2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+
+        .can-do-item i {
+            color: var(--kgu-blue);
+            font-size: 1rem;
+            margin-top: 0.1rem;
+        }
+
+        .can-do-item span {
+            font-size: 0.88rem;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .can-do-note {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* ── FLOW SIMPLE STEPS ── */
+        .flow-steps-simple {
+            max-width: 700px;
+            margin: 0 auto 3rem;
+        }
+
+        .flow-step-simple {
+            margin-bottom: 1.5rem;
+        }
+
+        .flow-step-simple:last-child {
+            margin-bottom: 0;
+        }
+
+        .flow-step-simple h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .flow-step-simple h4 .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--kgu-blue);
+            color: #fff;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .flow-step-simple p {
+            font-size: 0.88rem;
+            color: var(--text-light);
+            line-height: 1.8;
+            padding-left: calc(24px + 0.6rem);
+        }
+
+        /* ── CASE STUDIES ── */
+        .cases-container {
+            max-width: 800px;
+            margin: 3rem auto 0;
+        }
+
+        .cases-header {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .cases-grid-simple {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .case-item {
+            margin-bottom: 0;
+        }
+
+        .case-item-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .case-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--kgu-blue);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .case-item-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .case-item-section {
+            margin-bottom: 0.8rem;
+        }
+
+        .case-item-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .case-item-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .case-item-list {
+            list-style: none;
+        }
+
+        .case-item-list li {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            line-height: 1.7;
+            padding-left: 0.8rem;
+            position: relative;
+        }
+
+        .case-item-list li::before {
+            content: '・';
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 600px) {
+            .can-do-grid { grid-template-columns: 1fr; }
+            .cases-grid-simple { grid-template-columns: 1fr; gap: 2rem; }
+        }
+
+        /* ── CONSULTATION TOPICS ── */
+        .topic-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .topic-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-light);
+            background: var(--white);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: all 0.3s var(--ease-out-expo);
+            border-radius: 10px;
+        }
+
+        .topic-option input[type="radio"] { display: none; }
+
+        .topic-option i {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            transition: color 0.3s;
+        }
+
+        .topic-option:hover {
+            border-color: var(--kgu-blue);
+            background: rgba(15,35,80,0.02);
+        }
+
+        .topic-option.selected {
+            border-color: var(--kgu-blue);
+            background: var(--kgu-blue);
+            color: #fff;
+        }
+
+        .topic-option.selected i {
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .service-grid { grid-template-columns: 1fr; }
+            .access-grid { grid-template-columns: 1fr; }
+            .access-map { min-height: 350px; }
+            .topic-options { grid-template-columns: repeat(2, 1fr); }
+            .footer-inner { flex-direction: column; gap: 2rem; }
+            .members-grid { grid-template-columns: repeat(2, 1fr); }
+            .observer-grid { grid-template-columns: repeat(2, 1fr); }
+            .time-slots { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .members-grid { grid-template-columns: 1fr; }
+            .observer-grid { grid-template-columns: 1fr; }
+            .topic-options { grid-template-columns: 1fr; }
+            .hero-title { font-size: 2.2rem; }
+            .nav-list { display: none; }
+            .service-grid { grid-template-columns: 1fr; }
+            .form-box { padding: 2rem; }
+            .motto::before, .motto::after { display: none; }
+            .form-row { flex-direction: column; gap: 0; }
+            .form-row .form-group { margin-bottom: 1.8rem; }
+            .method-options { flex-direction: column; }
+            .time-slots { grid-template-columns: repeat(2, 1fr); }
+            .hero-features { flex-direction: column; gap: 0.8rem; }
+            .access-maps-row { grid-template-columns: 1fr; }
+            .building-photo { height: 200px; }
+            .header-logo-img { height: 22px; }
+            .logo-sub { display: none; }
+        }
+
+        /* ── HAMBURGER MENU ── */
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            padding: 0.5rem;
+            z-index: 1100;
+            position: relative;
+        }
+
+        @media (max-width: 600px) {
+            .hamburger { display: flex; align-items: center; justify-content: center; }
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--white);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            transform: translateX(100%);
+            transition: transform 0.4s var(--ease-out-expo);
+        }
+
+        .mobile-menu-overlay.open {
+            transform: translateX(0);
+        }
+
+        .mobile-menu-overlay a {
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s, color 0.3s;
+        }
+
+        .mobile-menu-overlay.open a {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mobile-menu-overlay a:nth-child(1) { transition-delay: 0.08s; }
+        .mobile-menu-overlay a:nth-child(2) { transition-delay: 0.12s; }
+        .mobile-menu-overlay a:nth-child(3) { transition-delay: 0.16s; }
+        .mobile-menu-overlay a:nth-child(4) { transition-delay: 0.2s; }
+        .mobile-menu-overlay a:nth-child(5) { transition-delay: 0.24s; }
+        .mobile-menu-overlay a:nth-child(6) { transition-delay: 0.28s; }
+
+        .mobile-menu-overlay a:hover {
+            color: var(--kgu-blue);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BGM PLAYER -->
+    <div class="bgm-player">
+        <button class="bgm-toggle" id="bgmToggle" title="BGM 再生/停止">
+            <i class="fas fa-play" id="bgmIcon"></i>
+        </button>
+        <span class="bgm-label">BGM</span>
+        <input type="range" class="bgm-volume" id="bgmVolume" min="0" max="100" value="30" title="音量">
+    </div>
+    <audio id="bgmAudio" loop preload="auto">
+        <source src="images/bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- PARTICLE CANVAS -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <a href="#" class="header-logo">
+            <img src="images/logo.svg" alt="関西学院大学" class="header-logo-img">
+            <span class="logo-sub">中小企業経営診断研究会</span>
+        </a>
+        <nav>
+            <ul class="nav-list">
+                <li><a href="#about">研究会について</a></li>
+                <li><a href="#service">相談内容</a></li>
+                <li><a href="#flow">相談の流れ</a></li>
+                <li><a href="#members">メンバー</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li class="nav-cta"><a href="#contact"><i class="fas fa-calendar-check" style="margin-right:0.3rem;"></i>ご予約</a></li>
+            </ul>
+        </nav>
+        <button class="hamburger" id="hamburgerBtn" aria-label="メニュー">
+            <i class="fas fa-bars" id="hamburgerIcon"></i>
+        </button>
+    </header>
+
+    <!-- MOBILE MENU OVERLAY -->
+    <div class="mobile-menu-overlay" id="mobileMenu">
+        <a href="#about">研究会について</a>
+        <a href="#service">相談内容</a>
+        <a href="#flow">相談の流れ</a>
+        <a href="#members">メンバー</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">ご予約</a>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+        <div class="hero-bg" id="heroBg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-circle hero-circle-1"></div>
+        <div class="hero-circle hero-circle-2"></div>
+        <div class="hero-circle hero-circle-3"></div>
+        <div class="hero-crest"><img src="images/kousyo.jpg" alt=""></div>
+
+        <div class="hero-content">
+            <span class="motto">Mastery for Service</span>
+            <div class="hero-free-tag">
+                <span class="free-label">相談無料</span>
+            </div>
+            <h1 class="hero-title">
+                経営の課題、<br>
+                <span class="highlight">共に解決</span>へ。
+            </h1>
+            <p class="hero-subtitle">
+                関西学院大学 経営戦略研究科（IBA）研究フォーラム<br>
+                中小企業診断士による無料経営相談
+            </p>
+            <div class="hero-features">
+                <span class="hero-feature"><i class="fas fa-check"></i> 完全無料</span>
+                <span class="hero-feature"><i class="fas fa-check"></i> 秘密厳守</span>
+            </div>
+            <div class="hero-cta">
+                <a href="#contact" class="btn">無料相談をする</a>
+            </div>
+        </div>
+
+        <div class="hero-scroll">
+            Scroll
+            <div class="line"></div>
+        </div>
+    </section>
+
+    <!-- NEWS BAR -->
+    <a href="news.html" class="news-bar">
+        <div class="news-bar-inner">
+            <span class="news-badge">News</span>
+            <span class="news-text">2026.04.01 — 無料経営相談の本格運用を開始しました。4月度の相談予約枠を公開中（限定3社）。</span>
+            <span class="news-more">一覧を見る <i class="fas fa-arrow-right"></i></span>
+        </div>
+    </a>
+
+    <!-- ABOUT -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-left reveal-left">
+                    <span class="eyebrow">Organization</span>
+                    <h2>「知」の力で、<br>経営課題に挑む。</h2>
+                    <p>関西学院大学IBA研究フォーラム傘下の公式研究会として、「IDEALS」コンセプトに基づき、高い倫理観と実践能力を持つ中小企業診断士の育成と研鑽を行っています。</p>
+                </div>
+                <div class="about-cards">
+                    <div class="about-card reveal-right delay-1">
+                        <h3><i class="fas fa-users"></i> 中小企業経営診断研究会</h3>
+                        <p>IBA研究フォーラム傘下の公式研究会。理論と実務を融合した高度な経営診断活動を展開しています。</p>
+                        <a href="https://iba.kwansei.ac.jp/knowledge/forum/25580/" target="_blank">詳細を見る <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="about-card reveal-right delay-2">
+                        <h3><i class="fas fa-university"></i> 中小企業診断士養成課程</h3>
+                        <p>MBAと国家資格を同時取得できる国内有数の高度専門職教育課程。理論と実践の融合を掲げています。</p>
+                        <a href="https://iba.kwansei.ac.jp/chusho/" target="_blank">詳細を見る <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICE -->
+    <section id="service" class="service-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <img src="images/kousyo.jpg" alt="" class="section-crest">
+                <span class="section-eyebrow">Service Menu</span>
+                <h2 class="section-title">ご相談テーマ</h2>
+                <p class="section-desc">中小企業診断士養成課程を修了した卒業生が、中小企業・個人事業主の経営課題を整理し、次の一手を一緒に考える無料相談です。大学で培った理論と実務に基づく視点を活かし、売り込みを目的としない中立的な立場で対応します。</p>
+            </div>
+            <div class="service-grid">
+                <div class="service-card reveal delay-1">
+                    <div class="service-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="service-text">
+                        <h3>事業計画書の策定</h3>
+                        <p>創業計画・経営改善計画・新規事業計画書の作成を、ヒアリングから完成までサポートします</p>
+                    </div>
+                </div>
+                <div class="service-card reveal delay-1">
+                    <div class="service-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="service-text">
+                        <h3>経営戦略の立案</h3>
+                        <p>SWOT分析やビジネスモデルキャンバスを活用し、中長期の成長戦略を一緒に考えます</p>
+                    </div>
+                </div>
+                <div class="service-card reveal delay-2">
+                    <div class="service-icon"><i class="fas fa-rocket"></i></div>
+                    <div class="service-text">
+                        <h3>新規事業開発</h3>
+                        <p>市場調査、競合分析、ビジネスモデル設計など、新規事業の壁打ち相手として伴走します</p>
+                    </div>
+                </div>
+                <div class="service-card reveal delay-2">
+                    <div class="service-icon"><i class="fas fa-bullhorn"></i></div>
+                    <div class="service-text">
+                        <h3>販路開拓・マーケティング</h3>
+                        <p>ターゲット選定、ブランディング、SNS活用、EC展開などの販促戦略をご提案します</p>
+                    </div>
+                </div>
+                <div class="service-card reveal delay-3">
+                    <div class="service-icon"><i class="fas fa-coins"></i></div>
+                    <div class="service-text">
+                        <h3>財務・資金繰り</h3>
+                        <p>収益構造の分析、キャッシュフロー改善、金融機関との交渉に向けた助言を行います</p>
+                    </div>
+                </div>
+                <div class="service-card reveal delay-3">
+                    <div class="service-icon"><i class="fas fa-users-cog"></i></div>
+                    <div class="service-text">
+                        <h3>人材・組織の課題</h3>
+                        <p>採用戦略、人材育成、組織体制の見直し、働き方改革への対応をサポートします</p>
+                    </div>
+                </div>
+                <div class="service-card reveal delay-4">
+                    <div class="service-icon"><i class="fas fa-laptop-code"></i></div>
+                    <div class="service-text">
+                        <h3>IT導入・DX推進</h3>
+                        <p>業務のデジタル化、クラウド活用、システム選定など、IT活用による業務改善を支援します</p>
+                    </div>
+                </div>
+                <div class="service-card reveal delay-4">
+                    <div class="service-icon"><i class="fas fa-handshake"></i></div>
+                    <div class="service-text">
+                        <h3>事業承継・M&amp;A</h3>
+                        <p>後継者問題、株式移転、企業価値算定など、円滑な事業承継に向けた相談に対応します</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONSULTATION FLOW -->
+    <section id="flow" class="flow-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <img src="images/kousyo.jpg" alt="" class="section-crest">
+                <span class="section-eyebrow">Concerns</span>
+                <h2 class="section-title">こんな悩みはありませんか？</h2>
+            </div>
+
+            <div class="concern-list reveal">
+                <ul>
+                    <li>売上や利益が伸び悩んでいるが、何から手を付ければよいかわからない</li>
+                    <li>人手不足・採用がうまくいかない</li>
+                    <li>原価や資金繰りに不安がある</li>
+                    <li>新しい事業やサービスを考えたいが整理できていない</li>
+                    <li>専門家に相談したいが、いきなり有料はハードルが高い</li>
+                </ul>
+            </div>
+
+            <div class="can-do-section reveal">
+                <div class="section-header" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.6rem; font-weight: 700; color: var(--text-main); text-align: center;">無料経営相談でできること</h3>
+                </div>
+                <div class="can-do-grid">
+                    <div class="can-do-item">
+                        <i class="fas fa-list-check"></i>
+                        <span>経営課題の整理（現状・論点・優先順位）</span>
+                    </div>
+                    <div class="can-do-item">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>課題に対する考え方・打ち手の方向性提示</span>
+                    </div>
+                    <div class="can-do-item">
+                        <i class="fas fa-arrow-right"></i>
+                        <span>次に取るべきアクションの明確化</span>
+                    </div>
+                    <div class="can-do-item">
+                        <i class="fas fa-handshake"></i>
+                        <span>必要に応じた支援先・専門家の考え方の整理</span>
+                    </div>
+                </div>
+                <p class="can-do-note">※法的判断・税務申告・投資判断等の専門業務は対象外です。</p>
+            </div>
+
+            <div class="section-header reveal" style="margin-top: 4rem;">
+                <img src="images/kousyo.jpg" alt="" class="section-crest">
+                <span class="section-eyebrow">Flow</span>
+                <h2 class="section-title">相談の流れ</h2>
+            </div>
+
+            <!-- 相談の流れ（シンプル版） -->
+            <div class="flow-steps-simple reveal">
+                <div class="flow-step-simple">
+                    <h4><span class="step-num">1</span>Web申し込み</h4>
+                    <p>本サイトの予約フォームからご希望の日時・相談方法（対面/オンライン）を選択してお申し込みください。相談テーマや内容は簡単にご記入いただくだけで結構です。</p>
+                </div>
+                <div class="flow-step-simple">
+                    <h4><span class="step-num">2</span>事前ヒアリング</h4>
+                    <p>ご予約後、担当者より確認のご連絡をいたします。相談当日に向けて、お悩みの内容や現状を簡単にお伺いする場合があります。</p>
+                </div>
+                <div class="flow-step-simple">
+                    <h4><span class="step-num">3</span>相談実施（60〜90分）</h4>
+                    <p>対面またはZoomで相談を実施します。現状をお聞きしながら、課題の整理・論点の明確化・次のアクションの方向性を一緒に考えます。</p>
+                </div>
+                <div class="flow-step-simple">
+                    <h4><span class="step-num">4</span>フォローアップ</h4>
+                    <p>相談後、必要に応じて補足資料のご提供や、次のステップに向けたアドバイスをお伝えします。継続的な相談も可能です。</p>
+                </div>
+            </div>
+
+            <div class="section-header reveal" style="margin-top: 4rem;">
+                <img src="images/kousyo.jpg" alt="" class="section-crest">
+                <span class="section-eyebrow">Cases</span>
+                <h2 class="section-title">相談事例</h2>
+            </div>
+
+            <!-- 相談事例 -->
+            <div class="cases-container reveal" id="cases">
+                <div class="cases-grid-simple">
+                <div class="case-item">
+                    <div class="case-item-header">
+                        <div class="case-item-icon"><i class="fas fa-industry"></i></div>
+                        <div class="case-item-title">製造業<span>｜収益構造と原価の見直し</span></div>
+                    </div>
+                    <div class="case-item-content">
+                        <div class="case-item-section">
+                            <div class="case-item-label">ご相談内容</div>
+                            <ul class="case-item-list">
+                                <li>将来的な収益構造の不安</li>
+                                <li>人材の確保</li>
+                                <li>原価構造が把握できていない</li>
+                            </ul>
+                        </div>
+                        <div class="case-item-section">
+                            <div class="case-item-label">相談で行ったこと</div>
+                            <ul class="case-item-list">
+                                <li>原価の考え方を整理</li>
+                                <li>利益が出にくい要因を構造的に可視化</li>
+                                <li>見直すべきポイントを整理</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="case-item">
+                    <div class="case-item-header">
+                        <div class="case-item-icon"><i class="fas fa-spa"></i></div>
+                        <div class="case-item-title">美容サロン<span>｜人材育成と事業方向性</span></div>
+                    </div>
+                    <div class="case-item-content">
+                        <div class="case-item-section">
+                            <div class="case-item-label">ご相談内容</div>
+                            <ul class="case-item-list">
+                                <li>人材の教育と確保</li>
+                                <li>事業の方向性</li>
+                            </ul>
+                        </div>
+                        <div class="case-item-section">
+                            <div class="case-item-label">相談で行ったこと</div>
+                            <ul class="case-item-list">
+                                <li>顧客層・強みの整理</li>
+                                <li>サロンの強みを言語化し方向性を確認</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MEMBERS -->
+    <section id="members" class="members-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <img src="images/kousyo.jpg" alt="" class="section-crest">
+                <span class="section-eyebrow">Members</span>
+                <h2 class="section-title">分科会メンバー</h2>
+            </div>
+
+            <!-- 1期生 -->
+            <div class="generation-block reveal">
+                <div class="gen-header">
+                    <span class="gen-badge">1st</span>
+                    <span class="gen-title">第1期生</span>
+                    <span class="gen-role">正会員</span>
+                </div>
+                <div class="members-grid">
+                    <div class="member-card">
+                        <div class="member-avatar"><i class="fas fa-user"></i></div>
+                        <div class="member-name">杉山 宏和</div>
+                        <div class="member-tags">
+                            <span class="member-tag cert">中小企業診断士</span>
+                            <span class="member-tag cert">MBA</span>
+                            <span class="member-tag cert">FP1級 / CFP</span>
+                            <span class="member-tag cert">販売士1級</span>
+                            <span class="member-tag cert">G検定 / E資格</span>
+                        </div>
+                    </div>
+                    <div class="member-card">
+                        <div class="member-avatar"><i class="fas fa-user"></i></div>
+                        <div class="member-name">川崎 真規</div>
+                        <div class="member-tags">
+                            <span class="member-tag cert">中小企業診断士</span>
+                            <span class="member-tag cert">MBA</span>
+                            <span class="member-tag role">関西学院大学 経営戦略科 非常勤講師</span>
+                            <span class="member-tag role">大阪商工会議所 アドバイザー</span>
+                        </div>
+                    </div>
+                    <div class="member-card">
+                        <div class="member-avatar"><i class="fas fa-user"></i></div>
+                        <div class="member-name">原 真人</div>
+                        <div class="member-tags">
+                            <span class="member-tag cert">中小企業診断士</span>
+                            <span class="member-tag cert">MBA</span>
+                        </div>
+                        <div class="member-skills">
+                            <span class="member-skills-label">得意分野</span>
+                            <div class="member-tags">
+                                <span class="member-tag skill">財務</span>
+                                <span class="member-tag skill">経理</span>
+                                <span class="member-tag skill">経営企画</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2期生 -->
+            <div class="generation-block reveal">
+                <div class="gen-header">
+                    <span class="gen-badge">2nd</span>
+                    <span class="gen-title">第2期生</span>
+                    <span class="gen-role">正会員</span>
+                </div>
+                <div class="members-grid">
+                    <div class="member-card">
+                        <div class="member-avatar"><i class="fas fa-user"></i></div>
+                        <div class="member-name">小椋 孝博</div>
+                        <div class="member-tags">
+                            <span class="member-tag cert">中小企業診断士</span>
+                            <span class="member-tag cert">MBA</span>
+                        </div>
+                        <div class="member-skills">
+                            <span class="member-skills-label">得意分野</span>
+                            <div class="member-tags">
+                                <span class="member-tag skill">製造業</span>
+                                <span class="member-tag skill">物流</span>
+                                <span class="member-tag skill">営業</span>
+                                <span class="member-tag skill">DX</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="member-card">
+                        <div class="member-avatar"><i class="fas fa-user"></i></div>
+                        <div class="member-name">秋月 仁志</div>
+                        <div class="member-tags">
+                            <span class="member-tag cert">中小企業診断士</span>
+                            <span class="member-tag cert">MBA</span>
+                            <span class="member-tag cert">ITストラテジスト</span>
+                        </div>
+                        <div class="member-skills">
+                            <span class="member-skills-label">得意分野</span>
+                            <div class="member-tags">
+                                <span class="member-tag skill">経営企画</span>
+                                <span class="member-tag skill">DX</span>
+                                <span class="member-tag skill">生成AI</span>
+                                <span class="member-tag skill">業務改革</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3期生 -->
+            <div class="generation-block reveal">
+                <div class="gen-header">
+                    <span class="gen-badge">3rd</span>
+                    <span class="gen-title">第3期生</span>
+                    <span class="gen-role">オブザーバー</span>
+                </div>
+                <div class="observer-grid">
+                    <div class="observer-card"><div class="observer-avatar"><i class="fas fa-user"></i></div><div class="observer-name">野田 慎士</div></div>
+                </div>
+            </div>
+
+            <!-- 4期生 -->
+            <div class="generation-block reveal">
+                <div class="gen-header">
+                    <span class="gen-badge">4th</span>
+                    <span class="gen-title">第4期生</span>
+                    <span class="gen-role">オブザーバー</span>
+                </div>
+                <div class="observer-grid">
+                    <div class="observer-card"><div class="observer-avatar"><i class="fas fa-user"></i></div><div class="observer-name">高乘 麻美</div></div>
+                    <div class="observer-card"><div class="observer-avatar"><i class="fas fa-user"></i></div><div class="observer-name">村本 将之</div></div>
+                    <div class="observer-card"><div class="observer-avatar"><i class="fas fa-user"></i></div><div class="observer-name">織田 美智子</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="faq-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <img src="images/kousyo.jpg" alt="" class="section-crest">
+                <span class="section-eyebrow">FAQ</span>
+                <h2 class="section-title">よくある質問</h2>
+            </div>
+            <div class="faq-container">
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>本当に無料ですか？</span>
+                        <div class="faq-icon">+</div>
+                    </div>
+                    <div class="faq-answer">はい、完全無料です。本プロジェクトは、診断士の研鑽と大学の地域貢献活動を目的としているため、相談料はいただきません。また、特定のツールの売り込みや勧誘も一切ございませんのでご安心ください。</div>
+                </div>
+                <div class="faq-item reveal delay-1">
+                    <div class="faq-question">
+                        <span>どのような業種でも相談できますか？</span>
+                        <div class="faq-icon">+</div>
+                    </div>
+                    <div class="faq-answer">はい、製造業、小売業、サービス業など、業種を問わずご相談いただけます。まだ起業前の方（創業予定者）のご相談も歓迎しております。</div>
+                </div>
+                <div class="faq-item reveal delay-2">
+                    <div class="faq-question">
+                        <span>オンラインでの相談は可能ですか？</span>
+                        <div class="faq-icon">+</div>
+                    </div>
+                    <div class="faq-answer">はい、Zoom等を用いたオンライン相談も受け付けております。お申し込みフォームにてご希望をお知らせください。遠方の企業様もぜひご利用ください。</div>
+                </div>
+                <div class="faq-item reveal delay-3">
+                    <div class="faq-question">
+                        <span>相談した内容は秘密にされますか？</span>
+                        <div class="faq-icon">+</div>
+                    </div>
+                    <div class="faq-answer">はい、厳守いたします。初回相談時に相談同意書をご確認いただいております。ご相談内容が外部に漏れることは一切ありません。</div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>相談時間はどのくらいですか？</span>
+                        <div class="faq-icon">+</div>
+                    </div>
+                    <div class="faq-answer">1回あたり約60〜90分を想定しています。内容やご要望に応じて柔軟に対応いたします。事前にご相談内容をお知らせいただけると、より充実した時間になります。</div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>相談は何回まで受けられますか？</span>
+                        <div class="faq-icon">+</div>
+                    </div>
+                    <div class="faq-answer">まずは1回の相談をベースとしていますが、課題の内容に応じて継続的にサポートさせていただく場合もあります。初回相談時にご相談ください。</div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>創業前でも相談できますか？</span>
+                        <div class="faq-icon">+</div>
+                    </div>
+                    <div class="faq-answer">はい、大歓迎です。事業計画書の作成支援、市場調査のアドバイス、資金調達の方法など、創業準備段階からサポートいたします。</div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>具体的な成果物はいただけますか？</span>
+                        <div class="faq-icon">+</div>
+                    </div>
+                    <div class="faq-answer">相談内容に応じて、分析レポートや提言書を作成する場合があります。ただし、あくまで助言・提言という位置づけであり、最終的な意思決定は経営者ご自身にお任せしています。</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ACCESS -->
+    <section id="access" class="access-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <img src="images/kousyo.jpg" alt="" class="section-crest">
+                <span class="section-eyebrow">Access</span>
+                <h2 class="section-title">アクセス</h2>
+            </div>
+
+            <!-- Building Photo -->
+            <div class="access-hero reveal">
+                <img src="images/photo_building.jpg" alt="アプローズタワー外観" class="building-photo">
+                <div class="building-caption">
+                    <span class="caption-title">アプローズタワー 14F</span>
+                </div>
+            </div>
+
+            <!-- Maps Row -->
+            <div class="access-maps-row reveal">
+                <div class="map-item" onclick="openModal('images/area_map.jpg', '周辺地図')">
+                    <img src="images/area_map.jpg" alt="周辺地図">
+                    <span class="map-item-label"><i class="fas fa-search-plus"></i> 周辺地図</span>
+                </div>
+                <div class="map-item" onclick="openModal('images/floor_map.jpg', '1Fフロア案内')">
+                    <img src="images/floor_map.jpg" alt="1Fフロア案内">
+                    <span class="map-item-label"><i class="fas fa-search-plus"></i> 1Fフロア案内</span>
+                </div>
+            </div>
+
+            <div class="access-grid">
+                <div class="access-info reveal-left">
+                    <h3>大阪梅田キャンパス</h3>
+                    <p class="access-address">
+                        〒530-0013<br>
+                        大阪市北区茶屋町19-19<br>
+                        アプローズタワー 14階
+                    </p>
+
+                    <ul class="access-routes">
+                        <li class="access-route">
+                            <div class="route-icon"><i class="fas fa-train"></i></div>
+                            <div class="route-info">
+                                <strong>阪急 大阪梅田駅</strong>
+                                <span>茶屋町口より徒歩5分</span>
+                            </div>
+                        </li>
+                        <li class="access-route">
+                            <div class="route-icon"><i class="fas fa-train"></i></div>
+                            <div class="route-info">
+                                <strong>JR 大阪駅</strong>
+                                <span>御堂筋出口より徒歩10分</span>
+                            </div>
+                        </li>
+                        <li class="access-route">
+                            <div class="route-icon"><i class="fas fa-subway"></i></div>
+                            <div class="route-info">
+                                <strong>地下鉄 梅田駅・中津駅</strong>
+                                <span>徒歩4〜7分</span>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <div class="access-note">
+                        <i class="fas fa-info-circle"></i>
+                        エレベーターで14階へ。開館時間外は14階に止まりません。
+                    </div>
+                </div>
+
+                <div class="access-map reveal-right">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3280.106828597375!2d135.4969243762955!3d34.70737408316279!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6000e69177114b31%3A0xc63806a32d67562f!2z44Ki44Kr44Oq44Kq44K577yI44Ki44OX44Ot44O844K644K_44Ov44O877yJ!5e0!3m2!1sja!2sjp!4v1709600000000!5m2!1sja!2sjp" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" onclick="closeModal()">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <img id="modalImage" src="" alt="">
+            <div id="modalCaption" class="modal-caption"></div>
+        </div>
+    </div>
+
+    <!-- CONTACT -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <img src="images/kousyo.jpg" alt="" class="section-crest">
+                <span class="section-eyebrow" style="color: var(--kgu-gold);">Reservation</span>
+                <h2 class="section-title">相談予約</h2>
+            </div>
+            <div class="form-box reveal">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label class="form-label">お名前</label>
+                        <input type="text" id="userName" name="name" class="form-control" placeholder="例：関学 太郎" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">貴社名</label>
+                        <input type="text" id="userCompany" name="company" class="form-control" placeholder="例：株式会社○○">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">役職</label>
+                            <select id="userPosition" name="position" class="form-control" required>
+                                <option value="" disabled selected>選択</option>
+                                <option value="経営者・代表取締役">経営者・代表取締役</option>
+                                <option value="取締役・役員">取締役・役員</option>
+                                <option value="部長・マネージャー">部長・マネージャー</option>
+                                <option value="課長・係長">課長・係長</option>
+                                <option value="一般社員">一般社員</option>
+                                <option value="個人事業主">個人事業主</option>
+                                <option value="創業予定者">創業予定者</option>
+                                <option value="その他">その他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">業種</label>
+                            <select id="userIndustry" name="industry" class="form-control" required>
+                                <option value="" disabled selected>選択</option>
+                                <option value="製造業">製造業</option>
+                                <option value="小売業">小売業</option>
+                                <option value="飲食業">飲食業</option>
+                                <option value="サービス業">サービス業</option>
+                                <option value="IT・通信業">IT・通信業</option>
+                                <option value="建設業">建設業</option>
+                                <option value="不動産業">不動産業</option>
+                                <option value="医療・福祉">医療・福祉</option>
+                                <option value="教育・学習支援">教育・学習支援</option>
+                                <option value="運輸・物流">運輸・物流</option>
+                                <option value="農林水産業">農林水産業</option>
+                                <option value="その他">その他</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">メールアドレス</label>
+                        <input type="email" id="userEmail" name="email" class="form-control" placeholder="info@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">電話番号</label>
+                        <input type="tel" id="userPhone" name="phone" class="form-control" placeholder="例：090-1234-5678">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">企業ホームページURL <span style="font-weight:400;font-size:0.75rem;color:var(--text-muted);">（任意）</span></label>
+                        <input type="url" id="companyUrl" name="companyUrl" class="form-control" placeholder="https://www.example.co.jp">
+                    </div>
+
+                    <!-- 相談方法 -->
+                    <div class="method-section">
+                        <label class="form-label">相談方法</label>
+                        <div class="method-options">
+                            <label class="method-option" id="methodVisit">
+                                <input type="radio" name="method" value="visit" checked>
+                                <i class="fas fa-building"></i>
+                                <span class="method-name">対面（梅田キャンパス）</span>
+                                <span class="method-desc">土日 12:00〜17:00</span>
+                            </label>
+                            <label class="method-option" id="methodZoom">
+                                <input type="radio" name="method" value="zoom">
+                                <i class="fas fa-video"></i>
+                                <span class="method-name">オンライン（Zoom）</span>
+                                <span class="method-desc">火・金・土・日 対応可</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- カレンダー -->
+                    <div class="calendar-section">
+                        <label class="form-label"><i class="fas fa-calendar-alt"></i> ご希望の日程</label>
+                        <div class="calendar-header">
+                            <span class="calendar-month" id="calendarMonth"></span>
+                            <div class="calendar-nav">
+                                <button type="button" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                                <button type="button" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid" id="calendarGrid"></div>
+                        <div class="calendar-legend">
+                            <div class="calendar-legend-item"><div class="legend-dot available"></div> 予約可能</div>
+                            <div class="calendar-legend-item"><div class="legend-dot selected"></div> 選択中</div>
+                        </div>
+                    </div>
+
+                    <!-- 時間帯 -->
+                    <div class="time-slot-section" id="timeSlotSection">
+                        <label class="form-label"><i class="fas fa-clock"></i> ご希望の時間帯</label>
+                        <div id="selectedDateDisplay" class="selected-date-display"></div>
+                        <div class="time-slots" id="timeSlots"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ご相談テーマ</label>
+                        <div class="topic-options" id="topicOptions">
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="経営全般">
+                                <i class="fas fa-briefcase"></i> 経営全般
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="事業計画書の策定">
+                                <i class="fas fa-file-alt"></i> 事業計画書の策定
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="経営戦略の立案">
+                                <i class="fas fa-chart-line"></i> 経営戦略の立案
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="新規事業開発">
+                                <i class="fas fa-rocket"></i> 新規事業開発
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="販路開拓・マーケティング">
+                                <i class="fas fa-bullhorn"></i> 販路開拓・マーケティング
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="財務・資金繰り">
+                                <i class="fas fa-coins"></i> 財務・資金繰り
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="人材・組織の課題">
+                                <i class="fas fa-users-cog"></i> 人材・組織の課題
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="IT導入・DX推進">
+                                <i class="fas fa-laptop-code"></i> IT導入・DX推進
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="事業承継・M&A">
+                                <i class="fas fa-handshake"></i> 事業承継・M&amp;A
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="その他">
+                                <i class="fas fa-ellipsis-h"></i> その他
+                            </label>
+                            <label class="topic-option">
+                                <input type="radio" name="topic" value="面談時に相談">
+                                <i class="fas fa-comments"></i> 面談時に相談
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ご相談内容（自由記述）</label>
+                        <div class="textarea-with-voice">
+                            <textarea id="consultationContent" class="form-control" rows="5" placeholder="ご相談内容の詳細をご記入ください（音声入力も可能です）"></textarea>
+                            <button type="button" id="voiceInputBtn" class="voice-input-btn" title="音声入力">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                        <div id="voiceStatus" class="voice-status"></div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" style="font-size: 0.75rem;">備考（記載不要）</label>
+                        <input type="text" id="formRemarks" class="form-control" style="padding: 0.5rem 0.8rem; font-size: 0.8rem; height: auto;" placeholder="">
+                    </div>
+                    <div class="form-notice">
+                        <strong style="text-decoration: underline;">【確認事項】</strong><br>
+                        本サービスは大学の教育・研究活動の一環として実施される無料相談です。<br>
+                        営利目的の勧誘は行いません。<br>
+                        お申し込み後、メールにて相談同意書のご確認をお願いしております。<br>
+                        <strong>同意書をご確認・ご同意いただいた後、予約が確定となります。</strong>
+                    </div>
+                    <button type="submit" class="form-btn"><span>予約を送信する</span></button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 送信結果モーダル -->
+    <div class="submit-modal-overlay" id="submitModal">
+        <div class="submit-modal">
+            <div class="modal-icon" id="modalIcon"></div>
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <div class="modal-details" id="modalDetails"></div>
+            <p id="modalSub"></p>
+            <button class="modal-close-btn" onclick="document.getElementById('submitModal').classList.remove('active')">閉じる</button>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <img src="images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="footer-logo-img">
+                    <p>経営戦略研究科（IBA）研究フォーラム｜中小企業経営診断研究会</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#about">研究会について</a>
+                    <a href="#flow">相談の流れ</a>
+                    <a href="#faq">FAQ</a>
+                    <a href="#contact">ご予約</a>
+                </div>
+            </div>
+            <div class="footer-copy">
+                &copy; Kwansei Gakuin University. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Parallax hero background
+        window.addEventListener('scroll', () => {
+            const bg = document.getElementById('heroBg');
+            const scrolled = window.pageYOffset;
+            if (bg && scrolled < window.innerHeight) {
+                bg.style.transform = `translateY(${scrolled * 0.4}px) scale(1.1)`;
+            }
+        });
+
+        // Header shrink on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            header.classList.toggle('scrolled', window.scrollY > 80);
+        });
+
+        // Scroll reveal
+        const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        revealEls.forEach(el => revealObserver.observe(el));
+
+        // FAQ accordion
+        document.querySelectorAll('.faq-question').forEach(item => {
+            item.addEventListener('click', () => {
+                const parent = item.parentNode;
+                document.querySelectorAll('.faq-item.active').forEach(active => {
+                    if (active !== parent) active.classList.remove('active');
+                });
+                parent.classList.toggle('active');
+            });
+        });
+
+        // ── CONSULTATION TOPIC SELECTION ──
+        document.querySelectorAll('.topic-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.topic-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // ── CONSULTATION METHOD ──
+        const methodOptions = document.querySelectorAll('.method-option');
+        let currentMethod = 'visit';
+
+        methodOptions.forEach(option => {
+            const radio = option.querySelector('input[type="radio"]');
+            if (radio.checked) option.classList.add('selected');
+
+            option.addEventListener('click', () => {
+                methodOptions.forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                currentMethod = radio.value;
+                // Rebuild calendar with new available days from spreadsheet
+                selectedDate = null;
+                document.getElementById('timeSlotSection').classList.remove('active');
+                fetchAvailableSchedule(); // スプレッドシートから再取得
+            });
+        });
+
+        // ── CALENDAR DATE PICKER (スプレッドシート連携版) ──
+
+        // GAS APIのURL（デプロイ後に設定）
+        const SCHEDULE_API_URL = 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec';
+
+        let currentYear, currentMonth;
+        let selectedDate = null;
+        let availableSchedule = {}; // スプレッドシートから取得した日程データ
+        let isLoadingSchedule = false;
+
+        // Initialize to current month
+        const now = new Date();
+        currentYear = now.getFullYear();
+        currentMonth = now.getMonth();
+
+        /**
+         * スプレッドシートから日程データを取得
+         */
+        async function fetchAvailableSchedule() {
+            // APIが未設定の場合はフォールバック
+            if (!SCHEDULE_API_URL || SCHEDULE_API_URL === 'ここにGASデプロイURLを入力') {
+                console.log('日程API未設定: デフォルト日程を使用');
+                useDefaultSchedule();
+                return;
+            }
+
+            isLoadingSchedule = true;
+            showCalendarLoading(true);
+
+            try {
+                const method = currentMethod === 'visit' ? 'visit' : 'zoom';
+                const response = await fetch(`${SCHEDULE_API_URL}?action=schedule&method=${method}`);
+                const data = await response.json();
+
+                if (data.success && data.schedule) {
+                    availableSchedule = data.schedule;
+                    console.log('日程データ取得成功:', Object.keys(availableSchedule).length + '日分');
+                } else {
+                    console.warn('日程データ取得失敗:', data);
+                    useDefaultSchedule();
+                }
+            } catch (error) {
+                console.error('日程API通信エラー:', error);
+                useDefaultSchedule();
+            } finally {
+                isLoadingSchedule = false;
+                showCalendarLoading(false);
+                renderCalendar();
+            }
+        }
+
+        /**
+         * デフォルト日程を設定（API未設定時のフォールバック）
+         */
+        /**
+         * N回目のdow曜日かを返す（フォールバック用）
+         */
+        function getNthDayOfWeekLP(year, month, day, dow) {
+            let count = 0;
+            for (let d = 1; d <= day; d++) {
+                if (new Date(year, month, d).getDay() === dow) count++;
+            }
+            return count;
+        }
+
+        function useDefaultSchedule() {
+            availableSchedule = {};
+            const year = 2026;
+            const today = new Date();
+            const maxDate = new Date(today.getFullYear(), today.getMonth() + 2, today.getDate());
+            for (let month = 2; month <= 5; month++) {
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const d = new Date(year, month, day);
+                    if (d > maxDate) continue; // 2ヶ月先まで
+                    const dow = d.getDay();
+                    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                    // 土日: 第1・第3のみ → 14:00, 16:00, 18:00
+                    if (dow === 0 || dow === 6) {
+                        const nth = getNthDayOfWeekLP(year, month, day, dow);
+                        if (nth === 1 || nth === 3) {
+                            availableSchedule[dateKey] = [
+                                { time: '14:00' }, { time: '16:00' }, { time: '18:00' }
+                            ];
+                        }
+                    }
+
+                    // 金曜: 第2・第4のみ → 19:00, 20:30（Zoomのみ）
+                    if (dow === 5) {
+                        const nth = getNthDayOfWeekLP(year, month, day, dow);
+                        if (nth === 2 || nth === 4) {
+                            if (currentMethod !== 'visit') {
+                                availableSchedule[dateKey] = [
+                                    { time: '19:00' }, { time: '20:30' }
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * カレンダー読み込み中表示
+         */
+        function showCalendarLoading(show) {
+            const grid = document.getElementById('calendarGrid');
+            if (show) {
+                grid.innerHTML = '<div style="grid-column: span 7; text-align: center; padding: 2rem; color: var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> 日程を読み込み中...</div>';
+            }
+        }
+
+        function isPast(year, month, day) {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const check = new Date(year, month, day);
+            return check < today;
+        }
+
+        /**
+         * 指定日が予約可能かチェック（スプレッドシートデータを参照）
+         */
+        function isAvailable(year, month, day) {
+            if (isPast(year, month, day)) return false;
+
+            const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            return availableSchedule[dateKey] && availableSchedule[dateKey].length > 0;
+        }
+
+        /**
+         * 指定日の時間枠を取得
+         */
+        function getTimeSlotsForDate(year, month, day) {
+            const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            return availableSchedule[dateKey] || [];
+        }
+
+        function getDaysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        function getFirstDayOfMonth(year, month) {
+            return new Date(year, month, 1).getDay();
+        }
+
+        function renderCalendar() {
+            if (isLoadingSchedule) return;
+
+            const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+            document.getElementById('calendarMonth').textContent = `${currentYear}年 ${monthNames[currentMonth]}`;
+
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            // Day headers
+            const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            dayNames.forEach((name, i) => {
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                if (i === 0) header.classList.add('sun');
+                if (i === 6) header.classList.add('sat');
+                header.textContent = name;
+                grid.appendChild(header);
+            });
+
+            const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+            const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+
+            // Empty cells before first day
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'calendar-day empty';
+                grid.appendChild(empty);
+            }
+
+            // Day cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day';
+                cell.textContent = day;
+
+                const d = new Date(currentYear, currentMonth, day);
+                const dow = d.getDay();
+                if (dow === 0) cell.classList.add('sun');
+                if (dow === 6) cell.classList.add('sat');
+
+                if (isPast(currentYear, currentMonth, day)) {
+                    cell.classList.add('past');
+                } else if (isAvailable(currentYear, currentMonth, day)) {
+                    cell.classList.add('available');
+
+                    // Check if this is the selected date
+                    if (selectedDate &&
+                        selectedDate.year === currentYear &&
+                        selectedDate.month === currentMonth &&
+                        selectedDate.day === day) {
+                        cell.classList.add('selected');
+                        cell.classList.remove('available');
+                    }
+
+                    cell.addEventListener('click', () => {
+                        selectedDate = { year: currentYear, month: currentMonth, day: day };
+                        renderCalendar();
+                        showTimeSlots();
+                    });
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        /**
+         * 時間帯を表示（スプレッドシートのデータを使用）
+         */
+        function showTimeSlots() {
+            const section = document.getElementById('timeSlotSection');
+            const display = document.getElementById('selectedDateDisplay');
+            const slotsContainer = document.getElementById('timeSlots');
+
+            section.classList.add('active');
+
+            const d = new Date(selectedDate.year, selectedDate.month, selectedDate.day);
+            const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            display.textContent = `${selectedDate.year}年${selectedDate.month + 1}月${selectedDate.day}日（${dayNames[d.getDay()]}）`;
+
+            slotsContainer.innerHTML = '';
+
+            // スプレッドシートから取得した時間枠を表示
+            const slots = getTimeSlotsForDate(selectedDate.year, selectedDate.month, selectedDate.day);
+
+            if (slots.length === 0) {
+                slotsContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">この日は予約枠がありません</div>';
+                return;
+            }
+
+            slots.forEach((slot) => {
+                const timeStr = slot.time;
+                const endHour = parseInt(timeStr.split(':')[0]) + 1;
+                const displayTime = `${timeStr}〜${endHour}:00`;
+
+                const label = document.createElement('label');
+                label.className = 'time-slot';
+
+                // 担当者がいれば表示
+                let staffInfo = '';
+                if (slot.staff) {
+                    staffInfo = `<span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 0.5rem;">（${slot.staff}）</span>`;
+                }
+
+                label.innerHTML = `<input type="radio" name="timeslot" value="${timeStr}"><i class="fas fa-clock"></i> ${displayTime}${staffInfo}`;
+
+                label.addEventListener('click', () => {
+                    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+                    label.classList.add('selected');
+                });
+
+                slotsContainer.appendChild(label);
+            });
+        }
+
+        // Calendar navigation
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar();
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            renderCalendar();
+        });
+
+        // Initial render - スプレッドシートから日程を取得してカレンダー表示
+        fetchAvailableSchedule();
+
+        // ニュースバーを動的に更新
+        async function fetchNews() {
+            try {
+                const response = await fetch(SCHEDULE_API_URL + '?action=news');
+                const data = await response.json();
+                if (data.success && data.news && data.news.length > 0) {
+                    const latest = data.news[0];
+                    const newsTextEl = document.querySelector('.news-text');
+                    if (newsTextEl) {
+                        newsTextEl.textContent = latest.date + ' — ' + latest.content;
+                    }
+                }
+            } catch (e) {
+                console.log('ニュース取得スキップ');
+            }
+        }
+        fetchNews();
+
+        // ── PARTICLE ANIMATION ──
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animFrame;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = -Math.random() * 0.5 - 0.1;
+                this.opacity = Math.random() * 0.5 + 0.15;
+                this.pulse = Math.random() * Math.PI * 2;
+                this.pulseSpeed = Math.random() * 0.02 + 0.01;
+                this.r = 255;
+                this.g = 255;
+                this.b = 255;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.pulse += this.pulseSpeed;
+                const currentOpacity = this.opacity * (0.5 + 0.5 * Math.sin(this.pulse));
+                if (this.y < -10 || this.x < -10 || this.x > canvas.width + 10) this.reset();
+                if (this.y < -10) { this.y = canvas.height + 10; }
+                return currentOpacity;
+            }
+            draw(op) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${this.r},${this.g},${this.b},${op})`;
+                ctx.fill();
+                // グロウエフェクト（大きめの粒にぼんやり光る輪）
+                if (this.size > 1) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 3.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${this.r},${this.g},${this.b},${op * 0.12})`;
+                    ctx.fill();
+                }
+            }
+        }
+
+        const count = Math.min(60, Math.floor(window.innerWidth / 25));
+        for (let i = 0; i < count; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                const op = p.update();
+                p.draw(op);
+            });
+            animFrame = requestAnimationFrame(animate);
+        }
+        animate();
+
+        // ── IMAGE MODAL ──
+        function openModal(src, caption) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('modalImage');
+            const cap = document.getElementById('modalCaption');
+
+            modal.classList.add('active');
+            img.src = src;
+            cap.textContent = caption;
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // ── BGM PLAYER ──
+        const bgmAudio = document.getElementById('bgmAudio');
+        const bgmToggle = document.getElementById('bgmToggle');
+        const bgmIcon = document.getElementById('bgmIcon');
+        const bgmVolume = document.getElementById('bgmVolume');
+        let bgmPlaying = false;
+
+        bgmAudio.volume = 0.3;
+
+        bgmToggle.addEventListener('click', () => {
+            if (bgmPlaying) {
+                bgmAudio.pause();
+                bgmIcon.className = 'fas fa-play';
+                bgmToggle.classList.remove('playing');
+            } else {
+                bgmAudio.play();
+                bgmIcon.className = 'fas fa-pause';
+                bgmToggle.classList.add('playing');
+            }
+            bgmPlaying = !bgmPlaying;
+        });
+
+        bgmVolume.addEventListener('input', (e) => {
+            bgmAudio.volume = e.target.value / 100;
+        });
+
+        // ── VOICE INPUT (Web Speech API) ──
+        const voiceBtn = document.getElementById('voiceInputBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const consultationTextarea = document.getElementById('consultationContent');
+        let recognition = null;
+        let isRecording = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ja-JP';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                voiceStatus.textContent = '録音中... お話しください';
+                voiceStatus.className = 'voice-status recording';
+            };
+
+            recognition.onresult = (event) => {
+                let finalTranscript = '';
+                let interimTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (finalTranscript) {
+                    consultationTextarea.value += finalTranscript;
+                }
+                if (interimTranscript) {
+                    voiceStatus.textContent = '認識中: ' + interimTranscript;
+                }
+            };
+
+            recognition.onerror = (event) => {
+                voiceStatus.textContent = 'エラー: ' + event.error;
+                voiceStatus.className = 'voice-status error';
+                stopRecording();
+            };
+
+            recognition.onend = () => {
+                if (isRecording) {
+                    stopRecording();
+                }
+            };
+
+            voiceBtn.addEventListener('click', () => {
+                if (isRecording) {
+                    recognition.stop();
+                    stopRecording();
+                } else {
+                    recognition.start();
+                }
+            });
+        } else {
+            voiceBtn.style.display = 'none';
+            voiceStatus.textContent = '※ お使いのブラウザは音声入力に対応していません';
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            voiceBtn.classList.remove('recording');
+            voiceStatus.textContent = '音声入力完了';
+            voiceStatus.className = 'voice-status';
+            setTimeout(() => { voiceStatus.textContent = ''; }, 2000);
+        }
+
+        // ══════════════════════════════════════════════
+        // FORM SUBMISSION — Google Apps Script バックエンド連携
+        // ══════════════════════════════════════════════
+        //
+        // 【設定方法】
+        //   1. gas-backend.gs のコードを Google Apps Script に貼り付け
+        //   2. GAS側の CONFIG を設定してデプロイ
+        //   3. 下記の URL をデプロイURLに書き換え
+        //
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec';
+        // 例: 'https://script.google.com/macros/s/AKfycbx.../exec'
+        //
+        // ══════════════════════════════════════════════
+
+        // GASへ送信（iframe経由でCORS回避）
+        function submitToGAS(formData) {
+            return new Promise((resolve, reject) => {
+                // 隠しiframeを作成
+                const iframe = document.createElement('iframe');
+                iframe.name = 'gas-submit-frame';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+
+                // 隠しフォームを作成
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = GAS_WEB_APP_URL;
+                form.target = 'gas-submit-frame';
+
+                // フォームデータを追加
+                Object.keys(formData).forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = formData[key];
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+
+                // タイムアウト設定（5秒後に成功とみなす）
+                const timeout = setTimeout(() => {
+                    cleanup();
+                    resolve(); // GASへの送信は完了したとみなす
+                }, 5000);
+
+                // iframe読み込み完了時
+                iframe.onload = () => {
+                    clearTimeout(timeout);
+                    cleanup();
+                    resolve();
+                };
+
+                // クリーンアップ
+                function cleanup() {
+                    if (form.parentNode) form.parentNode.removeChild(form);
+                    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                }
+
+                // フォーム送信
+                form.submit();
+            });
+        }
+
+        // 送信結果モーダル表示
+        function showSubmitModal(type, formData) {
+            const modal = document.getElementById('submitModal');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const msg = document.getElementById('modalMessage');
+            const details = document.getElementById('modalDetails');
+            const sub = document.getElementById('modalSub');
+
+            if (type === 'success') {
+                icon.className = 'modal-icon success';
+                icon.innerHTML = '<i class="fas fa-check"></i>';
+                title.textContent = '確認メールをお送りしました';
+                msg.innerHTML = 'ご入力いただいたメールアドレスに確認メールをお送りしました。<br>メール内の<strong>「予約を確定する」ボタン</strong>をクリックすると、予約が確定します。';
+                details.innerHTML = '<strong>予約内容</strong><br>'
+                    + 'お名前: ' + formData.name + '<br>'
+                    + (formData.company ? '貴社名: ' + formData.company + '<br>' : '')
+                    + '役職: ' + formData.position + '<br>'
+                    + '業種: ' + formData.industry + '<br>'
+                    + (formData.phone ? '電話番号: ' + formData.phone + '<br>' : '')
+                    + (formData.companyUrl ? '企業URL: ' + formData.companyUrl + '<br>' : '')
+                    + '相談方法: ' + formData.method + '<br>'
+                    + '希望日: ' + formData.date + '<br>'
+                    + '希望時間: ' + formData.time + '<br>'
+                    + '相談テーマ: ' + formData.topic;
+                details.style.display = 'block';
+                sub.innerHTML = '<span style="color:#e67e22;font-size:0.85rem;"><i class="fas fa-exclamation-triangle"></i> メールが届かない場合は、迷惑メールフォルダもご確認ください。<br>同意書確認リンクがメールに含まれますので必ずご確認ください。</span>';
+            } else if (type === 'no-gas') {
+                icon.className = 'modal-icon success';
+                icon.innerHTML = '<i class="fas fa-check"></i>';
+                title.textContent = 'ご予約を受け付けました';
+                msg.innerHTML = '予約内容を確認いたしました。<br>担当者より折り返しご連絡させていただきます。';
+                details.innerHTML = '<strong>予約内容</strong><br>'
+                    + 'お名前: ' + formData.name + '<br>'
+                    + (formData.company ? '貴社名: ' + formData.company + '<br>' : '')
+                    + '役職: ' + formData.position + '<br>'
+                    + '業種: ' + formData.industry + '<br>'
+                    + (formData.phone ? '電話番号: ' + formData.phone + '<br>' : '')
+                    + (formData.companyUrl ? '企業URL: ' + formData.companyUrl + '<br>' : '')
+                    + '相談方法: ' + formData.method + '<br>'
+                    + '希望日: ' + formData.date + '<br>'
+                    + '希望時間: ' + formData.time + '<br>'
+                    + '相談テーマ: ' + formData.topic;
+                details.style.display = 'block';
+                sub.textContent = '';
+            } else {
+                icon.className = 'modal-icon error';
+                icon.innerHTML = '<i class="fas fa-times"></i>';
+                title.textContent = '送信に失敗しました';
+                msg.textContent = '申し訳ございません。送信中にエラーが発生しました。お手数ですが、もう一度お試しください。';
+                details.style.display = 'none';
+                sub.textContent = '';
+            }
+
+            modal.classList.add('active');
+        }
+
+        // フォーム送信処理
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const consultationContent = document.getElementById('consultationContent').value;
+            const remarks = document.getElementById('formRemarks').value;
+            const isWalkIn = remarks.includes('9999');
+
+            const formData = {
+                name: document.getElementById('userName').value,
+                company: document.getElementById('userCompany').value,
+                email: document.getElementById('userEmail').value,
+                phone: document.getElementById('userPhone').value,
+                position: document.getElementById('userPosition').value,
+                industry: document.getElementById('userIndustry').value,
+                companyUrl: document.getElementById('companyUrl').value,
+                method: document.querySelector('input[name="method"]:checked').value === 'zoom' ? 'オンライン（Zoom）' : '対面（梅田キャンパス）',
+                date: selectedDate ? `${selectedDate.year}年${selectedDate.month + 1}月${selectedDate.day}日` : '未選択',
+                time: document.querySelector('input[name="timeslot"]:checked')?.value || '未選択',
+                topic: document.querySelector('input[name="topic"]:checked')?.value || '未選択',
+                content: consultationContent,
+                remarks: remarks,
+                walkInFlag: isWalkIn ? 'TRUE' : 'FALSE',
+                submittedAt: new Date().toLocaleString('ja-JP')
+            };
+
+            // 送信中表示
+            const submitBtn = this.querySelector('.form-btn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> 送信中...</span>';
+            submitBtn.disabled = true;
+
+            try {
+                if (GAS_WEB_APP_URL !== 'YOUR_GAS_URL_HERE') {
+                    // Google Apps Script へ送信（iframe経由でCORS回避）
+                    await submitToGAS(formData);
+                    showSubmitModal('success', formData);
+                } else {
+                    // GAS未設定時はローカル確認のみ
+                    console.log('予約データ:', formData);
+                    showSubmitModal('no-gas', formData);
+                }
+
+                // フォームリセット
+                this.reset();
+                selectedDate = null;
+                document.getElementById('timeSlotSection').classList.remove('active');
+                document.querySelectorAll('.method-option').forEach(o => o.classList.remove('selected'));
+                document.getElementById('methodVisit').classList.add('selected');
+                document.querySelectorAll('.topic-option').forEach(o => o.classList.remove('selected'));
+                currentMethod = 'visit';
+                renderCalendar();
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                showSubmitModal('error', formData);
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+
+    <!-- HAMBURGER MENU SCRIPT -->
+    <script>
+    (() => {
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const hamburgerIcon = document.getElementById('hamburgerIcon');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuLinks = mobileMenu.querySelectorAll('a');
+
+        function toggleMenu() {
+            const isOpen = mobileMenu.classList.toggle('open');
+            hamburgerIcon.classList.replace(
+                isOpen ? 'fa-bars' : 'fa-times',
+                isOpen ? 'fa-times' : 'fa-bars'
+            );
+            document.body.classList.toggle('menu-open', isOpen);
+        }
+
+        hamburgerBtn.addEventListener('click', toggleMenu);
+
+        menuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (mobileMenu.classList.contains('open')) {
+                    toggleMenu();
+                }
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>相談同意書のご確認 - 関西学院大学 中小企業経営診断研究会</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #f5f5f7;
+      color: #1a1a1a;
+      line-height: 1.8;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    .header {
+      background: #0F2350;
+      color: #fff;
+      padding: 2rem 0;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .header p {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #0F2350;
+    }
+    .applicant-info {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+    .applicant-info dt {
+      font-weight: 600;
+      color: #666;
+    }
+    .pdf-viewer {
+      width: 100%;
+      height: 500px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 0.9rem;
+    }
+    .pdf-viewer-placeholder {
+      text-align: center;
+      padding: 2rem;
+    }
+    .pdf-viewer-placeholder .icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .pdf-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+      padding: 0.5rem 1rem;
+      background: #f0f0f0;
+      border-radius: 6px;
+      color: #0F2350;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    .pdf-download:hover { background: #e0e0e0; }
+    .consent-section {
+      margin-top: 1.5rem;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      padding: 1rem;
+      background: #fff3cd;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 0.2rem;
+      flex-shrink: 0;
+    }
+    .checkbox-group label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .signature-group {
+      margin-bottom: 1.5rem;
+    }
+    .signature-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .signature-group input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    .signature-group input:focus {
+      outline: none;
+      border-color: #0F2350;
+      box-shadow: 0 0 0 3px rgba(15,35,80,0.1);
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: #0F2350;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .error-msg {
+      color: #dc3545;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    .success-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .success-overlay.active { display: flex; }
+    .success-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      text-align: center;
+      max-width: 500px;
+      margin: 1rem;
+    }
+    .success-icon {
+      width: 60px; height: 60px;
+      background: #d4edda;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 1.5rem;
+      color: #28a745;
+    }
+    .preview-banner {
+      background: #e74c3c;
+      color: #fff;
+      text-align: center;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-banner">PREVIEW MODE - This is a local preview of the consent page</div>
+
+  <div class="header">
+    <h1>相談同意書のご確認</h1>
+    <p>関西学院大学 中小企業経営診断研究会</p>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>お申込者情報</h2>
+      <dl class="applicant-info">
+        <dt>申込ID</dt><dd>20260210-001</dd>
+        <dt>お名前</dt><dd>関学 太郎</dd>
+        <dt>貴社名</dt><dd>サンプル株式会社</dd>
+        <dt>相談テーマ</dt><dd>経営全般</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2>経営相談に関する同意書</h2>
+      <p style="font-size:0.85rem; color:#666; margin-bottom:1rem;">関西学院大学 中小企業診断士養成課程（経営診断研究会無料経営診断分科会）</p>
+      <div class="pdf-viewer">
+        <div class="pdf-viewer-placeholder">
+          <div class="icon">&#128196;</div>
+          <p>Google Drive PDF Viewer</p>
+          <p style="font-size:0.8rem; margin-top:0.5rem;">（実運用時はここにPDFが表示されます）</p>
+          <p style="font-size:0.75rem; color:#bbb; margin-top:0.5rem;">iframe src: https://drive.google.com/file/d/{PDF_FILE_ID}/preview</p>
+        </div>
+      </div>
+      <a href="#" class="pdf-download" onclick="alert('プレビューモード: 実運用時にPDFがダウンロードされます'); return false;">PDFをダウンロード</a>
+
+      <div class="consent-section">
+        <div class="checkbox-group">
+          <input type="checkbox" id="agreeCheck">
+          <label for="agreeCheck">上記同意書の内容を確認し、全ての内容に同意します</label>
+        </div>
+
+        <div class="signature-group">
+          <label for="signature">電子署名（お名前をご入力ください）</label>
+          <input type="text" id="signature" placeholder="関学 太郎" required>
+        </div>
+
+        <div id="errorMsg" class="error-msg"></div>
+
+        <button id="submitBtn" class="submit-btn" disabled onclick="submitConsent()">
+          同意して送信
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="successOverlay" class="success-overlay">
+    <div class="success-box">
+      <div class="success-icon">&#10003;</div>
+      <h3>同意が完了しました</h3>
+      <p style="margin-top: 1rem; color: #666;">担当者より日程確定のご連絡をいたします。<br>このページを閉じていただいて結構です。</p>
+    </div>
+  </div>
+
+  <script>
+    const checkbox = document.getElementById('agreeCheck');
+    const signatureInput = document.getElementById('signature');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function updateButtonState() {
+      submitBtn.disabled = !(checkbox.checked && signatureInput.value.trim());
+    }
+
+    checkbox.addEventListener('change', updateButtonState);
+    signatureInput.addEventListener('input', updateButtonState);
+
+    function submitConsent() {
+      // Preview mode: show success overlay directly
+      document.getElementById('successOverlay').classList.add('active');
+    }
+  </script>
+</body>
+</html>
