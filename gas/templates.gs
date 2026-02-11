@@ -519,7 +519,7 @@ function getConsentPageHtml(data, token) {
 
     <div class="card">
       <h2>経営相談に関する同意書</h2>
-      <p style="font-size:0.85rem; color:#666; margin-bottom:1rem;">関西学院大学 中小企業診断士養成課程（経営診断研究会無料経営診断分科会）</p>
+      <p style="font-size:0.85rem; color:#666; margin-bottom:1rem;">関西学院大学 中小企業診断士養成課程（無料経営診断分科会）</p>
       <iframe class="pdf-viewer" src="${pdfViewerUrl}" allow="autoplay"></iframe>
       <a href="${pdfDownloadUrl}" target="_blank" class="pdf-download">PDFをダウンロード</a>
 
