@@ -41,7 +41,7 @@ function doPost(e) {
       // 当日受付用メール
       sendWalkInConfirmationEmail(data, consentUrl);
     } else {
-      // 通常の確認メール（ヒアリングシート添付 + 同意書リンク）
+      // 通常の確認メール（同意書リンク付き）
       sendConfirmationEmail(data, consentUrl);
     }
 
@@ -268,21 +268,9 @@ function sendConfirmationEmail(data, consentUrl) {
   const subject = '【受付完了】無料経営相談のお申し込みありがとうございます';
   const body = getConfirmationEmailBody(data, consentUrl);
 
-  // ヒアリングシートを添付
-  let attachments = [];
-  try {
-    if (CONFIG.HEARING_SHEET_FILE_ID && CONFIG.HEARING_SHEET_FILE_ID !== 'ここにヒアリングシートのファイルIDを入力') {
-      const file = DriveApp.getFileById(CONFIG.HEARING_SHEET_FILE_ID);
-      attachments.push(file.getAs(MimeType.PDF));
-    }
-  } catch (e) {
-    console.log('ヒアリングシートの添付に失敗:', e);
-  }
-
   const options = {
     name: CONFIG.SENDER_NAME,
-    replyTo: CONFIG.REPLY_TO,
-    attachments: attachments
+    replyTo: CONFIG.REPLY_TO
   };
 
   GmailApp.sendEmail(data.email, subject, body, options);

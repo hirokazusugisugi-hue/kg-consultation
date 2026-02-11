@@ -142,8 +142,8 @@ ${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサー�
 
   // 書類受領に変更された場合
   if (newStatus === STATUS.RECEIVED) {
-    const subject = `【書類受領】${data.name}様 - ヒアリングシート受領`;
-    const body = `ヒアリングシートを受領しました。
+    const subject = `【書類受領】${data.name}様 - 書類受領`;
+    const body = `書類を受領しました。
 
 申込ID：${data.id}
 お名前：${data.name}様

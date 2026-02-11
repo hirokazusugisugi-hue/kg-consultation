@@ -129,6 +129,9 @@ function processNdaConsent(e) {
     const data = getRowData(rowIndex);
     notifyConsentAgreed(data, signature);
 
+    // 相談者に同意完了確認メール送信
+    sendConsentConfirmationToApplicant(data);
+
     return { success: true, message: '同意が完了しました' };
 
   } catch (error) {
@@ -156,7 +159,7 @@ function notifyConsentAgreed(data, signature) {
 電子署名：${signature}
 同意日時：${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
 
-ヒアリングシート受領後、日程を確定してください。
+日程を確定してください。
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
   CONFIG.ADMIN_EMAILS.forEach(email => {
@@ -173,7 +176,7 @@ function notifyConsentAgreed(data, signature) {
 貴社名: ${data.company}
 同意日時: ${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
 
-ヒアリングシート受領後、日程を確定してください。`;
+日程を確定してください。`;
 
   sendLineMessage(CONFIG.LINE.GROUP_ID, lineMessage);
 }
@@ -225,4 +228,45 @@ function submitNdaConsent(formData) {
     parameter: formData,
     postData: null
   });
+}
+
+/**
+ * 同意完了後に相談者へ確認メールを送信
+ * @param {Object} data - 申込データ
+ */
+function sendConsentConfirmationToApplicant(data) {
+  try {
+    const subject = `【同意完了】相談同意書への同意を受領しました - ${data.id}`;
+    const body = `${data.name} 様
+
+相談同意書への同意を受領いたしました。ありがとうございます。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 同意内容
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.id}
+お名前：${data.name}
+貴社名：${data.company || '（個人）'}
+同意日時：${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+日程確定後、改めて確定メールをお送りいたします。
+しばらくお待ちください。
+
+ご不明な点がございましたら、お気軽にお問い合わせください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${CONFIG.ORG.NAME}
+Email: ${CONFIG.ORG.EMAIL}
+URL: ${CONFIG.ORG.URL}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    GmailApp.sendEmail(data.email, subject, body, {
+      name: CONFIG.SENDER_NAME,
+      replyTo: CONFIG.REPLY_TO
+    });
+    console.log(`同意完了確認メールを ${data.email} に送信しました`);
+  } catch (e) {
+    console.error('同意完了確認メール送信エラー:', e);
+  }
 }
