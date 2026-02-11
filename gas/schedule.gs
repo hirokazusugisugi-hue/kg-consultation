@@ -214,6 +214,45 @@ function generateMarchSchedule() {
 }
 
 /**
+ * 指定月の日程データをクリーンアップ（旧データ削除→新ルールで再生成→メンバー再登録）
+ */
+function cleanupAndRegenerateMonth(year, month) {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  var rowsToDelete = [];
+
+  // 対象月の行を特定（逆順で削除するため）
+  for (var i = data.length - 1; i >= 1; i--) {
+    var dateStr = data[i][SCHEDULE_COLUMNS.DATE];
+    var d = dateStr instanceof Date ? dateStr : new Date(dateStr);
+    if (d.getFullYear() === year && d.getMonth() + 1 === month) {
+      rowsToDelete.push(i + 1); // 1-indexed
+    }
+  }
+
+  // 旧データ削除（逆順）
+  for (var j = 0; j < rowsToDelete.length; j++) {
+    sheet.deleteRow(rowsToDelete[j]);
+  }
+  console.log(year + '年' + month + '月の旧データ ' + rowsToDelete.length + '行を削除');
+
+  // 新ルールで再生成
+  var newData = generateScheduleData(year, month);
+  var lastRow = sheet.getLastRow();
+  if (newData.length > 0) {
+    sheet.getRange(lastRow + 1, 1, newData.length, newData[0].length).setValues(newData);
+  }
+  console.log(year + '年' + month + '月の日程を' + newData.length + '件再生成');
+
+  // 全メンバー再登録
+  registerAllMembersForMonth(year, month);
+  console.log(year + '年' + month + '月の全メンバー再登録完了');
+}
+
+/**
  * 利用可能な日程を取得（API用・拡張版）
  * 予約可能判定が「○」の枠のみ返す
  * @param {string} method - 'visit' または 'zoom'
