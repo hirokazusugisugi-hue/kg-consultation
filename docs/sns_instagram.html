@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>KG無料経営相談 - Instagram</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; width: 1080px; height: 1080px; overflow: hidden; }
+
+  body {
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+    background: linear-gradient(160deg, #0a1a3a 0%, #0F2350 35%, #142c58 65%, #0d1e44 100%);
+    color: #ffffff;
+    position: relative;
+  }
+
+  /* Geometric background pattern */
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      linear-gradient(60deg, transparent 0%, transparent 49.5%, rgba(201, 168, 76, 0.025) 49.5%, rgba(201, 168, 76, 0.025) 50.5%, transparent 50.5%, transparent 100%),
+      linear-gradient(-60deg, transparent 0%, transparent 49.5%, rgba(201, 168, 76, 0.025) 49.5%, rgba(201, 168, 76, 0.025) 50.5%, transparent 50.5%, transparent 100%),
+      radial-gradient(circle at 50% 30%, rgba(201, 168, 76, 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 20% 70%, rgba(201, 168, 76, 0.03) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(201, 168, 76, 0.03) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  /* Corner accent decoration */
+  body::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container {
+    width: 1080px;
+    height: 1080px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  /* Top section with university name */
+  .top-section {
+    padding-top: 65px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .university-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #c9a84c;
+    letter-spacing: 8px;
+    position: relative;
+    display: inline-block;
+  }
+
+  .university-name::before,
+  .university-name::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #c9a84c);
+  }
+
+  .university-name::before {
+    right: calc(100% + 16px);
+    background: linear-gradient(90deg, transparent, #c9a84c);
+  }
+
+  .university-name::after {
+    left: calc(100% + 16px);
+    background: linear-gradient(90deg, #c9a84c, transparent);
+  }
+
+  /* Hero text section */
+  .hero-section {
+    text-align: center;
+    margin-top: 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-text {
+    font-size: 96px;
+    font-weight: 900;
+    letter-spacing: 10px;
+    line-height: 1.2;
+    background: linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+  }
+
+  .hero-free {
+    color: #c9a84c;
+    background: linear-gradient(180deg, #d4b45e 0%, #c9a84c 50%, #a8873a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 4px 20px rgba(201, 168, 76, 0.3));
+  }
+
+  .hero-subtitle {
+    font-size: 22px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 24px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    line-height: 1.6;
+  }
+
+  /* Decorative gold line separator */
+  .separator {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #c9a84c, transparent);
+    margin: 36px auto;
+    border-radius: 2px;
+  }
+
+  /* Feature cards section */
+  .features-section {
+    display: flex;
+    gap: 24px;
+    padding: 0 60px;
+    margin-top: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .feature-card {
+    flex: 1;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 32px 20px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #c9a84c, transparent);
+    opacity: 0.5;
+  }
+
+  .feature-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+    display: block;
+    line-height: 1;
+  }
+
+  .feature-title {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #ffffff;
+    line-height: 1.5;
+  }
+
+  .feature-sub {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 8px;
+    font-weight: 400;
+  }
+
+  /* CTA section */
+  .cta-section {
+    margin-top: 40px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-text {
+    font-size: 19px;
+    color: #c9a84c;
+    font-weight: 700;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .cta-text .arrow-icon {
+    font-size: 14px;
+    opacity: 0.7;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: linear-gradient(90deg, rgba(201, 168, 76, 0.12), rgba(201, 168, 76, 0.04));
+    border-top: 2px solid rgba(201, 168, 76, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    z-index: 1;
+  }
+
+  .bottom-bar .bar-icon {
+    color: #c9a84c;
+    font-size: 18px;
+  }
+
+  .bottom-bar .bar-text {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* Corner decorations */
+  .corner-deco {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    z-index: 1;
+  }
+
+  .corner-deco.top-left {
+    top: 30px;
+    left: 30px;
+    border-top: 2px solid rgba(201, 168, 76, 0.3);
+    border-left: 2px solid rgba(201, 168, 76, 0.3);
+  }
+
+  .corner-deco.top-right {
+    top: 30px;
+    right: 30px;
+    border-top: 2px solid rgba(201, 168, 76, 0.3);
+    border-right: 2px solid rgba(201, 168, 76, 0.3);
+  }
+
+  .corner-deco.bottom-left {
+    bottom: 90px;
+    left: 30px;
+    border-bottom: 2px solid rgba(201, 168, 76, 0.3);
+    border-left: 2px solid rgba(201, 168, 76, 0.3);
+  }
+
+  .corner-deco.bottom-right {
+    bottom: 90px;
+    right: 30px;
+    border-bottom: 2px solid rgba(201, 168, 76, 0.3);
+    border-right: 2px solid rgba(201, 168, 76, 0.3);
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- Corner decorations -->
+    <div class="corner-deco top-left"></div>
+    <div class="corner-deco top-right"></div>
+    <div class="corner-deco bottom-left"></div>
+    <div class="corner-deco bottom-right"></div>
+
+    <!-- University name -->
+    <div class="top-section">
+      <div class="university-name">関西学院大学</div>
+    </div>
+
+    <!-- Hero text -->
+    <div class="hero-section">
+      <div class="hero-text">
+        <span class="hero-free">無料</span>経営相談
+      </div>
+      <div class="hero-subtitle">あなたの経営課題、専門家と一緒に解決しませんか？</div>
+    </div>
+
+    <div class="separator"></div>
+
+    <!-- Feature cards -->
+    <div class="features-section">
+      <div class="feature-card">
+        <span class="feature-icon"><i class="fa-solid fa-building"></i></span>
+        <div class="feature-title">対面相談</div>
+        <div class="feature-sub">梅田キャンパス</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><i class="fa-solid fa-laptop"></i></span>
+        <div class="feature-title">オンライン相談</div>
+        <div class="feature-sub">Zoom</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><i class="fa-solid fa-lock"></i></span>
+        <div class="feature-title">完全無料<br>秘密厳守</div>
+        <div class="feature-sub">中小企業診断士が対応</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <div class="cta-text">
+        <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+        ご予約はプロフィールのリンクから
+        <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bottom-bar">
+      <span class="bar-icon"><i class="fa-solid fa-university"></i></span>
+      <span class="bar-text">中小企業経営診断研究会</span>
+    </div>
+  </div>
+</body>
+</html>

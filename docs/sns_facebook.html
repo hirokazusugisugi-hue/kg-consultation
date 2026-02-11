@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1200">
+<title>KG無料経営相談 - Facebook/X OGP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; width: 1200px; height: 630px; overflow: hidden; }
+
+  body {
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+    background: linear-gradient(135deg, #0a1a3a 0%, #0F2350 40%, #162d5e 70%, #1a3568 100%);
+    color: #ffffff;
+    position: relative;
+  }
+
+  /* Subtle background pattern */
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(circle at 80% 20%, rgba(201, 168, 76, 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 20% 80%, rgba(201, 168, 76, 0.04) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  /* Decorative diagonal lines */
+  body::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      linear-gradient(120deg, transparent 0%, transparent 48%, rgba(201, 168, 76, 0.03) 48%, rgba(201, 168, 76, 0.03) 52%, transparent 52%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .container {
+    width: 1200px;
+    height: 630px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 50px 60px 30px 70px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .left-section {
+    flex: 1;
+    padding-right: 40px;
+  }
+
+  .title-area {
+    margin-bottom: 28px;
+  }
+
+  .title-free {
+    font-size: 72px;
+    font-weight: 900;
+    color: #c9a84c;
+    letter-spacing: 8px;
+    line-height: 1.1;
+    text-shadow: 0 2px 20px rgba(201, 168, 76, 0.3);
+    display: inline-block;
+    position: relative;
+  }
+
+  .title-free::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #c9a84c, transparent);
+    border-radius: 2px;
+  }
+
+  .title-consultation {
+    font-size: 72px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 6px;
+    line-height: 1.2;
+    margin-top: 4px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .subtitle {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 32px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    line-height: 1.6;
+  }
+
+  .features {
+    list-style: none;
+  }
+
+  .features li {
+    font-size: 19px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .features li .check {
+    color: #c9a84c;
+    font-size: 20px;
+    margin-right: 14px;
+    font-weight: 700;
+    min-width: 24px;
+  }
+
+  .right-section {
+    width: 340px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Main circular badge */
+  .badge {
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #c9a84c, #a8873a, #c9a84c);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow:
+      0 0 60px rgba(201, 168, 76, 0.3),
+      0 0 120px rgba(201, 168, 76, 0.1),
+      inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  }
+
+  .badge::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+  }
+
+  .badge::after {
+    content: '';
+    position: absolute;
+    top: 14px; left: 14px; right: 14px; bottom: 14px;
+    border-radius: 50%;
+    border: 1px dashed rgba(255, 255, 255, 0.25);
+  }
+
+  .badge-text-top {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0F2350;
+    letter-spacing: 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .badge-text-main {
+    font-size: 56px;
+    font-weight: 900;
+    color: #0F2350;
+    letter-spacing: 6px;
+    line-height: 1.1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .badge-icon {
+    font-size: 24px;
+    color: #0F2350;
+    margin-top: 6px;
+    position: relative;
+    z-index: 1;
+    opacity: 0.7;
+  }
+
+  /* Decorative rings around badge */
+  .badge-ring-outer {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    border: 1px solid rgba(201, 168, 76, 0.2);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .badge-ring-outermost {
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    border: 1px solid rgba(201, 168, 76, 0.08);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Small decorative dots */
+  .dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(201, 168, 76, 0.3);
+    border-radius: 50%;
+  }
+  .dot-1 { top: 15%; right: 5%; }
+  .dot-2 { top: 60%; right: -2%; }
+  .dot-3 { bottom: 25%; right: 15%; }
+
+  /* Bottom bar */
+  .bottom-bar {
+    height: 60px;
+    background: linear-gradient(90deg, rgba(201, 168, 76, 0.15), rgba(201, 168, 76, 0.05));
+    border-top: 3px solid #c9a84c;
+    display: flex;
+    align-items: center;
+    padding: 0 70px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .bottom-bar .org-icon {
+    color: #c9a84c;
+    font-size: 20px;
+    margin-right: 14px;
+  }
+
+  .bottom-bar .org-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 3px;
+  }
+
+  .bottom-bar .org-sub {
+    margin-left: auto;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="main-content">
+      <div class="left-section">
+        <div class="title-area">
+          <div class="title-free">無料</div>
+          <div class="title-consultation">経営相談</div>
+        </div>
+        <div class="subtitle">中小企業の経営課題、一緒に考えます。</div>
+        <ul class="features">
+          <li><span class="check"><i class="fa-solid fa-check"></i></span>中小企業診断士が対応</li>
+          <li><span class="check"><i class="fa-solid fa-check"></i></span>完全無料・秘密厳守</li>
+          <li><span class="check"><i class="fa-solid fa-check"></i></span>対面・Zoomで全国対応</li>
+        </ul>
+      </div>
+      <div class="right-section">
+        <div class="badge-ring-outermost"></div>
+        <div class="badge-ring-outer"></div>
+        <div class="badge">
+          <div class="badge-text-top">相談</div>
+          <div class="badge-text-main">無料</div>
+          <div class="badge-icon"><i class="fa-solid fa-handshake"></i></div>
+        </div>
+        <div class="dot dot-1"></div>
+        <div class="dot dot-2"></div>
+        <div class="dot dot-3"></div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <span class="org-icon"><i class="fa-solid fa-university"></i></span>
+      <span class="org-name">関西学院大学 中小企業経営診断研究会</span>
+      <span class="org-sub">Kwansei Gakuin University</span>
+    </div>
+  </div>
+</body>
+</html>

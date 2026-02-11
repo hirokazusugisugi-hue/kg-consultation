@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>無料経営相談 | 関西学院大学 中小企業経営診断研究会</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  /* ===== Reset & Base ===== */
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  @media print {
+    html, body {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page {
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+  }
+
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    color: #1a1a1a;
+    background: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 10mm 0;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+      padding: 0;
+    }
+  }
+
+  /* ===== Page Container ===== */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+
+  @media print {
+    .page {
+      box-shadow: none;
+    }
+  }
+
+  /* ===== Color Variables ===== */
+  :root {
+    --navy: #0F2350;
+    --navy-dark: #0a1a3a;
+    --gold: #c9a84c;
+    --gold-light: #e8d5a0;
+    --gold-pale: #f5ecd4;
+    --light-bg: #f7f8fb;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    background: var(--navy);
+    color: #fff;
+    padding: 10mm 8mm 9mm;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40mm;
+    right: -20mm;
+    width: 100mm;
+    height: 100mm;
+    background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+  }
+
+  .header-org {
+    font-size: 8pt;
+    color: var(--gold-light);
+    letter-spacing: 0.15em;
+    margin-bottom: 3mm;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-title {
+    font-size: 32pt;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2.5mm;
+  }
+
+  .header-title .accent {
+    color: var(--gold);
+  }
+
+  .header-subtitle {
+    font-size: 12pt;
+    font-weight: 400;
+    color: var(--gold-light);
+    letter-spacing: 0.08em;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== Key Points ===== */
+  .key-points {
+    padding: 6mm 8mm 5mm;
+    display: flex;
+    gap: 4mm;
+  }
+
+  .key-point {
+    flex: 1;
+    background: var(--light-bg);
+    border-radius: 4mm;
+    padding: 5mm 4mm 4mm;
+    text-align: center;
+    border: 1px solid #e8eaf0;
+    position: relative;
+  }
+
+  .key-point::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    border-radius: 0 0 2px 2px;
+  }
+
+  .key-point-icon {
+    width: 14mm;
+    height: 14mm;
+    margin: 0 auto 3mm;
+    background: var(--navy);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-size: 16pt;
+    box-shadow: 0 2px 8px rgba(15,35,80,0.2);
+  }
+
+  .key-point-title {
+    font-size: 10pt;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 2mm;
+    letter-spacing: 0.05em;
+  }
+
+  .key-point-desc {
+    font-size: 7pt;
+    line-height: 1.6;
+    color: #444;
+  }
+
+  /* ===== Consultation Topics ===== */
+  .topics-section {
+    padding: 4mm 8mm 5mm;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 2mm;
+    margin-bottom: 3.5mm;
+  }
+
+  .section-label-icon {
+    width: 7mm;
+    height: 7mm;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--navy);
+    font-size: 8pt;
+  }
+
+  .section-label-text {
+    font-size: 11pt;
+    font-weight: 800;
+    color: var(--navy);
+    letter-spacing: 0.05em;
+  }
+
+  .topics-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2mm;
+  }
+
+  .topic-tag {
+    background: var(--navy);
+    color: #fff;
+    padding: 1.8mm 4mm;
+    border-radius: 3mm;
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .topic-tag:nth-child(even) {
+    background: linear-gradient(135deg, var(--navy), #1a3470);
+  }
+
+  /* ===== Schedule ===== */
+  .schedule-section {
+    padding: 4mm 8mm 4mm;
+    margin: 0 8mm;
+    background: var(--gold-pale);
+    border-radius: 4mm;
+    border: 1px solid var(--gold-light);
+  }
+
+  .schedule-title {
+    font-size: 10pt;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 3mm;
+    display: flex;
+    align-items: center;
+    gap: 2mm;
+  }
+
+  .schedule-title i {
+    color: var(--gold);
+    font-size: 11pt;
+  }
+
+  .schedule-items {
+    display: flex;
+    gap: 4mm;
+  }
+
+  .schedule-item {
+    flex: 1;
+    background: #fff;
+    border-radius: 3mm;
+    padding: 3mm 4mm;
+    border-left: 3px solid var(--gold);
+  }
+
+  .schedule-item-label {
+    font-size: 9pt;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 1mm;
+    display: flex;
+    align-items: center;
+    gap: 1.5mm;
+  }
+
+  .schedule-item-label i {
+    color: var(--gold);
+    font-size: 9pt;
+  }
+
+  .schedule-item-detail {
+    font-size: 7.5pt;
+    color: #444;
+    line-height: 1.5;
+  }
+
+  .schedule-item-detail strong {
+    color: var(--navy);
+  }
+
+  /* ===== CTA (Call to Action) ===== */
+  .cta-section {
+    padding: 5mm 8mm 4mm;
+    margin-top: 3mm;
+    display: flex;
+    align-items: center;
+    gap: 5mm;
+  }
+
+  .cta-left {
+    flex: 1;
+  }
+
+  .cta-heading {
+    font-size: 16pt;
+    font-weight: 900;
+    color: var(--navy);
+    letter-spacing: 0.06em;
+    margin-bottom: 2mm;
+    line-height: 1.4;
+  }
+
+  .cta-heading .highlight {
+    color: var(--gold);
+    position: relative;
+  }
+
+  .cta-heading .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gold);
+  }
+
+  .cta-description {
+    font-size: 8pt;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 3mm;
+  }
+
+  .cta-arrow-row {
+    display: flex;
+    align-items: center;
+    gap: 2mm;
+    color: var(--navy);
+    font-weight: 800;
+    font-size: 11pt;
+  }
+
+  .cta-arrow-row i {
+    color: var(--gold);
+    font-size: 14pt;
+    animation: none;
+  }
+
+  .cta-right {
+    flex-shrink: 0;
+    text-align: center;
+  }
+
+  .qr-frame {
+    background: #fff;
+    border: 3px solid var(--navy);
+    border-radius: 4mm;
+    padding: 3mm;
+    box-shadow: 0 3px 12px rgba(15,35,80,0.15);
+    position: relative;
+  }
+
+  .qr-frame::before {
+    content: 'SCAN ME';
+    position: absolute;
+    top: -3mm;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold);
+    color: var(--navy);
+    font-size: 6pt;
+    font-weight: 800;
+    padding: 0.5mm 3mm;
+    border-radius: 2mm;
+    letter-spacing: 0.1em;
+  }
+
+  .qr-frame img {
+    width: 32mm;
+    height: 32mm;
+    display: block;
+  }
+
+  .qr-caption {
+    font-size: 7pt;
+    color: var(--navy);
+    font-weight: 700;
+    margin-top: 1.5mm;
+    letter-spacing: 0.04em;
+  }
+
+  /* ===== Contact ===== */
+  .contact-bar {
+    margin: 3mm 8mm 0;
+    padding: 2.5mm 4mm;
+    background: var(--light-bg);
+    border-radius: 3mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2mm;
+    border: 1px solid #e0e3ea;
+  }
+
+  .contact-bar i {
+    color: var(--gold);
+    font-size: 9pt;
+  }
+
+  .contact-bar span {
+    font-size: 8pt;
+    color: var(--navy);
+    font-weight: 600;
+  }
+
+  .contact-bar a {
+    color: var(--navy);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 9pt;
+  }
+
+  /* ===== Footer ===== */
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--navy);
+    color: #fff;
+    padding: 3.5mm 8mm;
+    text-align: center;
+  }
+
+  .footer-main {
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--gold-light);
+    margin-bottom: 1mm;
+  }
+
+  .footer-note {
+    font-size: 5.5pt;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.03em;
+  }
+
+  /* ===== Decorative Elements ===== */
+  .deco-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+    margin: 0 8mm;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <div class="header-org">関西学院大学 中小企業経営診断研究会（経営診断研究会無料経営診断分科会）</div>
+    <div class="header-title"><span class="accent">無料</span>経営相談</div>
+    <div class="header-subtitle">中小企業の経営課題、一緒に考えます。</div>
+  </div>
+
+  <!-- ===== 3 KEY POINTS ===== -->
+  <div class="key-points">
+    <div class="key-point">
+      <div class="key-point-icon">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="key-point-title">経営のプロが対応</div>
+      <div class="key-point-desc">中小企業診断士の資格を持つ専門家が、あなたの経営課題に寄り添います。</div>
+    </div>
+    <div class="key-point">
+      <div class="key-point-icon">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <div class="key-point-title">完全無料・秘密厳守</div>
+      <div class="key-point-desc">費用は一切かかりません。ご相談内容は厳重に管理いたします。</div>
+    </div>
+    <div class="key-point">
+      <div class="key-point-icon">
+        <i class="fas fa-laptop-house"></i>
+      </div>
+      <div class="key-point-title">対面・オンライン対応</div>
+      <div class="key-point-desc">梅田キャンパスでの対面相談、Zoomでのオンライン相談をお選びいただけます。</div>
+    </div>
+  </div>
+
+  <div class="deco-line"></div>
+
+  <!-- ===== CONSULTATION TOPICS ===== -->
+  <div class="topics-section">
+    <div class="section-label">
+      <div class="section-label-icon"><i class="fas fa-clipboard-list"></i></div>
+      <div class="section-label-text">こんなご相談に対応します</div>
+    </div>
+    <div class="topics-grid">
+      <span class="topic-tag">経営全般</span>
+      <span class="topic-tag">事業計画書の策定</span>
+      <span class="topic-tag">経営戦略の立案</span>
+      <span class="topic-tag">新規事業開発</span>
+      <span class="topic-tag">販路開拓・マーケティング</span>
+      <span class="topic-tag">財務・資金繰り</span>
+      <span class="topic-tag">人材・組織の課題</span>
+      <span class="topic-tag">IT導入・DX推進</span>
+      <span class="topic-tag">事業承継・M&amp;A</span>
+    </div>
+  </div>
+
+  <div class="deco-line"></div>
+
+  <!-- ===== SCHEDULE ===== -->
+  <div class="schedule-section">
+    <div class="schedule-title">
+      <i class="fas fa-calendar-check"></i>
+      相談スケジュール
+    </div>
+    <div class="schedule-items">
+      <div class="schedule-item">
+        <div class="schedule-item-label">
+          <i class="fas fa-building"></i>
+          対面相談
+        </div>
+        <div class="schedule-item-detail">
+          <strong>祝日・土日 14:00〜18:00</strong><br>
+          関西学院大学 梅田キャンパス
+        </div>
+      </div>
+      <div class="schedule-item">
+        <div class="schedule-item-label">
+          <i class="fas fa-video"></i>
+          オンライン相談
+        </div>
+        <div class="schedule-item-detail">
+          <strong>隔週金曜 随時開催</strong><br>
+          Zoomで全国対応
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CTA ===== -->
+  <div class="cta-section">
+    <div class="cta-left">
+      <div class="cta-heading">
+        まずは<span class="highlight">お気軽に</span><br>ご相談ください
+      </div>
+      <div class="cta-description">
+        スマートフォンでQRコードを読み取るだけで、<br>
+        簡単にご予約いただけます。
+      </div>
+      <div class="cta-arrow-row">
+        今すぐ予約する <i class="fas fa-arrow-right"></i>
+      </div>
+    </div>
+    <div class="cta-right">
+      <div class="qr-frame">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec" alt="予約ページQRコード">
+      </div>
+      <div class="qr-caption">Web予約はこちら</div>
+    </div>
+  </div>
+
+  <!-- ===== CONTACT ===== -->
+  <div class="contact-bar">
+    <i class="fas fa-envelope"></i>
+    <span>お問い合わせ:</span>
+    <a href="mailto:kgibaconsultant@gmail.com">kgibaconsultant@gmail.com</a>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="footer">
+    <div class="footer-main">関西学院大学 大学院経営戦略研究科 中小企業診断士養成課程</div>
+    <div class="footer-note">※相談内容は研究・教育目的に限り、匿名化して利用する場合があります。</div>
+  </div>
+
+</div>
+</body>
+</html>
