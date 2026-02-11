@@ -372,6 +372,8 @@
 
         /* ── NEWS TICKER ── */
         .news-bar {
+            display: block;
+            text-decoration: none;
             background: var(--off-white);
             color: var(--text-main);
             padding: 1rem 0;
@@ -3281,10 +3283,21 @@
         async function fetchNews() {
             try {
                 const response = await fetch(SCHEDULE_API_URL + '?action=news');
-                const data = await response.json();
+                if (!response.ok) {
+                    console.log('ニュースAPI応答エラー:', response.status);
+                    return;
+                }
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (parseErr) {
+                    console.log('ニュースJSONパースエラー:', text.substring(0, 200));
+                    return;
+                }
+                const newsTextEl = document.querySelector('.news-text');
                 if (data.success && data.news && data.news.length > 0) {
                     const latest = data.news[0];
-                    const newsTextEl = document.querySelector('.news-text');
                     if (newsTextEl) {
                         newsTextEl.textContent = latest.date + ' — ' + latest.content;
                     }
@@ -3301,14 +3314,19 @@
                             });
                         }
                     }
+                    console.log('ニュース取得成功:', data.news.length + '件');
+                } else {
+                    console.log('ニュースデータなし:', JSON.stringify(data));
                 }
-                // 一覧を見るリンクを無効化（ニュース1件の場合）
-                const newsBar = document.getElementById('newsBarLink');
-                if (newsBar) {
-                    newsBar.addEventListener('click', function(e) { e.preventDefault(); });
+                // 一覧を見るリンクを無効化（ニュース1件以下の場合）
+                if (!data.news || data.news.length <= 1) {
+                    const newsBar = document.getElementById('newsBarLink');
+                    if (newsBar) {
+                        newsBar.addEventListener('click', function(e) { e.preventDefault(); });
+                    }
                 }
             } catch (e) {
-                console.log('ニュース取得スキップ');
+                console.log('ニュース取得エラー:', e.message);
             }
         }
         fetchNews();

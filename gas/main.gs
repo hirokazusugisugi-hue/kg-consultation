@@ -98,6 +98,27 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 【一時ルート】日程データクリーンアップ（使用後削除すること）
+    if (action === 'cleanup-schedule') {
+      try {
+        cleanupAndRegenerateMonth(2026, 3);
+        cleanupAndRegenerateMonth(2026, 4);
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: true,
+            message: '3月・4月の日程データをクリーンアップし再生成しました'
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: false,
+            error: err.toString()
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     // お知らせ管理ページ
     if (action === 'news-admin') {
       return generateNewsAdminPage();
