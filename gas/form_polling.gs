@@ -193,7 +193,7 @@ function registerAllMembersForMonth(year, month) {
   const sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
   if (!sheet) return;
 
-  const members = getAllMembers();
+  const members = getScheduleMembers();
   const memberNames = members.map(function(m) { return m.name; }).filter(function(n) { return n; });
   const allMembersStr = memberNames.join(', ');
 
@@ -587,7 +587,7 @@ function sendBookingWarningEmail(warnings, sheet, data) {
  * @param {number} month - 対象月
  */
 function sendOptOutFormToMembers(formUrl, year, month) {
-  var members = getAllMembers();
+  var members = getScheduleMembers();
   var sentCount = 0;
 
   var deadline = new Date();
@@ -634,7 +634,7 @@ function sendOptOutFormToMembers(formUrl, year, month) {
  * @param {string} firstFormId - 1回目フォームID（回答済み判定用）
  */
 function sendConfirmationFormToMembers(formUrl, year, month, firstFormId) {
-  var members = getAllMembers();
+  var members = getScheduleMembers();
   var sentCount = 0;
 
   var deadline = new Date();

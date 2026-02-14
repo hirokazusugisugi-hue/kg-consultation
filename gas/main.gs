@@ -151,6 +151,17 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // メンバーマスタセットアップ（管理用）
+    if (action === 'setup-members') {
+      setupMemberSheet();
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          message: 'メンバーマスタシートのセットアップが完了しました'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // デフォルト: ステータス確認
     return ContentService
       .createTextOutput(JSON.stringify({

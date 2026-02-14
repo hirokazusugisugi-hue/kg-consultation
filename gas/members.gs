@@ -29,12 +29,22 @@ function getAllMembers() {
       cert: row[MEMBER_COLUMNS.CERT],
       type: row[MEMBER_COLUMNS.TYPE],
       email: row[MEMBER_COLUMNS.EMAIL],
+      phone: row[MEMBER_COLUMNS.PHONE],
       lineId: row[MEMBER_COLUMNS.LINE_ID],
       notes: row[MEMBER_COLUMNS.NOTES]
     });
   }
 
   return members;
+}
+
+/**
+ * 日程関連に参加するメンバーのみ取得（顧問を除外）
+ * @returns {Array<Object>} スケジュール対象メンバーの配列
+ */
+function getScheduleMembers() {
+  const members = getAllMembers();
+  return members.filter(m => m.type !== '顧問');
 }
 
 /**
@@ -70,7 +80,7 @@ function getMembersByNames(memberNames) {
   const allMembers = getAllMembers();
 
   return names.map(name => {
-    return allMembers.find(m => m.name === name) || { name: name, term: '', cert: '', type: '', email: '', lineId: '', notes: '' };
+    return allMembers.find(m => m.name === name) || { name: name, term: '', cert: '', type: '', email: '', phone: '', lineId: '', notes: '' };
   });
 }
 
@@ -159,7 +169,7 @@ function setupMemberSheet() {
   }
 
   // ヘッダー設定
-  const headers = ['氏名', '期', '資格', '区分', 'メール', 'LINE ID', '備考'];
+  const headers = ['氏名', '期', '資格', '区分', 'メール', '電話番号', 'LINE ID', '備考'];
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 
   // ヘッダー行の書式
@@ -173,24 +183,26 @@ function setupMemberSheet() {
   sheet.setColumnWidth(2, 60);   // 期
   sheet.setColumnWidth(3, 80);   // 資格
   sheet.setColumnWidth(4, 80);   // 区分
-  sheet.setColumnWidth(5, 200);  // メール
-  sheet.setColumnWidth(6, 200);  // LINE ID
-  sheet.setColumnWidth(7, 200);  // 備考
+  sheet.setColumnWidth(5, 250);  // メール
+  sheet.setColumnWidth(6, 120);  // 電話番号
+  sheet.setColumnWidth(7, 200);  // LINE ID
+  sheet.setColumnWidth(8, 200);  // 備考
 
   // 1行目を固定
   sheet.setFrozenRows(1);
 
   // サンプルデータを投入
   const sampleData = [
-    ['杉山 宏和', '1期', '診断士', '正会員', '', '', ''],
-    ['川崎 真規', '1期', '診断士', '正会員', '', '', '非常勤講師'],
-    ['原 真人', '1期', '診断士', '正会員', '', '', ''],
-    ['小椋 孝博', '2期', '診断士', '正会員', '', '', ''],
-    ['秋月 仁志', '2期', '診断士', '正会員', '', '', ''],
-    ['野田 慎士', '3期', '', 'オブザーバー', '', '', ''],
-    ['高乘 麻美', '4期', '', 'オブザーバー', '', '', ''],
-    ['村本 将之', '4期', '', 'オブザーバー', '', '', ''],
-    ['織田 美智子', '4期', '', 'オブザーバー', '', '', '']
+    ['杉山 宏和', '1期', '診断士', '正会員', 'hirokazusugisugi@gmail.com', '', '', ''],
+    ['川崎 真規', '1期', '診断士', '正会員', 'stevenm.kawasaki@gmail.com', '', '', 'TA'],
+    ['原 真人', '1期', '診断士', '正会員', 'm.hara.2006@gmail.com', '', '', ''],
+    ['小椋 孝博', '2期', '診断士', '正会員', 'takahiro09.03.21@gmail.com', '', '', ''],
+    ['秋月 仁志', '2期', '診断士', '正会員', 'akizukihitoshi@gmail.com', '', '', ''],
+    ['谷村 真里', '0期', '', '顧問', 'mari_tanimura@k-mba.com', '', '', ''],
+    ['野田 慎士', '3期', '', 'オブザーバー', 'jimi320320320@gmail.com', '', '', ''],
+    ['高乘 麻美', '4期', '', 'オブザーバー', 'asami.koujou@gmail.com', '', '', ''],
+    ['村本 将之', '4期', '', 'オブザーバー', 'kastu.mura3.teru@gmail.com', '', '', ''],
+    ['織田 美智子', '4期', '', 'オブザーバー', 'amdt.ked@gmail.com', '', '', '']
   ];
 
   sheet.getRange(2, 1, sampleData.length, sampleData[0].length).setValues(sampleData);

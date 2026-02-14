@@ -131,8 +131,9 @@ const MEMBER_COLUMNS = {
   CERT: 2,      // C: 資格
   TYPE: 3,      // D: 区分
   EMAIL: 4,     // E: メール
-  LINE_ID: 5,   // F: LINE ID
-  NOTES: 6      // G: 備考
+  PHONE: 5,     // F: 電話番号
+  LINE_ID: 6,   // G: LINE ID
+  NOTES: 7      // H: 備考
 };
 
 /**
