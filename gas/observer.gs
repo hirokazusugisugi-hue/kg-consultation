@@ -221,7 +221,16 @@ function getUpcomingConsultations() {
 }
 
 /**
- * 署名済みNDAを保存（スプレッドシート記録 + メール添付 - Drive/DocumentApp不要）
+ * Drive権限テスト（GASエディタから実行して再認証を促す）
+ */
+function testDriveAccess() {
+  var root = DriveApp.getRootFolder();
+  console.log('Drive access OK: ' + root.getName());
+  return { success: true, message: 'Drive権限OK' };
+}
+
+/**
+ * 署名済みNDAを保存（Drive保存 → 失敗時はメール添付にフォールバック）
  * @param {Object} data - { observerName, consultDate, company, staff, signatureBase64 }
  * @returns {Object} 結果
  */
@@ -241,18 +250,40 @@ function saveSignedNda(data) {
     var htmlContent = buildNdaHtml(data);
     var htmlBlob = Utilities.newBlob(htmlContent, 'text/html', docName + '.html');
 
-    // スプレッドシートに記録（署名base64も保存）
+    // Drive保存を試行（権限がない場合はフォールバック）
+    var fileId = '';
+    var fileUrl = '';
+    try {
+      var folder;
+      if (CONFIG.OBSERVER_NDA.DRIVE_FOLDER_ID) {
+        folder = DriveApp.getFolderById(CONFIG.OBSERVER_NDA.DRIVE_FOLDER_ID);
+      } else {
+        folder = DriveApp.getRootFolder();
+      }
+      var file = folder.createFile(htmlBlob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      fileId = file.getId();
+      fileUrl = 'https://drive.google.com/file/d/' + fileId + '/view';
+      // Blob再生成（createFileで消費されるため）
+      htmlBlob = Utilities.newBlob(htmlContent, 'text/html', docName + '.html');
+    } catch (driveError) {
+      console.log('Drive保存スキップ（権限不足）: ' + driveError.toString());
+      fileId = '（メール添付のみ）';
+      fileUrl = '（メール添付のみ）';
+    }
+
+    // スプレッドシートに記録
     sheet.appendRow([
       new Date(),
       data.observerName,
       data.consultDate,
       data.company,
       data.staff,
-      '（メール添付）',
-      data.signatureBase64 ? data.signatureBase64.substring(0, 100) + '...' : ''
+      fileId,
+      fileUrl
     ]);
 
-    // 管理者にNDAをメール添付で送信
+    // 管理者にメール通知（常にHTML添付付き）
     var subject = '【NDA提出】' + data.observerName + ' - ' + data.company;
     var emailBody = 'オブザーバーから署名済みNDAが提出されました。\n\n' +
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
@@ -261,6 +292,7 @@ function saveSignedNda(data) {
       '相談企業：' + data.company + '\n' +
       '相談予定可能者：' + data.staff + '\n' +
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      (fileUrl && fileUrl.indexOf('http') === 0 ? 'ファイル：' + fileUrl + '\n' : '') +
       '署名済みNDA（HTMLファイル）を添付しています。\n' +
       'ブラウザで開いて印刷（PDF保存）できます。\n';
 
@@ -271,7 +303,7 @@ function saveSignedNda(data) {
       });
     });
 
-    return { success: true, message: 'NDAを提出しました' };
+    return { success: true, message: 'NDAを提出しました', fileUrl: fileUrl };
   } catch (error) {
     console.error('NDA保存エラー:', error);
     return { success: false, message: error.toString() };
