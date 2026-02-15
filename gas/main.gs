@@ -326,6 +326,80 @@ function convertJapaneseDateToSlash(jaDate) {
 }
 
 /**
+ * 日本語日付をスラッシュ形式に変換（時間帯を保持）
+ * "2026年3月7日（土） 14:00" → "2026/03/07 14:00"
+ * "2026年3月7日（土）" → "2026/03/07"
+ */
+function convertJapaneseDateToSlashWithTime(jaDate) {
+  if (!jaDate) return null;
+  var str = String(jaDate);
+
+  var dateMatch = str.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+  if (!dateMatch) {
+    // yyyy/MM/dd HH:mm形式ならそのまま
+    if (/^\d{4}\/\d{2}\/\d{2}/.test(str)) return str;
+    return null;
+  }
+
+  var year = dateMatch[1];
+  var month = String(dateMatch[2]).padStart(2, '0');
+  var day = String(dateMatch[3]).padStart(2, '0');
+  var datePart = year + '/' + month + '/' + day;
+
+  // 時間帯を抽出（例: 14:00, 19:00 etc）
+  var timeMatch = str.match(/(\d{1,2}:\d{2})/);
+  if (timeMatch) {
+    return datePart + ' ' + timeMatch[1];
+  }
+
+  return datePart;
+}
+
+/**
+ * 確定日時を取得（K列 + 日程設定シートの時間帯から補完）
+ * @param {number} rowIndex - 行番号（1-based）
+ * @param {Object} sheet - 予約管理シート
+ * @returns {string|null} 確定日時文字列
+ */
+function resolveConfirmedDateTime(rowIndex, sheet) {
+  var date1 = sheet.getRange(rowIndex, COLUMNS.DATE1 + 1).getValue();
+  if (!date1) return null;
+
+  var dateStr = String(date1);
+  var result = convertJapaneseDateToSlashWithTime(dateStr);
+
+  // 時間が含まれていればそのまま返す
+  if (result && /\d{1,2}:\d{2}/.test(result)) return result;
+
+  // 時間がない場合、日程設定シートから予約済みの時間帯を検索
+  var slashDate = convertJapaneseDateToSlash(dateStr);
+  if (slashDate) {
+    try {
+      var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+      var schedSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+      if (schedSheet) {
+        var schedData = schedSheet.getDataRange().getValues();
+        for (var i = 1; i < schedData.length; i++) {
+          var sDate = schedData[i][SCHEDULE_COLUMNS.DATE];
+          var sDateStr = sDate instanceof Date
+            ? Utilities.formatDate(sDate, 'Asia/Tokyo', 'yyyy/MM/dd')
+            : String(sDate);
+          if (sDateStr === slashDate && schedData[i][SCHEDULE_COLUMNS.BOOKING_STATUS] === '予約済み') {
+            var sTime = schedData[i][SCHEDULE_COLUMNS.TIME];
+            var timeStr = sTime instanceof Date
+              ? Utilities.formatDate(sTime, 'Asia/Tokyo', 'HH:mm')
+              : String(sTime);
+            return slashDate + ' ' + timeStr;
+          }
+        }
+      }
+    } catch (e) { /* fallback */ }
+  }
+
+  return result || dateStr;
+}
+
+/**
  * 申込ID生成（YYYYMMDD-001形式）
  */
 function generateApplicationId() {

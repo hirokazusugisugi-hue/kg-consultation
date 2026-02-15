@@ -222,15 +222,12 @@ function updateNdaStatus(rowIndex, signature) {
     sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.NDA_AGREED);
   }
 
-  // P列: 確定日時をK列（希望日時1）から自動設定
+  // P列: 確定日時をK列（希望日時1）+ 日程設定シートの時間帯から自動設定
   const confirmedDate = sheet.getRange(rowIndex, COLUMNS.CONFIRMED_DATE + 1).getValue();
   if (!confirmedDate || confirmedDate === '') {
-    const date1 = sheet.getRange(rowIndex, COLUMNS.DATE1 + 1).getValue();
-    if (date1) {
-      // 日本語日付形式をパース（例: "2026年3月15日（土）10:00〜12:00"）
-      const dateStr = date1.toString();
-      const slashDate = convertJapaneseDateToSlash(dateStr);
-      sheet.getRange(rowIndex, COLUMNS.CONFIRMED_DATE + 1).setValue(slashDate || dateStr);
+    const fullDateTime = resolveConfirmedDateTime(rowIndex, sheet);
+    if (fullDateTime) {
+      sheet.getRange(rowIndex, COLUMNS.CONFIRMED_DATE + 1).setValue(fullDateTime);
     }
   }
 }

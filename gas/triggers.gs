@@ -89,15 +89,37 @@ function handleStatusChange(rowIndex, oldStatus, newStatus) {
 
   // 確定に変更された場合
   if (newStatus === STATUS.CONFIRMED) {
-    // 確定日時が入力されているか確認
+    const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
+      .getSheetByName(CONFIG.SHEET_NAME);
+
+    // P列が空の場合、K列（希望日時1）+ 日程設定シートから時間帯を補完して自動設定
     if (!data.confirmedDate) {
-      SpreadsheetApp.getUi().alert(
-        '確定日時が入力されていません。\n確定日時（P列）を入力してからステータスを変更してください。'
-      );
-      const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
-        .getSheetByName(CONFIG.SHEET_NAME);
-      sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(oldStatus || STATUS.PENDING);
-      return;
+      const fullDateTime = resolveConfirmedDateTime(rowIndex, sheet);
+      if (fullDateTime) {
+        sheet.getRange(rowIndex, COLUMNS.CONFIRMED_DATE + 1).setValue(fullDateTime);
+        data.confirmedDate = fullDateTime;
+      } else {
+        SpreadsheetApp.getUi().alert(
+          '確定日時が入力されていません。\n希望日時（K列）または確定日時（P列）を入力してからステータスを変更してください。'
+        );
+        sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(oldStatus || STATUS.PENDING);
+        return;
+      }
+    }
+
+    // オフライン相談の場合、場所（X列）が必須
+    const method = data.method || '';
+    const isOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0 || method.indexOf('zoom') >= 0;
+    if (!isOnline) {
+      const location = sheet.getRange(rowIndex, COLUMNS.LOCATION + 1).getValue();
+      if (!location || location === '') {
+        SpreadsheetApp.getUi().alert(
+          '対面相談の場合、場所（X列）を設定してからステータスを「確定」に変更してください。\n\n選択肢: アプローズタワー / スミセスペース / ナレッジサロン / その他'
+        );
+        sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(oldStatus || STATUS.PENDING);
+        return;
+      }
+      data.location = location;
     }
 
     // 確定メールを送信

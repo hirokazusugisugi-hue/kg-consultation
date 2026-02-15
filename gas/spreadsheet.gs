@@ -26,7 +26,7 @@ function saveToSpreadsheet(data, isWalkIn) {
     data.industry,            // H: 業種
     data.theme,               // I: 相談テーマ
     data.content,             // J: 相談内容
-    data.date1,               // K: 希望日時1
+    data.date1 + (data.time ? ' ' + data.time : ''),  // K: 希望日時1（時間帯付き）
     data.date2,               // L: 希望日時2
     data.method,              // M: 相談方法
     initialStatus,            // N: ステータス
@@ -38,7 +38,8 @@ function saveToSpreadsheet(data, isWalkIn) {
     '',                       // T: 同意書同意
     '',                       // U: 同意日時
     data.companyUrl || '',    // V: 企業URL
-    isWalkIn ? 'TRUE' : 'FALSE'  // W: 当日受付フラグ
+    isWalkIn ? 'TRUE' : 'FALSE',  // W: 当日受付フラグ
+    ''                        // X: 場所
   ];
 
   sheet.appendRow(newRow);
@@ -53,7 +54,7 @@ function getRowData(rowIndex) {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
     .getSheetByName(CONFIG.SHEET_NAME);
 
-  const row = sheet.getRange(rowIndex, 1, 1, 23).getValues()[0];
+  const row = sheet.getRange(rowIndex, 1, 1, 24).getValues()[0];
 
   return {
     timestamp: row[COLUMNS.TIMESTAMP],
@@ -78,7 +79,8 @@ function getRowData(rowIndex) {
     ndaStatus: row[COLUMNS.NDA_STATUS],
     ndaDate: row[COLUMNS.NDA_DATE],
     companyUrl: row[COLUMNS.COMPANY_URL],
-    walkInFlag: row[COLUMNS.WALK_IN_FLAG]
+    walkInFlag: row[COLUMNS.WALK_IN_FLAG],
+    location: row[COLUMNS.LOCATION]
   };
 }
 
@@ -122,7 +124,8 @@ function setupSpreadsheetHeaders() {
     '同意書同意',
     '同意日時',
     '企業URL',
-    '当日受付フラグ'
+    '当日受付フラグ',
+    '場所'
   ];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -157,6 +160,7 @@ function setupSpreadsheetHeaders() {
   sheet.setColumnWidth(21, 150); // 同意日時
   sheet.setColumnWidth(22, 250); // 企業URL
   sheet.setColumnWidth(23, 100); // 当日受付フラグ
+  sheet.setColumnWidth(24, 120); // 場所
 
   // 1行目を固定
   sheet.setFrozenRows(1);
@@ -174,6 +178,13 @@ function setupSpreadsheetHeaders() {
     ])
     .build();
   statusRange.setDataValidation(statusRule);
+
+  // 場所列にプルダウン設定
+  const locationRange = sheet.getRange(2, COLUMNS.LOCATION + 1, 1000, 1);
+  const locationRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(LOCATION_OPTIONS)
+    .build();
+  locationRange.setDataValidation(locationRule);
 
   // 同意書同意列にプルダウン設定
   const ndaRange = sheet.getRange(2, COLUMNS.NDA_STATUS + 1, 1000, 1);

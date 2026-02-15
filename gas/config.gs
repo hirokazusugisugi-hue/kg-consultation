@@ -132,8 +132,19 @@ const COLUMNS = {
   NDA_STATUS: 19,    // T: 同意書同意（済/未）
   NDA_DATE: 20,      // U: 同意日時
   COMPANY_URL: 21,   // V: 企業URL
-  WALK_IN_FLAG: 22   // W: 当日受付フラグ
+  WALK_IN_FLAG: 22,  // W: 当日受付フラグ
+  LOCATION: 23       // X: 場所
 };
+
+/**
+ * 場所の選択肢
+ */
+const LOCATION_OPTIONS = [
+  'アプローズタワー',
+  'スミセスペース',
+  'ナレッジサロン',
+  'その他'
+];
 
 /**
  * ステータス定義
