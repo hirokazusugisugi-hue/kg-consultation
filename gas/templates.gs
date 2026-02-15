@@ -943,6 +943,7 @@ function getObserverPageHtml(schedules) {
     .observer-badges { display: flex; flex-wrap: wrap; gap: 0.3rem; }
     .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 20px; font-size: 0.8rem; }
     .badge-submitted { background: #d4edda; color: #155724; }
+    .badge-scheduled { background: #fff3cd; color: #856404; }
     .badge-none { background: #f0f0f0; color: #888; font-style: italic; }
 
     .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-family: inherit; font-weight: 500; }
@@ -1061,12 +1062,17 @@ function getObserverPageHtml(schedules) {
       schedules.forEach(function(s, idx) {
         var consultants = s.members || s.staff;
         var observerHtml = '';
+        var ndaSubmitted = s.ndaSubmitted || [];
         if (s.observers && s.observers.length > 0) {
           s.observers.forEach(function(name) {
-            observerHtml += '<span class="badge badge-submitted">' + escHtml(name) + '（提出済）</span>';
+            if (ndaSubmitted.indexOf(name) >= 0) {
+              observerHtml += '<span class="badge badge-submitted">' + escHtml(name) + '（NDA提出済）</span>';
+            } else {
+              observerHtml += '<span class="badge badge-scheduled">' + escHtml(name) + '（未提出）</span>';
+            }
           });
         } else {
-          observerHtml = '<span class="badge badge-none">未提出</span>';
+          observerHtml = '<span class="badge badge-none">なし</span>';
         }
         html += '<div class="schedule-card">' +
           '<div class="schedule-date">' + escHtml(s.date) + '</div>' +
