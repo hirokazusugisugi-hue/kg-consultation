@@ -184,10 +184,12 @@ function getUpcomingConsultations() {
             var dateRaw2 = Utilities.formatDate(schedDate, 'Asia/Tokyo', 'yyyy/MM/dd');
             var exists = results.some(function (r) { return r.date === dateStr; });
             if (!exists) {
+              // 予約管理シートから企業名を照合（企業登録なしの日はスキップ）
+              var matchedCompany = companyByDate[dateRaw2];
+              if (!matchedCompany) continue;
+
               // メンバーを分類（オブザーバーを除外）
               var split2 = splitMembers(sMembers);
-              // 予約管理シートから企業名を照合
-              var matchedCompany = companyByDate[dateRaw2] || '（未定）';
               var ndaObs2 = ndaObservers[dateRaw2] || [];
               var allObservers2 = split2.scheduledObservers.slice();
               ndaObs2.forEach(function(o) {
