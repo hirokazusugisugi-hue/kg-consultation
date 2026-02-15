@@ -1282,8 +1282,9 @@
         <li><a href="#sec4"><span class="toc-num">4</span> メンバー日程調整フロー</a></li>
         <li><a href="#sec5"><span class="toc-num">5</span> スコア計算ロジック</a></li>
         <li><a href="#sec6"><span class="toc-num">6</span> API仕様</a></li>
-        <li><a href="#sec7"><span class="toc-num">7</span> 2ヶ月制限ロジック</a></li>
-        <li><a href="#sec8"><span class="toc-num">8</span> セキュリティ</a></li>
+        <li><a href="#sec7"><span class="toc-num">7</span> アンケート・オブザーバーNDAフロー</a></li>
+        <li><a href="#sec8"><span class="toc-num">8</span> 2ヶ月制限ロジック</a></li>
+        <li><a href="#sec9"><span class="toc-num">9</span> セキュリティ</a></li>
       </ol>
     </nav>
 
@@ -1335,6 +1336,8 @@
               <span class="sheet-tab"><i class="fa-solid fa-users"></i>メンバーマスタ</span>
               <span class="sheet-tab"><i class="fa-solid fa-clock"></i>日程設定</span>
               <span class="sheet-tab"><i class="fa-solid fa-bullhorn"></i>お知らせ</span>
+              <span class="sheet-tab"><i class="fa-solid fa-clipboard-check"></i>アンケート</span>
+              <span class="sheet-tab"><i class="fa-solid fa-file-signature"></i>オブザーバーNDA</span>
             </div>
           </div>
         </div>
@@ -1386,7 +1389,7 @@
         </li>
         <li>
           <i class="fa-solid fa-table comp-icon" style="color: var(--green);"></i>
-          <div><strong>Google Spreadsheet</strong> &mdash; データベースとして機能。4つのシート（予約管理・メンバーマスタ・日程設定・お知らせ）で予約情報、メンバー情報、日程情報、お知らせデータを管理。</div>
+          <div><strong>Google Spreadsheet</strong> &mdash; データベースとして機能。6つのシート（予約管理・メンバーマスタ・日程設定・お知らせ・アンケート・オブザーバーNDA）で予約情報、メンバー情報、日程情報、お知らせ、アンケート回答、オブザーバーNDA提出記録を管理。</div>
         </li>
         <li>
           <i class="fa-brands fa-google comp-icon" style="color: #8e44ad;"></i>
@@ -1394,7 +1397,15 @@
         </li>
         <li>
           <i class="fa-solid fa-envelope comp-icon" style="color: var(--red);"></i>
-          <div><strong>Gmail</strong> &mdash; 確認メール・NDA同意リンク・リマインダー・管理者通知を自動送信。GASの<code>GmailApp</code>/<code>MailApp</code>を利用。</div>
+          <div><strong>Gmail</strong> &mdash; 確認メール・NDA同意リンク・リマインダー・管理者通知・アンケート配信を自動送信。GASの<code>GmailApp</code>/<code>MailApp</code>を利用。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-clipboard-check comp-icon" style="color: var(--orange);"></i>
+          <div><strong>アンケートシステム</strong> &mdash; 相談完了後に自動でアンケートメールを配信（完了2時間後）。Q1〜Q11の満足度調査を実施し、回答はスプレッドシートに自動記録。トークン認証で不正アクセスを防止。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-user-graduate comp-icon" style="color: #2c7a7b;"></i>
+          <div><strong>オブザーバー専用ページ</strong> &mdash; 養成課程在学生（オブザーバー）向けポータル。相談予定一覧の確認、タッチ対応署名パッドによるNDA署名・PDF提出が可能。署名済みNDAはGoogle Driveに自動保存。</div>
         </li>
       </ul>
     </section>
@@ -1416,6 +1427,8 @@
 ├── <span class="dir">docs/</span>                 <span class="comment"># ドキュメント</span>
 │   ├── <span class="file">guide_consultee.html</span>    <span class="comment"># 相談者向けガイド</span>
 │   ├── <span class="file">manual_admin.html</span>       <span class="comment"># 管理者マニュアル</span>
+│   ├── <span class="file">manual_staff.html</span>       <span class="comment"># 担当者マニュアル</span>
+│   ├── <span class="file">manual_observer.html</span>    <span class="comment"># オブザーバーマニュアル</span>
 │   ├── <span class="highlight">system_overview.html</span>    <span class="comment"># 本ドキュメント</span>
 │   └── <span class="file">form_polling_v2_requirements.md</span>  <span class="comment"># 要件定義</span>
 └── <span class="dir">gas/</span>                  <span class="comment"># Google Apps Script</span>
@@ -1428,7 +1441,9 @@
     ├── <span class="file">news.gs</span>           <span class="comment"># お知らせ管理（CRUD+管理画面）</span>
     ├── <span class="file">spreadsheet.gs</span>    <span class="comment"># スプレッドシート操作</span>
     ├── <span class="file">notification.gs</span>   <span class="comment"># LINE・メール通知</span>
-    ├── <span class="file">templates.gs</span>      <span class="comment"># メールテンプレート</span>
+    ├── <span class="highlight">survey.gs</span>         <span class="comment"># アンケートシステム（自動送信・回答保存）</span>
+    ├── <span class="highlight">observer.gs</span>       <span class="comment"># オブザーバー専用ページ（NDA署名）</span>
+    ├── <span class="file">templates.gs</span>      <span class="comment"># メール・HTMLテンプレート</span>
     └── <span class="file">triggers.gs</span>       <span class="comment"># 時限トリガー設定</span></div>
     </section>
 
@@ -1806,6 +1821,31 @@
               <td>NDA同意処理を実行</td>
             </tr>
             <tr>
+              <td><span class="api-endpoint">?action=survey&amp;token=xxx</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>アンケートページを表示（トークン認証）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=observer</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>オブザーバー専用ページを表示</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=setup-survey</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>アンケートシート初期化（管理用）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=setup-observer-nda</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>オブザーバーNDAシート初期化（管理用）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=setup-survey-trigger</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>アンケート自動送信トリガー設定（管理用）</td>
+            </tr>
+            <tr>
               <td><span class="api-endpoint">（本体URL）</span></td>
               <td><span class="method-badge method-post">POST</span></td>
               <td>予約申込処理（JSON形式で送信）</td>
@@ -1828,10 +1868,103 @@
 }</div>
     </section>
 
-    <!-- ===== Section 7: 2ヶ月制限ロジック ===== -->
+    <!-- ===== Section 7: アンケート・オブザーバーNDAフロー ===== -->
     <section class="section" id="sec7">
       <div class="section-header">
         <span class="section-number">7</span>
+        <h2 class="section-title">アンケート・オブザーバーNDAフロー</h2>
+        <i class="fa-solid fa-clipboard-check section-icon"></i>
+      </div>
+
+      <p class="section-desc">相談完了後のアンケート自動送信と、オブザーバーのNDA署名提出フローです。</p>
+
+      <!-- Survey Flow -->
+      <div style="font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 12px;">
+        <i class="fa-solid fa-chart-bar" style="margin-right: 6px;"></i> アンケート自動送信フロー
+      </div>
+
+      <div class="flow">
+        <div class="flow-step">
+          <i class="fa-solid fa-check-circle flow-step-icon"></i>
+          <div class="flow-step-text"><strong>ステータスを「完了」に変更</strong>（管理者/担当者が手動で操作）</div>
+        </div>
+        <div class="flow-connector branch">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+        <div class="flow-branch-group">
+          <div class="flow-branch-title"><i class="fa-solid fa-clock"></i> 2時間後（自動・1時間おきにチェック）</div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>アンケートトークン生成（UUID）</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>相談者にアンケートメール自動送信</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>備考欄に「アンケート送信済」記録</span></div>
+        </div>
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+        <div class="flow-step">
+          <i class="fa-solid fa-pen-to-square flow-step-icon"></i>
+          <div class="flow-step-text"><strong>相談者がアンケートに回答</strong>（Q1〜Q11: 複数選択・5段階評価・自由記述）</div>
+        </div>
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+        <div class="flow-step success">
+          <i class="fa-solid fa-database flow-step-icon"></i>
+          <div class="flow-step-text"><strong>アンケートシートに自動記録</strong> + 管理者にメール通知</div>
+        </div>
+      </div>
+
+      <!-- Observer NDA Flow -->
+      <div style="font-size: 0.95rem; font-weight: 700; color: var(--navy); margin: 32px 0 12px;">
+        <i class="fa-solid fa-file-signature" style="margin-right: 6px;"></i> オブザーバーNDA署名フロー
+      </div>
+
+      <div class="flow">
+        <div class="flow-step">
+          <i class="fa-solid fa-user-graduate flow-step-icon"></i>
+          <div class="flow-step-text"><strong>オブザーバー専用ページにアクセス</strong>（<code>?action=observer</code>）</div>
+        </div>
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+        <div class="flow-step">
+          <i class="fa-solid fa-calendar-check flow-step-icon"></i>
+          <div class="flow-step-text"><strong>相談予定一覧を確認</strong>（予約管理+日程設定シートから自動取得）</div>
+        </div>
+        <div class="flow-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+        <div class="flow-step">
+          <i class="fa-solid fa-signature flow-step-icon"></i>
+          <div class="flow-step-text"><strong>「署名して提出」</strong> &mdash; 氏名入力、タッチ署名パッドで署名、jsPDFでPDF生成</div>
+        </div>
+        <div class="flow-connector branch">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+        <div class="flow-branch-group">
+          <div class="flow-branch-title"><i class="fa-solid fa-cogs"></i> GAS 内部処理</div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>Base64デコード → PDF Blob生成</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>Google Driveに保存（リンク共有設定）</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>オブザーバーNDAシートに記録</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>管理者にメール通知</span></div>
+        </div>
+      </div>
+
+      <div class="info-box info" style="margin-top: 20px;">
+        <div class="info-box-title"><i class="fa-solid fa-info-circle"></i> トリガー設定</div>
+        <p>アンケート自動送信は <code>sendSurveyEmails</code> 関数が1時間おきに実行されます。トリガーは <code>?action=setup-survey-trigger</code> で設定可能です。</p>
+      </div>
+    </section>
+
+    <!-- ===== Section 8: 2ヶ月制限ロジック ===== -->
+    <section class="section" id="sec8">
+      <div class="section-header">
+        <span class="section-number">8</span>
         <h2 class="section-title">2ヶ月制限ロジック</h2>
         <i class="fa-solid fa-hourglass-half section-icon"></i>
       </div>
@@ -1861,10 +1994,10 @@
       </div>
     </section>
 
-    <!-- ===== Section 8: セキュリティ ===== -->
-    <section class="section" id="sec8">
+    <!-- ===== Section 9: セキュリティ ===== -->
+    <section class="section" id="sec9">
       <div class="section-header">
-        <span class="section-number">8</span>
+        <span class="section-number">9</span>
         <h2 class="section-title">セキュリティ</h2>
         <i class="fa-solid fa-shield-halved section-icon"></i>
       </div>
@@ -1897,7 +2030,14 @@
           <i class="fa-solid fa-globe-lock"></i>
           <div>
             <strong>APIアクセス制限</strong><br>
-            GAS Web Appのデプロイ設定により、アクセス範囲を制御。公開APIエンドポイントは必要最小限のアクション（schedule, news, nda）のみを受け付けます。
+            GAS Web Appのデプロイ設定により、アクセス範囲を制御。公開APIエンドポイントは必要最小限のアクション（schedule, news, nda, survey, observer）のみを受け付けます。
+          </div>
+        </li>
+        <li>
+          <i class="fa-solid fa-clipboard-check"></i>
+          <div>
+            <strong>アンケートトークン認証</strong><br>
+            アンケートページはUUIDトークンベースの認証を採用。<span class="security-tag">ScriptProperties</span> にトークンデータを保存し、URLパラメータと照合。第三者がアンケートに不正回答することを防止します。
           </div>
         </li>
       </ul>
@@ -1910,7 +2050,7 @@
     <div class="footer-divider"></div>
     <p>無料経営相談予約システム &mdash; システム全体構成図</p>
     <p>関西学院大学 中小企業経営診断研究会</p>
-    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 1.0 &mdash; 2026-02-11</p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 2.0 &mdash; 2026-02-15 更新（アンケート・オブザーバー機能追加）</p>
   </footer>
 
 </body>

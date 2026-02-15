@@ -570,10 +570,12 @@
       <li><a href="#sec5">お知らせ管理</a></li>
       <li><a href="#sec6">予約の管理</a></li>
       <li><a href="#sec7">メンバー管理</a></li>
-      <li><a href="#sec8">トリガーの確認・管理</a></li>
-      <li><a href="#sec9">GASコードの更新手順</a></li>
-      <li><a href="#sec10">トラブルシューティング</a></li>
-      <li><a href="#sec11">設定変更（config.gs）</a></li>
+      <li><a href="#sec8">アンケートシステム</a></li>
+      <li><a href="#sec9">オブザーバー専用ページ</a></li>
+      <li><a href="#sec10">トリガーの確認・管理</a></li>
+      <li><a href="#sec11">GASコードの更新手順</a></li>
+      <li><a href="#sec12">トラブルシューティング</a></li>
+      <li><a href="#sec13">設定変更（config.gs）</a></li>
     </ol>
   </nav>
 
@@ -587,6 +589,8 @@
     <li><strong>Googleフォーム</strong> &mdash; メンバーの参加可能日を自動収集</li>
     <li><strong>スプレッドシート</strong> &mdash; 予約・日程・メンバーを一元管理</li>
     <li><strong>GAS</strong> &mdash; 上記すべてを連携し、メール通知・ステータス管理を自動実行</li>
+    <li><strong>アンケートシステム</strong> &mdash; 相談後の満足度調査を自動配信・集計</li>
+    <li><strong>オブザーバー専用ページ</strong> &mdash; 養成課程在学生が相談予定確認・NDA署名を行うポータル</li>
   </ul>
 
   <div class="info-box note">
@@ -628,6 +632,16 @@
           <td><strong>スプレッドシート</strong></td>
           <td><span class="url-cell">https://docs.google.com/spreadsheets/d/1tD6-0WVXsud8_APnR4IxlI7yR085I47WoTjiFZ8oFBc/edit</span></td>
           <td>データ管理</td>
+        </tr>
+        <tr>
+          <td><strong>オブザーバー専用ページ</strong></td>
+          <td><span class="url-cell">上記ウェブアプリURL + ?action=observer</span></td>
+          <td>オブザーバーポータル</td>
+        </tr>
+        <tr>
+          <td><strong>アンケートページ</strong></td>
+          <td><span class="url-cell">上記ウェブアプリURL + ?action=survey&amp;token=xxx</span></td>
+          <td>相談後アンケート（トークン付き自動生成）</td>
         </tr>
       </tbody>
     </table>
@@ -701,7 +715,7 @@
 
   <div class="info-box success">
     <i class="fas fa-circle-check"></i>
-    <div>すべてのフローはGASトリガーで自動実行されます。トリガーの設定状況は <a href="#sec8">8. トリガーの確認・管理</a> を参照してください。</div>
+    <div>すべてのフローはGASトリガーで自動実行されます。トリガーの設定状況は <a href="#sec10">10. トリガーの確認・管理</a> を参照してください。</div>
   </div>
 
   <!-- ===== 4. スプレッドシートの構成 ===== -->
@@ -816,6 +830,44 @@
     <span class="col-id">D列</span><span>作成日時</span>
   </div>
 
+  <!-- 4.5 アンケートシート -->
+  <h3><i class="fas fa-clipboard-check"></i> 4.5 アンケートシート</h3>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>回答日時</span>
+    <span class="col-id">B列</span><span>申込ID</span>
+    <span class="col-id">C列</span><span>氏名</span>
+    <span class="col-id">D列</span><span>企業名</span>
+    <span class="col-id">E列</span><span>Q1きっかけ</span>
+    <span class="col-id">F列</span><span>Q1SNS種別</span>
+    <span class="col-id">G列</span><span>Q2手続き(5段階)</span>
+    <span class="col-id">H列</span><span>Q2コメント</span>
+    <span class="col-id">I列</span><span>Q3感想</span>
+    <span class="col-id">J列</span><span>Q4時間</span>
+    <span class="col-id">K列</span><span>Q5説明(5段階)</span>
+    <span class="col-id">L列</span><span>Q6課題解決(5段階)</span>
+    <span class="col-id">M列</span><span>Q7対応(5段階)</span>
+    <span class="col-id">N列</span><span>Q8アドバイス(5段階)</span>
+    <span class="col-id">O列</span><span>Q9また受けたい(5段階)</span>
+    <span class="col-id">P列</span><span>Q9理由</span>
+    <span class="col-id">Q列</span><span>Q10勧めたい(5段階)</span>
+    <span class="col-id">R列</span><span>Q10理由</span>
+    <span class="col-id">S列</span><span>Q11レポート希望</span>
+  </div>
+
+  <!-- 4.6 オブザーバーNDAシート -->
+  <h3><i class="fas fa-file-signature"></i> 4.6 オブザーバーNDAシート</h3>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>提出日時</span>
+    <span class="col-id">B列</span><span>オブザーバー氏名</span>
+    <span class="col-id">C列</span><span>相談日</span>
+    <span class="col-id">D列</span><span>相談企業名</span>
+    <span class="col-id">E列</span><span>相談担当者</span>
+    <span class="col-id">F列</span><span>ファイルID</span>
+    <span class="col-id">G列</span><span>ダウンロードURL</span>
+  </div>
+
   <!-- ===== 5. お知らせ管理 ===== -->
   <h2 id="sec5"><i class="fas fa-bullhorn"></i> 5. お知らせ管理</h2>
 
@@ -910,12 +962,88 @@
     </table>
   </div>
 
-  <!-- ===== 8. トリガーの確認・管理 ===== -->
-  <h2 id="sec8"><i class="fas fa-clock"></i> 8. トリガーの確認・管理</h2>
+  <!-- ===== 8. アンケートシステム ===== -->
+  <h2 id="sec8"><i class="fas fa-clipboard-check"></i> 8. アンケートシステム</h2>
+
+  <p>相談完了後に自動でアンケートメールを送信し、回答をスプレッドシートに記録するシステムです。</p>
+
+  <h3><i class="fas fa-cogs"></i> 8.1 自動送信の仕組み</h3>
+  <ul>
+    <li>ステータスが <span class="status-badge done">完了</span> に変更された案件が対象</li>
+    <li>確定日時の <strong>2時間後</strong> にアンケートメールが自動送信されます</li>
+    <li>1時間おきのトリガーでチェック・送信されます</li>
+    <li>送信済みの案件には備考欄に「アンケート送信済」が記録されます</li>
+  </ul>
+
+  <h3><i class="fas fa-poll"></i> 8.2 アンケート項目</h3>
+  <div class="table-wrapper">
+  <table>
+  <thead><tr><th>Q</th><th>内容</th><th>形式</th></tr></thead>
+  <tbody>
+  <tr><td>Q1</td><td>本プロジェクトを知ったきっかけ</td><td>複数選択（SNS選択時はサブ選択）</td></tr>
+  <tr><td>Q2</td><td>相談までの手続きはスムーズでしたか</td><td>5段階評価</td></tr>
+  <tr><td>Q3</td><td>相談の感想</td><td>自由記述</td></tr>
+  <tr><td>Q4</td><td>相談時間について</td><td>5択（長すぎた～短すぎた）</td></tr>
+  <tr><td>Q5</td><td>説明のわかりやすさ</td><td>5段階評価</td></tr>
+  <tr><td>Q6</td><td>課題解決の参考度</td><td>5段階評価</td></tr>
+  <tr><td>Q7</td><td>相談員の対応</td><td>5段階評価</td></tr>
+  <tr><td>Q8</td><td>具体的行動アドバイス</td><td>5段階評価</td></tr>
+  <tr><td>Q9</td><td>また受けたいか</td><td>5段階評価＋理由</td></tr>
+  <tr><td>Q10</td><td>他の方にすすめたいか</td><td>5段階評価＋理由</td></tr>
+  <tr><td>Q11</td><td>終了後レポート希望</td><td>希望する/しない</td></tr>
+  </tbody>
+  </table>
+  </div>
+
+  <h3><i class="fas fa-gear"></i> 8.3 セットアップ</h3>
+  <ol class="step-list">
+    <li>ウェブアプリURL + <code>?action=setup-survey</code> にアクセスしてシートを初期化</li>
+    <li>ウェブアプリURL + <code>?action=setup-survey-trigger</code> にアクセスして自動送信トリガーを設定</li>
+  </ol>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>アンケート送信のタイミング（相談終了後何時間後か）は <code>config.gs</code> の <code>SURVEY.DELAY_HOURS</code> で変更可能です（デフォルト: 2時間）。</div>
+  </div>
+
+  <!-- ===== 9. オブザーバー専用ページ ===== -->
+  <h2 id="sec9"><i class="fas fa-user-graduate"></i> 9. オブザーバー専用ページ</h2>
+
+  <p>養成課程在学生（オブザーバー）がNDA署名と相談予定確認を行うためのポータルページです。</p>
+
+  <h3><i class="fas fa-link"></i> 9.1 アクセス方法</h3>
+  <p>ウェブアプリURL + <code>?action=observer</code> でアクセスできます。</p>
+
+  <h3><i class="fas fa-list"></i> 9.2 機能一覧</h3>
+  <ul>
+    <li><strong>相談予定一覧</strong>: 確定済み・NDA同意済の案件と、予約済みスロットを過去7日～未来分表示</li>
+    <li><strong>NDA署名</strong>: 各相談予定に対し、タッチ対応の署名パッドでNDAに署名・PDF提出</li>
+    <li><strong>自動入力</strong>: 日付・担当者・企業名はスプレッドシートから自動取得</li>
+  </ul>
+
+  <h3><i class="fas fa-file-signature"></i> 9.3 NDA提出フロー</h3>
+  <ol class="step-list">
+    <li>オブザーバーが専用ページにアクセスし、対象相談の「署名して提出」をクリック</li>
+    <li>氏名を入力し、署名欄にタッチ（またはマウス）で署名</li>
+    <li>「署名して提出」ボタンで署名済みPDFがGoogle Driveに保存</li>
+    <li>管理者にメール通知が届く</li>
+    <li>オブザーバーNDAシートに記録が追加される</li>
+  </ol>
+
+  <h3><i class="fas fa-gear"></i> 9.4 セットアップ</h3>
+  <p>ウェブアプリURL + <code>?action=setup-observer-nda</code> にアクセスしてシートを初期化します。</p>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>署名済みNDAの保存先フォルダを指定する場合は <code>config.gs</code> の <code>OBSERVER_NDA.DRIVE_FOLDER_ID</code> にGoogle DriveのフォルダIDを設定してください。未設定時はDriveのルートフォルダに保存されます。</div>
+  </div>
+
+  <!-- ===== 10. トリガーの確認・管理 ===== -->
+  <h2 id="sec10"><i class="fas fa-clock"></i> 10. トリガーの確認・管理</h2>
 
   <p>GASエディタを開き、左メニューの「トリガー」（<i class="fas fa-clock"></i> 時計アイコン）をクリックして確認します。</p>
 
-  <p><strong>以下の3つのトリガーが登録されていることを確認してください:</strong></p>
+  <p><strong>以下の4つのトリガーが登録されていることを確認してください:</strong></p>
 
   <div style="margin: 16px 0 20px;">
     <div class="trigger-item">
@@ -930,15 +1058,19 @@
       <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> finalizeSchedule</span>
       <span class="trigger-schedule"><i class="fas fa-calendar" style="margin-right: 4px;"></i> 毎月21日 10:00</span>
     </div>
+    <div class="trigger-item">
+      <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> sendSurveyEmails</span>
+      <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 1時間おき</span>
+    </div>
   </div>
 
   <div class="info-box danger">
     <i class="fas fa-circle-exclamation"></i>
-    <div><strong>トリガーが消えた場合:</strong> GASエディタで <code>setupAllTriggers()</code> 関数を実行してください。これにより3つのトリガーが再設定されます。</div>
+    <div><strong>トリガーが消えた場合:</strong> GASエディタで <code>setupAllTriggers()</code> 関数を実行してください。これにより4つのトリガーが再設定されます。</div>
   </div>
 
-  <!-- ===== 9. GASコードの更新手順 ===== -->
-  <h2 id="sec9"><i class="fas fa-code"></i> 9. GASコードの更新手順</h2>
+  <!-- ===== 11. GASコードの更新手順 ===== -->
+  <h2 id="sec11"><i class="fas fa-code"></i> 11. GASコードの更新手順</h2>
 
   <ol class="step-list">
     <li>ローカル環境でコードを修正します</li>
@@ -955,8 +1087,8 @@
     <div>デプロイを更新しても <strong>URLは変わりません</strong>。LP側の変更は不要です。</div>
   </div>
 
-  <!-- ===== 10. トラブルシューティング ===== -->
-  <h2 id="sec10"><i class="fas fa-wrench"></i> 10. トラブルシューティング</h2>
+  <!-- ===== 12. トラブルシューティング ===== -->
+  <h2 id="sec12"><i class="fas fa-wrench"></i> 12. トラブルシューティング</h2>
 
   <div class="table-wrapper">
     <table>
@@ -993,6 +1125,16 @@
           <td>トリガー未設定</td>
           <td>GASエディタで <code>setupAllTriggers()</code> を実行してください</td>
         </tr>
+        <tr>
+          <td>アンケートが送信されない</td>
+          <td>ステータスが「完了」でない or トリガー未設定</td>
+          <td>ステータスを「完了」に変更し、sendSurveyEmailsトリガーが設定されているか確認</td>
+        </tr>
+        <tr>
+          <td>オブザーバーNDA提出でエラー</td>
+          <td>Driveフォルダ権限不足</td>
+          <td>DRIVE_FOLDER_IDの権限を確認、またはIDを空にしてルートフォルダに保存</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -1002,8 +1144,8 @@
     <div>GASの実行ログは、GASエディタの左メニュー「実行数」（<i class="fas fa-list"></i>）から確認できます。エラーが発生している場合は赤い表示で記録されています。</div>
   </div>
 
-  <!-- ===== 11. 設定変更 ===== -->
-  <h2 id="sec11"><i class="fas fa-sliders"></i> 11. 設定変更（config.gs）</h2>
+  <!-- ===== 13. 設定変更 ===== -->
+  <h2 id="sec13"><i class="fas fa-sliders"></i> 13. 設定変更（config.gs）</h2>
 
   <p><code>config.gs</code> ファイルで以下の主要な設定項目を変更できます。</p>
 
@@ -1037,19 +1179,29 @@
           <td>当日受付の識別コード</td>
           <td><code>9999</code></td>
         </tr>
+        <tr>
+          <td><code>SURVEY.DELAY_HOURS</code></td>
+          <td>アンケート送信待機時間</td>
+          <td>2（時間）</td>
+        </tr>
+        <tr>
+          <td><code>OBSERVER_NDA.DRIVE_FOLDER_ID</code></td>
+          <td>署名済みNDA保存先フォルダ</td>
+          <td>空（ルートフォルダ）</td>
+        </tr>
       </tbody>
     </table>
   </div>
 
   <div class="info-box warning">
     <i class="fas fa-triangle-exclamation"></i>
-    <div><code>config.gs</code> を変更した場合は、必ず <a href="#sec9">9. GASコードの更新手順</a> に従ってデプロイを更新してください。</div>
+    <div><code>config.gs</code> を変更した場合は、必ず <a href="#sec11">11. GASコードの更新手順</a> に従ってデプロイを更新してください。</div>
   </div>
 
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 1.0</span>&emsp;|&emsp;2025年6月 作成
+      <span class="version">Version 2.0</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>無料経営相談システム オブザーバーマニュアル</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  /* ===== Reset & Base ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0F2350;
+    --navy-light: #1a3a6e;
+    --navy-bg: #f0f3f8;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --border: #d1d5db;
+    --text: #1f2937;
+    --text-light: #6b7280;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --mono-bg: #f8f9fa;
+    --mono-border: #e2e6ea;
+  }
+
+  html { font-size: 14px; scroll-behavior: smooth; }
+
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    color: var(--text);
+    line-height: 1.8;
+    background: #f5f5f5;
+  }
+
+  /* ===== Print Styles ===== */
+  @media print {
+    body { background: #fff; font-size: 11pt; }
+    .page-wrapper { box-shadow: none; max-width: 100%; margin: 0; padding: 20mm; }
+    .toc { break-after: page; }
+    h2 { break-before: page; }
+    h2:first-of-type { break-before: auto; }
+    table { break-inside: avoid; }
+    .flowchart-step { break-inside: avoid; }
+    .no-print { display: none !important; }
+    a { color: var(--navy) !important; text-decoration: none !important; }
+    a::after { content: " (" attr(href) ")"; font-size: 9pt; color: #666; }
+    .toc a::after { content: none; }
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm 20mm;
+  }
+
+  /* ===== Page Layout ===== */
+  .page-wrapper {
+    max-width: 860px;
+    margin: 30px auto;
+    background: #fff;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    padding: 60px 70px;
+  }
+
+  /* ===== Cover ===== */
+  .cover {
+    text-align: center;
+    padding: 60px 0 50px;
+    border-bottom: 4px solid var(--navy);
+    margin-bottom: 50px;
+  }
+
+  .cover-icon {
+    font-size: 48px;
+    color: var(--navy);
+    margin-bottom: 20px;
+  }
+
+  .cover h1 {
+    font-size: 28px;
+    color: var(--navy);
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    font-weight: 800;
+  }
+
+  .cover .subtitle {
+    font-size: 16px;
+    color: var(--text-light);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .cover .doc-type {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 6px 28px;
+    background: var(--navy);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ===== Table of Contents ===== */
+  .toc {
+    background: var(--navy-bg);
+    border: 1px solid #d0d8e8;
+    border-radius: 8px;
+    padding: 36px 40px;
+    margin-bottom: 50px;
+  }
+
+  .toc h2 {
+    font-size: 18px;
+    color: var(--navy);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toc h2 i { font-size: 16px; }
+
+  .toc ol {
+    list-style: none;
+    counter-reset: toc-counter;
+  }
+
+  .toc > ol > li {
+    counter-increment: toc-counter;
+    margin-bottom: 8px;
+  }
+
+  .toc > ol > li > a {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    color: var(--navy);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+
+  .toc > ol > li > a:hover {
+    background: #dce3f0;
+  }
+
+  .toc > ol > li > a::before {
+    content: counter(toc-counter) ".";
+    display: inline-block;
+    width: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    flex-shrink: 0;
+  }
+
+  /* ===== Section Headings ===== */
+  h2 {
+    font-size: 22px;
+    color: var(--navy);
+    padding: 14px 0 14px 20px;
+    margin: 50px 0 24px;
+    border-left: 5px solid var(--navy);
+    background: linear-gradient(90deg, var(--navy-bg) 0%, transparent 100%);
+    border-radius: 0 6px 6px 0;
+  }
+
+  h2 i {
+    margin-right: 10px;
+    font-size: 20px;
+  }
+
+  h3 {
+    font-size: 17px;
+    color: var(--navy-light);
+    margin: 30px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  h3 i {
+    margin-right: 8px;
+    font-size: 15px;
+    color: var(--accent);
+  }
+
+  h4 {
+    font-size: 15px;
+    color: var(--text);
+    margin: 20px 0 10px;
+    font-weight: 700;
+  }
+
+  /* ===== Paragraphs & Lists ===== */
+  p { margin-bottom: 14px; }
+
+  ul, ol {
+    margin: 10px 0 18px 24px;
+  }
+
+  li { margin-bottom: 6px; }
+
+  /* ===== Tables ===== */
+  .table-wrapper {
+    overflow-x: auto;
+    margin: 16px 0 24px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  thead th:first-child { border-radius: 6px 0 0 0; }
+  thead th:last-child { border-radius: 0 6px 0 0; }
+
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tbody tr:hover { background: #f9fafb; }
+
+  tbody tr:last-child td:first-child { border-radius: 0 0 0 6px; }
+  tbody tr:last-child td:last-child { border-radius: 0 0 6px 0; }
+
+  /* ===== URL / Code Blocks ===== */
+  .url-cell {
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+    font-size: 11px;
+    word-break: break-all;
+    background: var(--mono-bg);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--mono-border);
+    display: inline-block;
+    max-width: 380px;
+    user-select: all;
+    cursor: text;
+  }
+
+  code {
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+    font-size: 12px;
+    background: var(--mono-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--mono-border);
+    color: #c7254e;
+  }
+
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 18px 22px;
+    border-radius: 8px;
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin: 14px 0 20px;
+    user-select: all;
+  }
+
+  pre code {
+    background: none;
+    border: none;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* ===== Flowchart ===== */
+  .flowchart {
+    margin: 20px 0 30px;
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .flowchart::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--navy), var(--accent), var(--success));
+    border-radius: 2px;
+  }
+
+  .flowchart-step {
+    position: relative;
+    margin-bottom: 28px;
+    padding: 18px 22px;
+    background: #fff;
+    border: 1px solid #e2e6ea;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .flowchart-step::before {
+    content: "";
+    position: absolute;
+    left: -30px;
+    top: 22px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--navy);
+  }
+
+  .flowchart-step.auto::before { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .flowchart-step.result::before { background: var(--success); box-shadow: 0 0 0 2px var(--success); }
+
+  .flowchart-step .step-date {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .flowchart-step .step-date .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 10px;
+  }
+
+  .flowchart-step ul {
+    margin: 6px 0 0 18px;
+    font-size: 13px;
+  }
+
+  .flowchart-step li { margin-bottom: 4px; }
+
+  /* ===== Info Boxes ===== */
+  .info-box {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 16px 0 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .info-box i { font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+
+  .info-box.note {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+  }
+
+  .info-box.warning {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+  }
+
+  .info-box.danger {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+  }
+
+  .info-box.success {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+  }
+
+  /* ===== Status Flow ===== */
+  .status-flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 16px 0 20px;
+    padding: 16px 20px;
+    background: var(--navy-bg);
+    border-radius: 8px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .status-badge.provisional { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .status-badge.nda { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+  .status-badge.docs { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
+  .status-badge.confirmed { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+  .status-badge.done { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+  .status-badge.cancel { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+  .status-arrow {
+    color: var(--text-light);
+    font-size: 14px;
+  }
+
+  /* ===== Column Layout ===== */
+  .column-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    margin: 12px 0 20px;
+    font-size: 13px;
+  }
+
+  .column-list .col-id {
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
+  }
+
+  /* ===== Score Box ===== */
+  .score-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, var(--navy-bg), #e8edf5);
+    border: 1px solid #c5cfe0;
+    border-radius: 8px;
+    margin: 10px 0 16px;
+    font-size: 13px;
+  }
+
+  .score-box .score-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .score-box .score-value {
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--navy);
+  }
+
+  /* ===== Step List ===== */
+  .step-list {
+    counter-reset: step-counter;
+    list-style: none;
+    margin: 14px 0 20px;
+    padding: 0;
+  }
+
+  .step-list li {
+    counter-increment: step-counter;
+    padding: 10px 14px 10px 48px;
+    position: relative;
+    margin-bottom: 8px;
+    background: #f9fafb;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+  }
+
+  .step-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 12px;
+    top: 10px;
+    width: 26px;
+    height: 26px;
+    background: var(--navy);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ===== Trigger Table ===== */
+  .trigger-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
+  .trigger-item .trigger-name {
+    font-family: "SFMono-Regular", "Consolas", monospace;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 13px;
+    min-width: 180px;
+  }
+
+  .trigger-item .trigger-schedule {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+
+  /* ===== Icon List ===== */
+  .icon-list {
+    list-style: none;
+    margin: 14px 0 20px;
+    padding: 0;
+  }
+
+  .icon-list li {
+    padding: 8px 14px 8px 36px;
+    position: relative;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+
+  .icon-list li i {
+    position: absolute;
+    left: 8px;
+    top: 12px;
+    font-size: 14px;
+    color: var(--navy);
+  }
+
+  /* ===== NDA Article ===== */
+  .nda-article {
+    margin: 16px 0 24px;
+    padding: 20px 24px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+  }
+
+  .nda-article h4 {
+    font-size: 14px;
+    color: var(--navy);
+    margin: 0 0 10px;
+    font-weight: 700;
+  }
+
+  .nda-article p {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .nda-article ol {
+    font-size: 13px;
+    margin: 8px 0 6px 20px;
+  }
+
+  .nda-article ol li {
+    margin-bottom: 4px;
+  }
+
+  /* ===== Form Field Description ===== */
+  .form-fields {
+    margin: 10px 0 14px 14px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .form-fields li {
+    padding: 6px 12px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    border-left: 3px solid var(--accent);
+    background: #f8fafc;
+  }
+
+  .form-fields li strong {
+    color: var(--navy);
+  }
+
+  /* ===== Footer ===== */
+  .doc-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 2px solid var(--navy);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-light);
+  }
+
+  .doc-footer .version {
+    font-weight: 600;
+    color: var(--navy);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ===== Cover ===== -->
+  <div class="cover">
+    <div class="cover-icon"><i class="fas fa-user-graduate"></i></div>
+    <h1>無料経営相談システム<br>オブザーバーマニュアル</h1>
+    <p class="subtitle">関西学院大学 中小企業経営診断研究会</p>
+    <span class="doc-type"><i class="fas fa-user-graduate"></i>&ensp;養成課程在学生向けドキュメント</span>
+  </div>
+
+  <!-- ===== Table of Contents ===== -->
+  <nav class="toc">
+    <h2><i class="fas fa-list-ol"></i> 目次</h2>
+    <ol>
+      <li><a href="#sec1">オブザーバーとは</a></li>
+      <li><a href="#sec2">オブザーバー専用ページの使い方</a></li>
+      <li><a href="#sec3">NDA（秘密保持誓約書）の署名方法</a></li>
+      <li><a href="#sec4">相談見学時の注意事項</a></li>
+      <li><a href="#sec5">秘密保持義務について</a></li>
+      <li><a href="#sec6">よくある質問（FAQ）</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===== 1. オブザーバーとは ===== -->
+  <h2 id="sec1"><i class="fas fa-user-graduate"></i> 1. オブザーバーとは</h2>
+
+  <p>「オブザーバー」とは、中小企業診断士養成課程に在学中の学生（3期・4期）が、実際の経営相談の場に同席して学ぶ制度です。</p>
+
+  <p>相談のスコア計算上、オブザーバーは <strong>1点</strong> としてカウントされます。</p>
+
+  <div class="score-box">
+    <div class="score-item">
+      <span>診断士（1期/2期）</span>
+      <span class="score-value">= 2点</span>
+    </div>
+    <div class="score-item">
+      <span>オブザーバー（3期/4期）</span>
+      <span class="score-value">= 1点</span>
+    </div>
+  </div>
+
+  <p>オブザーバーとして参加するには、事前に <strong>NDA（秘密保持誓約書）への署名</strong> が必要です。</p>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>オブザーバーは相談の見学者であり、相談者への直接的なアドバイスは行いません。</div>
+  </div>
+
+  <!-- ===== 2. オブザーバー専用ページの使い方 ===== -->
+  <h2 id="sec2"><i class="fas fa-desktop"></i> 2. オブザーバー専用ページの使い方</h2>
+
+  <h3><i class="fas fa-link"></i> アクセスURL</h3>
+
+  <p><span class="url-cell">https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec?action=observer</span></p>
+
+  <h3><i class="fas fa-puzzle-piece"></i> ページの構成</h3>
+
+  <ul>
+    <li><strong>ヘッダー:</strong> 「オブザーバー専用ページ」のタイトル</li>
+    <li><strong>相談予定一覧:</strong> 今後の相談スケジュール（日付・企業名・担当者）</li>
+    <li><strong>各予定に「署名して提出」ボタン</strong></li>
+  </ul>
+
+  <h3><i class="fas fa-shoe-prints"></i> アクセス手順</h3>
+
+  <ol class="step-list">
+    <li>上記URLにスマートフォンまたはPCのブラウザでアクセス</li>
+    <li>相談予定一覧が表示される</li>
+    <li>参加予定の相談の「署名して提出」ボタンをタップ</li>
+  </ol>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>予定が表示されない場合は、管理者がスプレッドシート上で日程を登録していない可能性があります。管理者にご確認ください。</div>
+  </div>
+
+  <!-- ===== 3. NDA署名方法 ===== -->
+  <h2 id="sec3"><i class="fas fa-file-signature"></i> 3. NDA（秘密保持誓約書）の署名方法</h2>
+
+  <p>NDAの署名は、オブザーバーとして相談に参加するための <strong>必須手続き</strong> です。以下の手順に従って署名を完了してください。</p>
+
+  <ol class="step-list">
+    <li>オブザーバー専用ページで参加予定の相談の「署名して提出」ボタンをタップ</li>
+    <li>署名フォームが表示されます:
+      <ul class="form-fields">
+        <li><strong>相談日:</strong> 自動入力（変更不可）</li>
+        <li><strong>相談担当者:</strong> 自動入力（変更不可）</li>
+        <li><strong>相談企業名:</strong> 自動入力（変更不可）</li>
+        <li><strong>オブザーバー氏名:</strong> ご自身の名前をフルネームで入力</li>
+      </ul>
+    </li>
+    <li>秘密保持誓約書の全文が表示されるので、内容を確認してください</li>
+    <li>署名欄に指またはペンで署名してください（スマートフォンの場合はタッチで直接記入）</li>
+    <li>署名を間違えた場合は「やり直し」ボタンで消去できます</li>
+    <li>内容を確認し「署名して提出」ボタンをタップ</li>
+    <li>「NDAを提出しました」と表示されれば完了です</li>
+  </ol>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div><strong>署名は各相談日ごとに必要です。</strong>複数の相談に参加する場合は、それぞれの予定に対して署名を提出してください。</div>
+  </div>
+
+  <div class="info-box success">
+    <i class="fas fa-circle-check"></i>
+    <div>提出されたNDAはGoogle Driveに自動保存され、管理者にメール通知が届きます。特に管理者への連絡は不要です。</div>
+  </div>
+
+  <!-- ===== 4. 相談見学時の注意事項 ===== -->
+  <h2 id="sec4"><i class="fas fa-eye"></i> 4. 相談見学時の注意事項</h2>
+
+  <p>相談見学にあたり、以下の事項を遵守してください。</p>
+
+  <ul class="icon-list">
+    <li><i class="fas fa-clock"></i>相談開始5分前には着席・ログインしてください</li>
+    <li><i class="fas fa-video"></i>相談中は原則としてカメラON・マイクOFF（Zoom）</li>
+    <li><i class="fas fa-comment-slash"></i>相談者への直接の質問や発言は控えてください</li>
+    <li><i class="fas fa-pen"></i>メモを取ることは可能ですが、相談企業が特定できる情報の記録は禁止です</li>
+    <li><i class="fas fa-ban"></i>録音・録画は厳禁です</li>
+    <li><i class="fas fa-hand-point-up"></i>相談終了後、担当者から質問の機会がある場合があります</li>
+  </ul>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div>相談者が見学に不同意の場合、オブザーバーは退室する必要があります。担当者の指示に従ってください。</div>
+  </div>
+
+  <!-- ===== 5. 秘密保持義務について ===== -->
+  <h2 id="sec5"><i class="fas fa-shield-halved"></i> 5. 秘密保持義務について</h2>
+
+  <p>NDAで定められた主要条項について、わかりやすく説明します。</p>
+
+  <div class="nda-article">
+    <h4><i class="fas fa-section"></i> 第1条（秘密情報の定義）</h4>
+    <p>相談を通じて知り得た企業の経営情報、財務情報、技術情報、個人情報、相談資料等のすべてが「秘密情報」です。</p>
+  </div>
+
+  <div class="nda-article">
+    <h4><i class="fas fa-section"></i> 第2条（遵守事項）</h4>
+    <ol>
+      <li>第三者への開示・漏洩をしないこと</li>
+      <li>学術研究・教育以外の目的で使用しないこと</li>
+      <li>SNSやブログ等に相談企業が特定できる情報を投稿しないこと</li>
+      <li>学術目的で利用する場合は匿名化処理を行うこと</li>
+      <li>活動終了時は資料・データを返還・廃棄すること</li>
+    </ol>
+  </div>
+
+  <div class="nda-article">
+    <h4><i class="fas fa-section"></i> 第3条（期間および損害賠償）</h4>
+    <p>秘密保持義務は活動終了後・養成課程修了後も存続します。違反時は法的責任を負います。</p>
+  </div>
+
+  <div class="info-box danger">
+    <i class="fas fa-circle-exclamation"></i>
+    <div><strong>秘密情報の漏洩は法的責任を問われる可能性があります。</strong>相談で得た情報は一切外部に開示しないでください。</div>
+  </div>
+
+  <!-- ===== 6. FAQ ===== -->
+  <h2 id="sec6"><i class="fas fa-circle-question"></i> 6. よくある質問（FAQ）</h2>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 35%;">質問</th>
+          <th>回答</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>署名がうまくできない</strong></td>
+          <td>スマートフォンを横向きにするか、指を少し強めに押してお試しください。PCの場合はマウスで署名できます</td>
+        </tr>
+        <tr>
+          <td><strong>「署名して提出」を押してもエラーが出る</strong></td>
+          <td>ネットワーク接続を確認してください。解消しない場合は管理者にご連絡ください</td>
+        </tr>
+        <tr>
+          <td><strong>提出したNDAを確認したい</strong></td>
+          <td>管理者にお問い合わせください。Google Driveに保存されています</td>
+        </tr>
+        <tr>
+          <td><strong>相談予定が表示されない</strong></td>
+          <td>管理者がまだ日程を登録していない可能性があります。管理者にご確認ください</td>
+        </tr>
+        <tr>
+          <td><strong>過去のNDAは再利用できますか</strong></td>
+          <td>いいえ、各相談日ごとにNDAの署名が必要です</td>
+        </tr>
+        <tr>
+          <td><strong>Zoom参加のURLはどこで確認できますか</strong></td>
+          <td>担当者から別途共有されます。不明な場合は担当者にお問い合わせください</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="doc-footer">
+    <div>
+      <span class="version">Version 1.0</span>&emsp;|&emsp;2026年2月 作成
+    </div>
+    <div>
+      <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会
+    </div>
+  </footer>
+
+</div><!-- /.page-wrapper -->
+
+</body>
+</html>
