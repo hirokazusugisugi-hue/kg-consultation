@@ -519,17 +519,13 @@ function getConsentPageHtml(data, token) {
     <div class="card">
       <h2>経営相談に関する同意書</h2>
       <p style="font-size:0.85rem; color:#666; margin-bottom:1rem;">関西学院大学 中小企業診断士養成課程（無料経営診断分科会）</p>
-      <div style="background:#eef3ff; border-left:4px solid #0F2350; padding:1rem 1.2rem; border-radius:0 8px 8px 0; margin-bottom:1rem; font-size:0.85rem; line-height:1.7;">
-        本相談は、<strong>中小企業診断士倫理規定</strong>に則り実施いたします。<br>
-        相談内容に関する秘密保持、誠実な対応を遵守いたします。
-      </div>
       <iframe class="pdf-viewer" src="${pdfViewerUrl}" allow="autoplay"></iframe>
       <a href="${pdfDownloadUrl}" target="_blank" class="pdf-download">PDFをダウンロード</a>
 
       <div class="consent-section">
         <div class="checkbox-group">
           <input type="checkbox" id="agreeCheck">
-          <label for="agreeCheck">中小企業診断士倫理規定に則り実施される上記同意書の内容を確認し、全ての内容に同意します</label>
+          <label for="agreeCheck">上記同意書の内容を確認し、全ての内容に同意します</label>
         </div>
 
         <div class="signature-group">
