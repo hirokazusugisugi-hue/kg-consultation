@@ -115,7 +115,7 @@ function getUpcomingConsultations() {
     var appId = bookingData[i][COLUMNS.ID];
     var name = bookingData[i][COLUMNS.NAME];
 
-    if ((status === '確定' || status === 'NDA同意済') && confirmedDate) {
+    if ((status === STATUS.CONFIRMED || status === STATUS.NDA_AGREED) && confirmedDate) {
       var cDate = new Date(confirmedDate);
       if (isNaN(cDate.getTime())) continue;
 

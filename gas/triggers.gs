@@ -196,7 +196,7 @@ function sendDailyReminders() {
     const status = data[i][COLUMNS.STATUS];
     const confirmedDate = data[i][COLUMNS.CONFIRMED_DATE];
 
-    if (status !== STATUS.CONFIRMED || !confirmedDate) {
+    if ((status !== STATUS.CONFIRMED && status !== STATUS.NDA_AGREED) || !confirmedDate) {
       continue;
     }
 

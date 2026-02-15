@@ -166,6 +166,7 @@ function setupSpreadsheetHeaders() {
   const statusRule = SpreadsheetApp.newDataValidation()
     .requireValueInList([
       STATUS.PENDING,
+      STATUS.NDA_AGREED,
       STATUS.RECEIVED,
       STATUS.CONFIRMED,
       STATUS.COMPLETED,
@@ -201,6 +202,13 @@ function setupConditionalFormatting() {
   rules.push(SpreadsheetApp.newConditionalFormatRule()
     .whenTextEqualTo(STATUS.PENDING)
     .setBackground('#fff3cd')
+    .setRanges([range])
+    .build());
+
+  // NDA同意済: オレンジ
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo(STATUS.NDA_AGREED)
+    .setBackground('#ffe0b2')
     .setRanges([range])
     .build());
 

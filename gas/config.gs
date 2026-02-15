@@ -140,6 +140,7 @@ const COLUMNS = {
  */
 const STATUS = {
   PENDING: '仮予約',
+  NDA_AGREED: 'NDA同意済',
   RECEIVED: '書類受領',
   CONFIRMED: '確定',
   COMPLETED: '完了',

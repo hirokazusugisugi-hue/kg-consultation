@@ -215,6 +215,24 @@ function updateNdaStatus(rowIndex, signature) {
 
   // U列: 同意日時
   sheet.getRange(rowIndex, COLUMNS.NDA_DATE + 1).setValue(new Date());
+
+  // N列: ステータスを「NDA同意済」に更新
+  const currentStatus = sheet.getRange(rowIndex, COLUMNS.STATUS + 1).getValue();
+  if (currentStatus === STATUS.PENDING || currentStatus === '' || !currentStatus) {
+    sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.NDA_AGREED);
+  }
+
+  // P列: 確定日時をK列（希望日時1）から自動設定
+  const confirmedDate = sheet.getRange(rowIndex, COLUMNS.CONFIRMED_DATE + 1).getValue();
+  if (!confirmedDate || confirmedDate === '') {
+    const date1 = sheet.getRange(rowIndex, COLUMNS.DATE1 + 1).getValue();
+    if (date1) {
+      // 日本語日付形式をパース（例: "2026年3月15日（土）10:00〜12:00"）
+      const dateStr = date1.toString();
+      const slashDate = convertJapaneseDateToSlash(dateStr);
+      sheet.getRange(rowIndex, COLUMNS.CONFIRMED_DATE + 1).setValue(slashDate || dateStr);
+    }
+  }
 }
 
 /**
