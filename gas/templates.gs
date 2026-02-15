@@ -911,12 +911,12 @@ function getSurveyPageHtml(tokenData) {
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// オブザーバー専用ページHTML
+// オブザーバー専用ページHTML（拡張版）
+// 企業名・相談予定可能者・オブザーバー表示、サーバーサイドPDF生成
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 function getObserverPageHtml(schedules) {
   var schedulesJson = JSON.stringify(schedules);
-  var webAppUrl = CONFIG.CONSENT.WEB_APP_URL;
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -924,7 +924,6 @@ function getObserverPageHtml(schedules) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>オブザーバー専用ページ</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans JP', sans-serif; background: #f5f5f7; color: #1a1a1a; line-height: 1.8; }
@@ -932,16 +931,25 @@ function getObserverPageHtml(schedules) {
     .header h1 { font-size: 1.2rem; font-weight: 500; }
     .container { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem; }
     .card { background: #fff; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.2rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-    .schedule-item { border-left: 4px solid #0F2350; padding-left: 1rem; margin-bottom: 1rem; }
-    .schedule-date { font-size: 1.1rem; font-weight: 700; color: #0F2350; }
-    .schedule-info { font-size: 0.9rem; color: #555; margin: 0.3rem 0; }
-    .btn-group { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; }
-    .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+    .card h2 { font-size: 1rem; color: #0F2350; margin-bottom: 1rem; border-left: 4px solid #0F2350; padding-left: 0.8rem; }
+
+    /* スケジュールカード */
+    .schedule-card { border: 1px solid #e0e4ea; border-radius: 10px; padding: 1.2rem; margin-bottom: 1rem; transition: box-shadow 0.2s; }
+    .schedule-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .schedule-date { font-size: 1.1rem; font-weight: 700; color: #0F2350; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 2px solid #eef3ff; }
+    .schedule-detail { display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.8rem; font-size: 0.9rem; margin-bottom: 0.8rem; }
+    .schedule-label { font-weight: 600; color: #555; white-space: nowrap; }
+    .schedule-value { color: #1a1a1a; }
+    .observer-badges { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 20px; font-size: 0.8rem; }
+    .badge-submitted { background: #d4edda; color: #155724; }
+    .badge-none { background: #f0f0f0; color: #888; font-style: italic; }
+
+    .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-family: inherit; font-weight: 500; }
     .btn-primary { background: #0F2350; color: #fff; }
     .btn-primary:hover { background: #1a3570; }
     .btn-secondary { background: #e8ecf1; color: #0F2350; }
     .btn-secondary:hover { background: #d0d8e4; }
-    .btn-success { background: #28a745; color: #fff; }
 
     /* 署名モーダル */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; }
@@ -974,7 +982,7 @@ function getObserverPageHtml(schedules) {
 
   <div class="container">
     <div class="card">
-      <h2 style="font-size:1rem; color:#0F2350; margin-bottom:1rem;">相談予定一覧</h2>
+      <h2>相談予定一覧</h2>
       <div id="scheduleList"></div>
     </div>
   </div>
@@ -988,7 +996,7 @@ function getObserverPageHtml(schedules) {
         <input type="text" id="signDate" readonly>
       </div>
       <div class="field">
-        <label>相談担当者</label>
+        <label>相談予定可能者</label>
         <input type="text" id="signStaff" readonly>
       </div>
       <div class="field">
@@ -1024,7 +1032,7 @@ function getObserverPageHtml(schedules) {
 
       <div id="signStatus" class="status-msg"></div>
 
-      <div class="btn-group" style="justify-content:center; margin-top:1rem;">
+      <div style="display:flex; gap:0.5rem; justify-content:center; margin-top:1rem;">
         <button class="btn btn-secondary" onclick="closeSignModal()">キャンセル</button>
         <button class="btn btn-primary" id="signSubmitBtn" onclick="submitSignedNda()">署名して提出</button>
       </div>
@@ -1035,7 +1043,14 @@ function getObserverPageHtml(schedules) {
     var schedules = ${schedulesJson};
     var sigCanvas, sigCtx, isDrawing = false;
 
-    // 相談予定一覧の描画
+    // HTMLエスケープ
+    function escHtml(str) {
+      var d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
+
+    // 相談予定一覧の描画（拡張版）
     function renderSchedules() {
       var list = document.getElementById('scheduleList');
       if (!schedules || schedules.length === 0) {
@@ -1043,25 +1058,43 @@ function getObserverPageHtml(schedules) {
         return;
       }
       var html = '';
-      schedules.forEach(function(s) {
-        html += '<div class="schedule-item">' +
-          '<div class="schedule-date">' + s.date + '</div>' +
-          '<div class="schedule-info">企業名：' + s.company + '</div>' +
-          '<div class="schedule-info">担当者：' + s.staff + '</div>' +
-          '<div class="btn-group">' +
-          '<button class="btn btn-primary" onclick="openSignModal(\\'' + s.dateRaw + '\\',\\'' + s.staff + '\\',\\'' + s.company + '\\')">署名して提出</button>' +
-          '</div></div>';
+      schedules.forEach(function(s, idx) {
+        var consultants = s.members || s.staff;
+        var observerHtml = '';
+        if (s.observers && s.observers.length > 0) {
+          s.observers.forEach(function(name) {
+            observerHtml += '<span class="badge badge-submitted">' + escHtml(name) + '（提出済）</span>';
+          });
+        } else {
+          observerHtml = '<span class="badge badge-none">未提出</span>';
+        }
+        html += '<div class="schedule-card">' +
+          '<div class="schedule-date">' + escHtml(s.date) + '</div>' +
+          '<div class="schedule-detail">' +
+            '<span class="schedule-label">相談企業</span>' +
+            '<span class="schedule-value">' + escHtml(s.company) + '</span>' +
+            '<span class="schedule-label">相談予定可能者</span>' +
+            '<span class="schedule-value">' + escHtml(consultants) + '</span>' +
+            '<span class="schedule-label">オブザーバー</span>' +
+            '<span class="schedule-value"><span class="observer-badges">' + observerHtml + '</span></span>' +
+          '</div>' +
+          '<button class="btn btn-primary" onclick="openSignModal(' + idx + ')">署名して提出</button>' +
+          '</div>';
       });
       list.innerHTML = html;
     }
 
-    // 署名モーダル
-    function openSignModal(date, staff, company) {
-      document.getElementById('signDate').value = date;
-      document.getElementById('signStaff').value = staff;
-      document.getElementById('signCompany').value = company;
+    // 署名モーダル（インデックスベース：文字列エスケープ問題を回避）
+    function openSignModal(idx) {
+      var s = schedules[idx];
+      document.getElementById('signDate').value = s.dateRaw;
+      document.getElementById('signStaff').value = s.members || s.staff;
+      document.getElementById('signCompany').value = s.company;
       document.getElementById('signName').value = '';
       document.getElementById('signStatus').textContent = '';
+      document.getElementById('signStatus').className = 'status-msg';
+      document.getElementById('signSubmitBtn').disabled = false;
+      document.getElementById('signSubmitBtn').textContent = '署名して提出';
       document.getElementById('signModal').classList.add('show');
       initSignatureCanvas();
     }
@@ -1118,7 +1151,7 @@ function getObserverPageHtml(schedules) {
       return true;
     }
 
-    // NDA提出
+    // NDA提出（署名画像のみ送信、PDF生成はサーバー側）
     function submitSignedNda() {
       var name = document.getElementById('signName').value.trim();
       if (!name) { alert('氏名を入力してください'); return; }
@@ -1127,81 +1160,12 @@ function getObserverPageHtml(schedules) {
       var btn = document.getElementById('signSubmitBtn');
       btn.disabled = true;
       btn.textContent = '送信中...';
-      document.getElementById('signStatus').textContent = '署名入りPDFを生成しています...';
+      document.getElementById('signStatus').textContent = '署名を送信しています...';
       document.getElementById('signStatus').className = 'status-msg';
 
-      // jsPDFで署名入りPDF生成
-      var { jsPDF } = window.jspdf;
-      var doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-      doc.setFontSize(16);
-      doc.text('秘密保持誓約書', 105, 25, { align: 'center' });
-      doc.setFontSize(9);
-      doc.text('養成課程在学生（オブザーバー）用', 105, 32, { align: 'center' });
-
-      var y = 45;
-      doc.setFontSize(10);
-      doc.text('相談担当者：' + document.getElementById('signStaff').value + ' 殿', 25, y);
-      y += 12;
-
-      doc.setFontSize(9);
-      var intro = '私は、「経営診断研究会 無料経営相談分科会」（以下「本分科会」といいます）が実施する無料経営相談にオブザーバーとして出席するにあたり、個人の責任として、以下の事項を遵守することを誓約いたします。';
-      var lines = doc.splitTextToSize(intro, 160);
-      doc.text(lines, 25, y);
-      y += lines.length * 5 + 8;
-
-      // 条文（簡略版）
-      var articles = [
-        '第1条（秘密情報の定義）',
-        '本誓約における「秘密情報」とは、本分科会の活動を通じて知り得た、相談企業の経営・財務・技術等の情報、関係者の個人情報、および活動中に作成された相談資料・録音データ等、一切の情報を指します。',
-        '',
-        '第2条（遵守事項）',
-        '私は、秘密情報の取り扱いについて、善良なる管理者の注意をもって遵守します。（1.第三者への非開示 2.目的外使用の禁止 3.SNS投稿禁止 4.匿名化処理 5.資料返還・廃棄）',
-        '',
-        '第3条（期間および損害賠償）',
-        '1. 本誓約の義務は、本分科会の活動終了後および養成課程修了後も存続するものとします。',
-        '2. 本誓約に違反した場合は、法的責任を負うとともに、研究会の処分に従います。'
-      ];
-
-      articles.forEach(function(line) {
-        if (!line) { y += 3; return; }
-        if (line.startsWith('第')) {
-          doc.setFontSize(10);
-          doc.setFont(undefined, 'bold');
-          doc.text(line, 25, y);
-          doc.setFont(undefined, 'normal');
-          doc.setFontSize(9);
-          y += 7;
-        } else {
-          var ls = doc.splitTextToSize(line, 155);
-          doc.text(ls, 30, y);
-          y += ls.length * 5 + 2;
-        }
-      });
-
-      y += 5;
-      doc.line(25, y, 185, y);
-      y += 8;
-
-      doc.setFontSize(9);
-      doc.text('相談日：' + document.getElementById('signDate').value, 25, y);
-      y += 7;
-      doc.text('相談企業名：' + document.getElementById('signCompany').value, 25, y);
-      y += 10;
-
-      doc.text('【誓約者】', 25, y);
-      y += 7;
-      doc.text('氏名：' + name, 25, y);
-      y += 8;
-
-      // 署名画像を埋め込み
-      var sigImage = sigCanvas.toDataURL('image/png');
-      doc.addImage(sigImage, 'PNG', 60, y, 80, 25);
-
-      // PDFをBase64に変換
-      var pdfBase64 = doc.output('datauristring').split(',')[1];
-
-      document.getElementById('signStatus').textContent = 'アップロード中...';
+      // 署名をPNG Base64として取得（data URI prefixを除去）
+      var sigDataUrl = sigCanvas.toDataURL('image/png');
+      var signatureBase64 = sigDataUrl.split(',')[1];
 
       google.script.run
         .withSuccessHandler(function(result) {
@@ -1227,7 +1191,7 @@ function getObserverPageHtml(schedules) {
           consultDate: document.getElementById('signDate').value,
           company: document.getElementById('signCompany').value,
           staff: document.getElementById('signStaff').value,
-          pdfBase64: pdfBase64
+          signatureBase64: signatureBase64
         });
     }
 
