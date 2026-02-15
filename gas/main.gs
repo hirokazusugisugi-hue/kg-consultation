@@ -184,6 +184,14 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 場所列マイグレーション（管理用）
+    if (action === 'migrate-location') {
+      var migrateResult = migrateAddLocationColumn();
+      return ContentService
+        .createTextOutput(JSON.stringify(migrateResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // メンバーマスタセットアップ（管理用）
     if (action === 'setup-members') {
       setupMemberSheet();

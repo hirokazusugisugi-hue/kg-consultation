@@ -123,17 +123,17 @@ const COLUMNS = {
   DATE1: 10,         // K: 希望日時1
   DATE2: 11,         // L: 希望日時2
   METHOD: 12,        // M: 相談方法
-  STATUS: 13,        // N: ステータス
-  STAFF: 14,         // O: 担当者
-  CONFIRMED_DATE: 15,// P: 確定日時
-  ZOOM_URL: 16,      // Q: ZoomURL
-  HEARING_SHEET: 17, // R: ヒアリングシート
-  NOTES: 18,         // S: 備考
-  NDA_STATUS: 19,    // T: 同意書同意（済/未）
-  NDA_DATE: 20,      // U: 同意日時
-  COMPANY_URL: 21,   // V: 企業URL
-  WALK_IN_FLAG: 22,  // W: 当日受付フラグ
-  LOCATION: 23       // X: 場所
+  LOCATION: 13,      // N: 場所
+  STATUS: 14,        // O: ステータス
+  STAFF: 15,         // P: 担当者
+  CONFIRMED_DATE: 16,// Q: 確定日時
+  ZOOM_URL: 17,      // R: ZoomURL
+  HEARING_SHEET: 18, // S: ヒアリングシート
+  NOTES: 19,         // T: 備考
+  NDA_STATUS: 20,    // U: 同意書同意（済/未）
+  NDA_DATE: 21,      // V: 同意日時
+  COMPANY_URL: 22,   // W: 企業URL
+  WALK_IN_FLAG: 23   // X: 当日受付フラグ
 };
 
 /**
