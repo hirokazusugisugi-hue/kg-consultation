@@ -114,12 +114,19 @@ function handleStatusChange(rowIndex, oldStatus, newStatus) {
       const location = sheet.getRange(rowIndex, COLUMNS.LOCATION + 1).getValue();
       if (!location || location === '') {
         SpreadsheetApp.getUi().alert(
-          '対面相談の場合、場所（X列）を設定してからステータスを「確定」に変更してください。\n\n選択肢: アプローズタワー / スミセスペース / ナレッジサロン / その他'
+          '対面相談の場合、場所（N列）を設定してからステータスを「確定」に変更してください。\n\n選択肢: アプローズタワー / スミセスペース / ナレッジサロン / その他'
         );
         sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(oldStatus || STATUS.PENDING);
         return;
       }
       data.location = location;
+    }
+
+    // 日程設定シートの予約状況を「予約済み」に更新
+    var parsed = parseConfirmedDateTime(data.confirmedDate);
+    if (parsed.date) {
+      var booked = markAsBooked(parsed.date, parsed.time);
+      console.log(`日程設定シート同期: ${parsed.date} ${parsed.time || ''} → ${booked ? '予約済み' : '該当なし'}`);
     }
 
     // 確定メールを送信
@@ -189,6 +196,15 @@ ${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサー�
 
   // キャンセルに変更された場合
   if (newStatus === STATUS.CANCELLED) {
+    // 日程設定シートの予約状況を「空き」に戻す
+    if (data.confirmedDate) {
+      var cancelParsed = parseConfirmedDateTime(data.confirmedDate);
+      if (cancelParsed.date) {
+        var freed = markAsAvailable(cancelParsed.date, cancelParsed.time);
+        console.log(`日程設定シート同期（キャンセル）: ${cancelParsed.date} ${cancelParsed.time || ''} → ${freed ? '空き' : '該当なし'}`);
+      }
+    }
+
     sendLineStatusNotification(data, newStatus);
   }
 }

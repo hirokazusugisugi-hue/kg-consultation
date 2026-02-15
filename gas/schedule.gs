@@ -381,6 +381,71 @@ function markAsBooked(dateStr, time) {
 }
 
 /**
+ * 予約状況を「空き」に戻す（キャンセル時）
+ * @param {string} dateStr - 日付（yyyy/MM/dd形式）
+ * @param {string} time - 時間帯
+ */
+function markAsAvailable(dateStr, time) {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+
+  if (!sheet) return false;
+
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    let rowDate = data[i][SCHEDULE_COLUMNS.DATE];
+    let rowTime = data[i][SCHEDULE_COLUMNS.TIME];
+
+    if (rowDate instanceof Date) {
+      rowDate = Utilities.formatDate(rowDate, 'Asia/Tokyo', 'yyyy/MM/dd');
+    }
+
+    if (rowTime instanceof Date) {
+      rowTime = Utilities.formatDate(rowTime, 'Asia/Tokyo', 'HH:mm');
+    } else {
+      rowTime = String(rowTime);
+    }
+
+    if (rowDate === dateStr && (!time || rowTime === time)) {
+      sheet.getRange(i + 1, SCHEDULE_COLUMNS.BOOKING_STATUS + 1).setValue('空き');
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * 確定日時文字列から日付と時間を分割
+ * "2026/03/21 14:00" → { date: "2026/03/21", time: "14:00" }
+ * "2026/03/21" → { date: "2026/03/21", time: null }
+ */
+function parseConfirmedDateTime(confirmedDate) {
+  if (!confirmedDate) return { date: null, time: null };
+  var str = String(confirmedDate);
+
+  // Date型の場合
+  if (confirmedDate instanceof Date) {
+    str = Utilities.formatDate(confirmedDate, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+  }
+
+  // yyyy/MM/dd HH:mm 形式
+  var match = str.match(/^(\d{4}\/\d{2}\/\d{2})\s+(\d{1,2}:\d{2})/);
+  if (match) return { date: match[1], time: match[2] };
+
+  // yyyy-MM-dd HH:mm 形式
+  match = str.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2})/);
+  if (match) return { date: match[1].replace(/-/g, '/'), time: match[2] };
+
+  // 日付のみ
+  match = str.match(/^(\d{4}[\/-]\d{2}[\/-]\d{2})/);
+  if (match) return { date: match[1].replace(/-/g, '/'), time: null };
+
+  return { date: null, time: null };
+}
+
+/**
  * 翌々月の日程を自動生成（時間トリガー用・新ルール版）
  */
 function generateNextMonthSchedule() {
