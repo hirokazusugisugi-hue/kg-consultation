@@ -221,7 +221,7 @@ function getUpcomingConsultations() {
 }
 
 /**
- * 署名済みNDAをDriveに保存（サーバーサイドPDF生成版）
+ * 署名済みNDAを保存（スプレッドシート記録 + メール添付 - Drive/DocumentApp不要）
  * @param {Object} data - { observerName, consultDate, company, staff, signatureBase64 }
  * @returns {Object} 結果
  */
@@ -235,110 +235,24 @@ function saveSignedNda(data) {
       sheet = ss.getSheetByName(CONFIG.OBSERVER_NDA_SHEET_NAME);
     }
 
-    // 署名画像のBlobを作成
-    var signatureBytes = Utilities.base64Decode(data.signatureBase64);
-    var signatureBlob = Utilities.newBlob(signatureBytes, 'image/png', 'signature.png');
-
-    // Google Docsで署名入りNDA PDFを生成
     var docName = 'NDA_' + data.company + '_' + data.observerName + '_' + data.consultDate.replace(/\//g, '');
-    var doc = DocumentApp.create(docName);
-    var body = doc.getBody();
 
-    body.setMarginTop(40);
-    body.setMarginBottom(40);
-    body.setMarginLeft(50);
-    body.setMarginRight(50);
+    // NDA内容をHTMLで生成（署名画像をdata URI埋め込み）
+    var htmlContent = buildNdaHtml(data);
+    var htmlBlob = Utilities.newBlob(htmlContent, 'text/html', docName + '.html');
 
-    // タイトル
-    var title = body.appendParagraph('秘密保持誓約書');
-    title.setHeading(DocumentApp.ParagraphHeading.HEADING1);
-    title.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-
-    var subtitle = body.appendParagraph('養成課程在学生（オブザーバー）用');
-    subtitle.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    subtitle.setFontSize(10);
-    subtitle.setForegroundColor('#666666');
-
-    body.appendParagraph('');
-
-    body.appendParagraph('相談予定可能者：' + data.staff + ' 殿').setFontSize(11);
-    body.appendParagraph('');
-
-    var intro = body.appendParagraph('私は、「経営診断研究会 無料経営相談分科会」（以下「本分科会」といいます）が実施する無料経営相談にオブザーバーとして出席するにあたり、個人の責任として、以下の事項を遵守することを誓約いたします。');
-    intro.setFontSize(10);
-    body.appendParagraph('');
-
-    // 第1条
-    body.appendParagraph('第1条（秘密情報の定義）').setBold(true).setFontSize(10);
-    body.appendParagraph('本誓約における「秘密情報」とは、本分科会の活動を通じて知り得た、相談企業の経営・財務・技術等の情報、関係者の個人情報、および活動中に作成された相談資料・録音データ等、一切の情報を指します。').setFontSize(10);
-    body.appendParagraph('');
-
-    // 第2条
-    body.appendParagraph('第2条（遵守事項）').setBold(true).setFontSize(10);
-    body.appendParagraph('1. 本分科会の正規メンバー以外の第三者に、秘密情報を開示・漏洩しないこと。').setFontSize(10);
-    body.appendParagraph('2. 経営相談およびそれに伴う学術研究・教育以外の目的で、秘密情報を使用しないこと。').setFontSize(10);
-    body.appendParagraph('3. SNSやブログ等のインターネット上に、相談企業が特定できる情報や活動内容を投稿しないこと。').setFontSize(10);
-    body.appendParagraph('4. 学術・教育目的で事例を利用する場合は、相談企業の事前同意に基づき、企業および個人が特定されないよう厳格な匿名化・統計化処理を施すこと。').setFontSize(10);
-    body.appendParagraph('5. 活動終了時または研究会の指示があった際は、秘密情報を含む資料・データ等を速やかに返還または廃棄すること。').setFontSize(10);
-    body.appendParagraph('');
-
-    // 第3条
-    body.appendParagraph('第3条（期間および損害賠償）').setBold(true).setFontSize(10);
-    body.appendParagraph('1. 本誓約の義務は、本分科会の活動終了後および養成課程修了後も存続するものとします。').setFontSize(10);
-    body.appendParagraph('2. 本誓約に違反し、研究会または相談企業に損害を与えた場合は、法的責任を負うとともに、研究会の処分に従います。').setFontSize(10);
-
-    body.appendParagraph('');
-    body.appendHorizontalRule();
-    body.appendParagraph('');
-
-    // 署名情報
-    body.appendParagraph('相談日：' + data.consultDate).setFontSize(10);
-    body.appendParagraph('相談企業名：' + data.company).setFontSize(10);
-    body.appendParagraph('');
-    body.appendParagraph('【誓約者】').setFontSize(10).setBold(true);
-    body.appendParagraph('氏名：' + data.observerName).setFontSize(10);
-    body.appendParagraph('署名日：' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日')).setFontSize(10);
-    body.appendParagraph('');
-
-    // 署名画像を挿入
-    body.appendImage(signatureBlob).setWidth(200).setHeight(60);
-
-    doc.saveAndClose();
-
-    // PDFに変換
-    var docFile = DriveApp.getFileById(doc.getId());
-    var pdfBlob = docFile.getAs('application/pdf');
-    var fileName = docName + '.pdf';
-    pdfBlob.setName(fileName);
-
-    // 保存先フォルダ
-    var folder;
-    if (CONFIG.OBSERVER_NDA.DRIVE_FOLDER_ID) {
-      folder = DriveApp.getFolderById(CONFIG.OBSERVER_NDA.DRIVE_FOLDER_ID);
-    } else {
-      folder = DriveApp.getRootFolder();
-    }
-    var pdfFile = folder.createFile(pdfBlob);
-    pdfFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-
-    // 一時Google Docを削除
-    docFile.setTrashed(true);
-
-    var fileId = pdfFile.getId();
-    var fileUrl = 'https://drive.google.com/file/d/' + fileId + '/view';
-
-    // スプレッドシートに記録
+    // スプレッドシートに記録（署名base64も保存）
     sheet.appendRow([
       new Date(),
       data.observerName,
       data.consultDate,
       data.company,
       data.staff,
-      fileId,
-      fileUrl
+      '（メール添付）',
+      data.signatureBase64 ? data.signatureBase64.substring(0, 100) + '...' : ''
     ]);
 
-    // 管理者に通知
+    // 管理者にNDAをメール添付で送信
     var subject = '【NDA提出】' + data.observerName + ' - ' + data.company;
     var emailBody = 'オブザーバーから署名済みNDAが提出されました。\n\n' +
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
@@ -346,19 +260,65 @@ function saveSignedNda(data) {
       '相談日：' + data.consultDate + '\n' +
       '相談企業：' + data.company + '\n' +
       '相談予定可能者：' + data.staff + '\n' +
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-      'ファイル：' + fileUrl + '\n';
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      '署名済みNDA（HTMLファイル）を添付しています。\n' +
+      'ブラウザで開いて印刷（PDF保存）できます。\n';
 
     CONFIG.ADMIN_EMAILS.forEach(function (email) {
-      GmailApp.sendEmail(email, subject, emailBody, { name: CONFIG.SENDER_NAME });
+      GmailApp.sendEmail(email, subject, emailBody, {
+        name: CONFIG.SENDER_NAME,
+        attachments: [htmlBlob]
+      });
     });
 
-    return { success: true, message: 'NDAを提出しました', fileUrl: fileUrl };
+    return { success: true, message: 'NDAを提出しました' };
   } catch (error) {
     console.error('NDA保存エラー:', error);
     return { success: false, message: error.toString() };
   }
 }
+
+/**
+ * NDA内容をHTMLで生成（署名画像はdata URI埋め込み）
+ */
+function buildNdaHtml(data) {
+  var esc = function(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var sigDate = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日');
+
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+    '<style>' +
+    'body{font-family:"Hiragino Sans","Yu Gothic","Meiryo",sans-serif;font-size:11pt;margin:40px 50px;line-height:1.7;color:#222}' +
+    'h1{text-align:center;font-size:16pt;margin-bottom:2px}' +
+    '.sub{text-align:center;font-size:10pt;color:#666;margin-bottom:20px}' +
+    '.art{font-weight:bold;margin-top:14px}' +
+    'hr{margin:20px 0;border:none;border-top:1px solid #999}' +
+    '.sig{margin-top:8px}' +
+    '</style></head><body>' +
+    '<h1>秘密保持誓約書</h1>' +
+    '<p class="sub">養成課程在学生（オブザーバー）用</p>' +
+    '<p>相談予定可能者：' + esc(data.staff) + ' 殿</p>' +
+    '<p>私は、「経営診断研究会 無料経営相談分科会」（以下「本分科会」といいます）が実施する無料経営相談にオブザーバーとして出席するにあたり、個人の責任として、以下の事項を遵守することを誓約いたします。</p>' +
+    '<p class="art">第1条（秘密情報の定義）</p>' +
+    '<p>本誓約における「秘密情報」とは、本分科会の活動を通じて知り得た、相談企業の経営・財務・技術等の情報、関係者の個人情報、および活動中に作成された相談資料・録音データ等、一切の情報を指します。</p>' +
+    '<p class="art">第2条（遵守事項）</p>' +
+    '<p>1. 本分科会の正規メンバー以外の第三者に、秘密情報を開示・漏洩しないこと。</p>' +
+    '<p>2. 経営相談およびそれに伴う学術研究・教育以外の目的で、秘密情報を使用しないこと。</p>' +
+    '<p>3. SNSやブログ等のインターネット上に、相談企業が特定できる情報や活動内容を投稿しないこと。</p>' +
+    '<p>4. 学術・教育目的で事例を利用する場合は、相談企業の事前同意に基づき、企業および個人が特定されないよう厳格な匿名化・統計化処理を施すこと。</p>' +
+    '<p>5. 活動終了時または研究会の指示があった際は、秘密情報を含む資料・データ等を速やかに返還または廃棄すること。</p>' +
+    '<p class="art">第3条（期間および損害賠償）</p>' +
+    '<p>1. 本誓約の義務は、本分科会の活動終了後および養成課程修了後も存続するものとします。</p>' +
+    '<p>2. 本誓約に違反し、研究会または相談企業に損害を与えた場合は、法的責任を負うとともに、研究会の処分に従います。</p>' +
+    '<hr>' +
+    '<p>相談日：' + esc(data.consultDate) + '</p>' +
+    '<p>相談企業名：' + esc(data.company) + '</p>' +
+    '<p><strong>【誓約者】</strong></p>' +
+    '<p>氏名：' + esc(data.observerName) + '</p>' +
+    '<p>署名日：' + sigDate + '</p>' +
+    '<div class="sig"><img src="data:image/png;base64,' + data.signatureBase64 + '" width="200" height="60"></div>' +
+    '</body></html>';
+}
+
 
 /**
  * オブザーバーNDA管理シートのセットアップ
