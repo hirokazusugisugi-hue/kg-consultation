@@ -651,3 +651,588 @@ function getConsentAlreadyAgreedPageHtml(data) {
 </body>
 </html>`;
 }
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// アンケートページHTML
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+function getSurveyPageHtml(tokenData) {
+  var webAppUrl = CONFIG.CONSENT.WEB_APP_URL;
+  return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>相談後アンケート</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans JP', sans-serif; background: #f5f5f7; color: #1a1a1a; line-height: 1.8; }
+    .header { background: #0F2350; color: #fff; padding: 1.5rem; text-align: center; }
+    .header h1 { font-size: 1.2rem; font-weight: 500; }
+    .container { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .card { background: #fff; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.2rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .card h2 { font-size: 1rem; color: #0F2350; margin-bottom: 0.8rem; border-left: 4px solid #0F2350; padding-left: 0.8rem; }
+    .q-label { font-weight: 500; margin-bottom: 0.5rem; font-size: 0.95rem; }
+    .required { color: #c00; font-size: 0.75rem; margin-left: 0.3rem; }
+    .radio-group, .check-group { margin: 0.5rem 0 1rem 0; }
+    .radio-group label, .check-group label { display: block; padding: 0.5rem 0.8rem; margin: 0.3rem 0; background: #f8f9fa; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+    .radio-group label:hover, .check-group label:hover { background: #eef3ff; }
+    .radio-group input, .check-group input { margin-right: 0.5rem; }
+    .sns-sub { margin-left: 2rem; padding: 0.5rem; background: #f0f4ff; border-radius: 8px; display: none; }
+    .sns-sub.show { display: block; }
+    .sns-sub label { display: inline-block; margin: 0.2rem 0.5rem; font-size: 0.85rem; }
+    .scale-group { display: flex; justify-content: space-between; margin: 0.5rem 0; gap: 0.3rem; }
+    .scale-group label { flex: 1; text-align: center; padding: 0.6rem 0.2rem; background: #f8f9fa; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+    .scale-group input { display: none; }
+    .scale-group input:checked + span { background: #0F2350; color: #fff; display: block; border-radius: 8px; padding: 0.6rem 0.2rem; margin: -0.6rem -0.2rem; }
+    .scale-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; margin-top: 0.2rem; }
+    textarea { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 0.8rem; font-size: 0.9rem; font-family: inherit; resize: vertical; min-height: 80px; }
+    .comment-box { display: none; margin-top: 0.5rem; }
+    .comment-box.show { display: block; }
+    .btn { display: block; width: 100%; padding: 1rem; background: #0F2350; color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 1rem; }
+    .btn:hover { background: #1a3570; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .success { text-align: center; padding: 3rem 1rem; }
+    .success h2 { color: #0F2350; margin-bottom: 1rem; }
+    .info-bar { background: #eef3ff; padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>無料経営相談 アンケート</h1>
+    <p style="font-size:0.8rem; opacity:0.8; margin-top:0.3rem;">関西学院大学 中小企業経営診断研究会</p>
+  </div>
+
+  <div class="container" id="formContainer">
+    <div class="info-bar">
+      ${tokenData.name} 様（${tokenData.company || ''}）<br>
+      ご利用ありがとうございました。今後の改善のため、アンケートにご協力ください。
+    </div>
+
+    <!-- Q1 -->
+    <div class="card">
+      <div class="q-label">Q1. 本プロジェクトを知ったきっかけ<span class="required">※複数選択可</span></div>
+      <div class="check-group">
+        <label><input type="checkbox" name="q1" value="大学の案内・掲示"> 大学の案内・掲示</label>
+        <label><input type="checkbox" name="q1" value="知人・友人の紹介"> 知人・友人の紹介</label>
+        <label><input type="checkbox" name="q1" value="SNS" id="q1Sns"> SNS</label>
+        <div class="sns-sub" id="snsSub">
+          <label><input type="radio" name="q1sns" value="LINE"> LINE</label>
+          <label><input type="radio" name="q1sns" value="Twitter/X"> Twitter/X</label>
+          <label><input type="radio" name="q1sns" value="Facebook"> Facebook</label>
+          <label><input type="radio" name="q1sns" value="Instagram"> Instagram</label>
+          <label><input type="radio" name="q1sns" value="その他SNS"> その他</label>
+        </div>
+        <label><input type="checkbox" name="q1" value="インターネット検索"> インターネット検索</label>
+        <label><input type="checkbox" name="q1" value="商工会議所・支援機関からの紹介"> 商工会議所・支援機関からの紹介</label>
+        <label><input type="checkbox" name="q1" value="その他"> その他</label>
+        <div class="comment-box" id="q1Other"><textarea id="q1OtherText" placeholder="具体的にお聞かせください"></textarea></div>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="card">
+      <div class="q-label">Q2. 相談までの手続きはスムーズでしたか？<span class="required">※必須</span></div>
+      <div class="scale-group" id="q2Scale">
+        <label><input type="radio" name="q2" value="1"><span>1<br>スムーズ<br>でない</span></label>
+        <label><input type="radio" name="q2" value="2"><span>2</span></label>
+        <label><input type="radio" name="q2" value="3"><span>3</span></label>
+        <label><input type="radio" name="q2" value="4"><span>4</span></label>
+        <label><input type="radio" name="q2" value="5"><span>5<br>とても<br>スムーズ</span></label>
+      </div>
+      <div class="comment-box" id="q2Comment"><textarea id="q2CommentText" placeholder="改善点をお聞かせください"></textarea></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="card">
+      <div class="q-label">Q3. 相談内容についての感想</div>
+      <textarea id="q3" placeholder="ご自由にお書きください"></textarea>
+    </div>
+
+    <!-- Q4 -->
+    <div class="card">
+      <div class="q-label">Q4. 相談時間について<span class="required">※必須</span></div>
+      <div class="radio-group">
+        <label><input type="radio" name="q4" value="長すぎた"> 長すぎた</label>
+        <label><input type="radio" name="q4" value="やや長い"> やや長い</label>
+        <label><input type="radio" name="q4" value="ちょうどよい"> ちょうどよい</label>
+        <label><input type="radio" name="q4" value="やや短い"> やや短い</label>
+        <label><input type="radio" name="q4" value="短すぎた"> 短すぎた</label>
+      </div>
+    </div>
+
+    <!-- Q5-Q8 -->
+    <div class="card">
+      <div class="q-label">Q5. 相談員の説明はわかりやすかったですか？<span class="required">※必須</span></div>
+      <div class="scale-group"><label><input type="radio" name="q5" value="1"><span>1</span></label><label><input type="radio" name="q5" value="2"><span>2</span></label><label><input type="radio" name="q5" value="3"><span>3</span></label><label><input type="radio" name="q5" value="4"><span>4</span></label><label><input type="radio" name="q5" value="5"><span>5</span></label></div>
+      <div class="scale-labels"><span>わかりにくい</span><span>とてもわかりやすい</span></div>
+    </div>
+
+    <div class="card">
+      <div class="q-label">Q6. 相談内容は課題解決の参考になりましたか？<span class="required">※必須</span></div>
+      <div class="scale-group"><label><input type="radio" name="q6" value="1"><span>1</span></label><label><input type="radio" name="q6" value="2"><span>2</span></label><label><input type="radio" name="q6" value="3"><span>3</span></label><label><input type="radio" name="q6" value="4"><span>4</span></label><label><input type="radio" name="q6" value="5"><span>5</span></label></div>
+      <div class="scale-labels"><span>参考にならない</span><span>とても参考になった</span></div>
+    </div>
+
+    <div class="card">
+      <div class="q-label">Q7. 相談員の対応は誠実・丁寧でしたか？<span class="required">※必須</span></div>
+      <div class="scale-group"><label><input type="radio" name="q7" value="1"><span>1</span></label><label><input type="radio" name="q7" value="2"><span>2</span></label><label><input type="radio" name="q7" value="3"><span>3</span></label><label><input type="radio" name="q7" value="4"><span>4</span></label><label><input type="radio" name="q7" value="5"><span>5</span></label></div>
+      <div class="scale-labels"><span>不満</span><span>とても満足</span></div>
+    </div>
+
+    <div class="card">
+      <div class="q-label">Q8. 具体的な行動につながるアドバイスがありましたか？<span class="required">※必須</span></div>
+      <div class="scale-group"><label><input type="radio" name="q8" value="1"><span>1</span></label><label><input type="radio" name="q8" value="2"><span>2</span></label><label><input type="radio" name="q8" value="3"><span>3</span></label><label><input type="radio" name="q8" value="4"><span>4</span></label><label><input type="radio" name="q8" value="5"><span>5</span></label></div>
+      <div class="scale-labels"><span>なかった</span><span>とてもあった</span></div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="card">
+      <div class="q-label">Q9. また相談を受けてみたいですか？<span class="required">※必須</span></div>
+      <div class="scale-group">
+        <label><input type="radio" name="q9" value="1"><span>1<br>また<br>受けたい</span></label>
+        <label><input type="radio" name="q9" value="2"><span>2<br>少しは<br>受けたい</span></label>
+        <label><input type="radio" name="q9" value="3"><span>3<br>どちらでも<br>ない</span></label>
+        <label><input type="radio" name="q9" value="4"><span>4<br>あまり受け<br>たくない</span></label>
+        <label><input type="radio" name="q9" value="5"><span>5<br>全く受け<br>たくない</span></label>
+      </div>
+      <textarea id="q9Reason" placeholder="理由をお聞かせください" style="margin-top:0.5rem;"></textarea>
+    </div>
+
+    <!-- Q10 -->
+    <div class="card">
+      <div class="q-label">Q10. 他の方にすすめたいですか？<span class="required">※必須</span></div>
+      <div class="scale-group">
+        <label><input type="radio" name="q10" value="1"><span>1<br>強く<br>勧めたい</span></label>
+        <label><input type="radio" name="q10" value="2"><span>2<br>勧めたい</span></label>
+        <label><input type="radio" name="q10" value="3"><span>3<br>どちらでも<br>ない</span></label>
+        <label><input type="radio" name="q10" value="4"><span>4<br>勧め<br>たくない</span></label>
+        <label><input type="radio" name="q10" value="5"><span>5<br>絶対に勧め<br>たくない</span></label>
+      </div>
+      <textarea id="q10Reason" placeholder="理由をお聞かせください" style="margin-top:0.5rem;"></textarea>
+    </div>
+
+    <!-- Q11 -->
+    <div class="card">
+      <div class="q-label">Q11. 後日、終了後レポートを希望しますか？</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q11" value="希望する"> 希望する</label>
+        <label><input type="radio" name="q11" value="希望しない"> 希望しない</label>
+      </div>
+    </div>
+
+    <button class="btn" id="submitBtn" onclick="submitSurvey()">回答を送信する</button>
+  </div>
+
+  <div class="container" id="successContainer" style="display:none;">
+    <div class="card success">
+      <h2>ご回答ありがとうございました</h2>
+      <p>今後のサービス向上に役立ててまいります。</p>
+    </div>
+  </div>
+
+  <script>
+    // SNSサブ選択の表示切替
+    document.getElementById('q1Sns').addEventListener('change', function() {
+      document.getElementById('snsSub').classList.toggle('show', this.checked);
+    });
+
+    // Q1その他
+    document.querySelectorAll('input[name="q1"][value="その他"]')[0].addEventListener('change', function() {
+      document.getElementById('q1Other').classList.toggle('show', this.checked);
+    });
+
+    // Q2: 4以下でコメント表示
+    document.querySelectorAll('input[name="q2"]').forEach(function(r) {
+      r.addEventListener('change', function() {
+        document.getElementById('q2Comment').classList.toggle('show', parseInt(this.value) <= 4);
+      });
+    });
+
+    // 5段階のスタイル
+    document.querySelectorAll('.scale-group label').forEach(function(label) {
+      label.addEventListener('click', function() {
+        var group = this.parentElement;
+        group.querySelectorAll('label').forEach(function(l) { l.style.background = '#f8f9fa'; l.style.color = '#1a1a1a'; });
+        this.style.background = '#0F2350';
+        this.style.color = '#fff';
+      });
+    });
+
+    function submitSurvey() {
+      var btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = '送信中...';
+
+      var q1vals = [];
+      document.querySelectorAll('input[name="q1"]:checked').forEach(function(c) { q1vals.push(c.value); });
+      var q1other = document.getElementById('q1OtherText').value;
+      if (q1other) q1vals.push('その他:' + q1other);
+
+      var formData = {
+        applicationId: '${tokenData.applicationId || ""}',
+        name: '${tokenData.name || ""}',
+        company: '${tokenData.company || ""}',
+        q1: q1vals.join(', '),
+        q1Sns: (document.querySelector('input[name="q1sns"]:checked') || {}).value || '',
+        q2: (document.querySelector('input[name="q2"]:checked') || {}).value || '',
+        q2Comment: document.getElementById('q2CommentText').value,
+        q3: document.getElementById('q3').value,
+        q4: (document.querySelector('input[name="q4"]:checked') || {}).value || '',
+        q5: (document.querySelector('input[name="q5"]:checked') || {}).value || '',
+        q6: (document.querySelector('input[name="q6"]:checked') || {}).value || '',
+        q7: (document.querySelector('input[name="q7"]:checked') || {}).value || '',
+        q8: (document.querySelector('input[name="q8"]:checked') || {}).value || '',
+        q9: (document.querySelector('input[name="q9"]:checked') || {}).value || '',
+        q9Reason: document.getElementById('q9Reason').value,
+        q10: (document.querySelector('input[name="q10"]:checked') || {}).value || '',
+        q10Reason: document.getElementById('q10Reason').value,
+        q11: (document.querySelector('input[name="q11"]:checked') || {}).value || ''
+      };
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('formContainer').style.display = 'none';
+          document.getElementById('successContainer').style.display = 'block';
+        })
+        .withFailureHandler(function(err) {
+          alert('送信エラー: ' + err.message);
+          btn.disabled = false;
+          btn.textContent = '回答を送信する';
+        })
+        .submitSurveyResponse(formData);
+    }
+  </script>
+</body>
+</html>`;
+}
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// オブザーバー専用ページHTML
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+function getObserverPageHtml(schedules) {
+  var schedulesJson = JSON.stringify(schedules);
+  var webAppUrl = CONFIG.CONSENT.WEB_APP_URL;
+  return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>オブザーバー専用ページ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans JP', sans-serif; background: #f5f5f7; color: #1a1a1a; line-height: 1.8; }
+    .header { background: #0F2350; color: #fff; padding: 1.5rem; text-align: center; }
+    .header h1 { font-size: 1.2rem; font-weight: 500; }
+    .container { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .card { background: #fff; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.2rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .schedule-item { border-left: 4px solid #0F2350; padding-left: 1rem; margin-bottom: 1rem; }
+    .schedule-date { font-size: 1.1rem; font-weight: 700; color: #0F2350; }
+    .schedule-info { font-size: 0.9rem; color: #555; margin: 0.3rem 0; }
+    .btn-group { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; }
+    .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+    .btn-primary { background: #0F2350; color: #fff; }
+    .btn-primary:hover { background: #1a3570; }
+    .btn-secondary { background: #e8ecf1; color: #0F2350; }
+    .btn-secondary:hover { background: #d0d8e4; }
+    .btn-success { background: #28a745; color: #fff; }
+
+    /* 署名モーダル */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; }
+    .modal-overlay.show { display: flex; align-items: center; justify-content: center; }
+    .modal { background: #fff; border-radius: 16px; padding: 1.5rem; width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal h2 { font-size: 1.1rem; color: #0F2350; margin-bottom: 1rem; }
+    .modal .field { margin-bottom: 0.8rem; }
+    .modal .field label { font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.3rem; }
+    .modal .field input { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; }
+    .modal .field input:read-only { background: #f0f0f0; }
+
+    /* 署名Canvas */
+    .sig-container { border: 2px solid #0F2350; border-radius: 8px; margin: 0.5rem 0; position: relative; background: #fff; }
+    .sig-container canvas { display: block; width: 100%; touch-action: none; }
+    .sig-label { font-size: 0.8rem; color: #888; text-align: center; padding: 0.3rem; }
+    .sig-clear { position: absolute; top: 0.3rem; right: 0.3rem; background: #e8ecf1; border: none; border-radius: 4px; padding: 0.2rem 0.5rem; font-size: 0.75rem; cursor: pointer; }
+
+    .nda-preview { max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; font-size: 0.8rem; margin: 0.5rem 0; background: #fafafa; }
+    .status-msg { text-align: center; padding: 1rem; font-size: 0.9rem; }
+    .status-msg.success { color: #28a745; }
+    .status-msg.error { color: #c00; }
+    .empty-msg { text-align: center; color: #888; padding: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>オブザーバー専用ページ</h1>
+    <p style="font-size:0.8rem; opacity:0.8; margin-top:0.3rem;">関西学院大学 中小企業経営診断研究会</p>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2 style="font-size:1rem; color:#0F2350; margin-bottom:1rem;">相談予定一覧</h2>
+      <div id="scheduleList"></div>
+    </div>
+  </div>
+
+  <!-- 署名モーダル -->
+  <div class="modal-overlay" id="signModal">
+    <div class="modal">
+      <h2>秘密保持誓約書 署名</h2>
+      <div class="field">
+        <label>相談日</label>
+        <input type="text" id="signDate" readonly>
+      </div>
+      <div class="field">
+        <label>相談担当者</label>
+        <input type="text" id="signStaff" readonly>
+      </div>
+      <div class="field">
+        <label>相談企業名</label>
+        <input type="text" id="signCompany" readonly>
+      </div>
+      <div class="field">
+        <label>オブザーバー氏名</label>
+        <input type="text" id="signName" placeholder="氏名を入力">
+      </div>
+
+      <div class="nda-preview">
+        <strong>秘密保持誓約書（養成課程在学生・オブザーバー用）</strong><br><br>
+        私は、「経営診断研究会 無料経営相談分科会」（以下「本分科会」といいます）が実施する無料経営相談にオブザーバーとして出席するにあたり、個人の責任として、以下の事項を遵守することを誓約いたします。<br><br>
+        <strong>第1条（秘密情報の定義）</strong><br>
+        本誓約における「秘密情報」とは、本分科会の活動を通じて知り得た、相談企業の経営・財務・技術等の情報、関係者の個人情報、および活動中に作成された相談資料・録音データ等、一切の情報を指します。<br><br>
+        <strong>第2条（遵守事項）</strong><br>
+        1. 本分科会の正規メンバー以外の第三者に、秘密情報を開示・漏洩しないこと。<br>
+        2. 経営相談およびそれに伴う学術研究・教育以外の目的で、秘密情報を使用しないこと。<br>
+        3. SNSやブログ等のインターネット上に、相談企業が特定できる情報や活動内容を投稿しないこと。<br>
+        4. 学術・教育目的で事例を利用する場合は、相談企業の事前同意に基づき、企業および個人が特定されないよう厳格な匿名化・統計化処理を施すこと。<br>
+        5. 活動終了時または研究会の指示があった際は、秘密情報を含む資料・データ等を速やかに返還または廃棄すること。<br><br>
+        <strong>第3条（期間および損害賠償）</strong><br>
+        1. 本誓約の義務は、本分科会の活動終了後および養成課程修了後も存続するものとします。<br>
+        2. 本誓約に違反し、研究会または相談企業に損害を与えた場合は、法的責任を負うとともに、研究会の処分に従います。
+      </div>
+
+      <div class="sig-container">
+        <div class="sig-label">署名欄（指またはペンで署名してください）</div>
+        <canvas id="sigCanvas" width="460" height="150"></canvas>
+        <button class="sig-clear" onclick="clearSignature()">やり直し</button>
+      </div>
+
+      <div id="signStatus" class="status-msg"></div>
+
+      <div class="btn-group" style="justify-content:center; margin-top:1rem;">
+        <button class="btn btn-secondary" onclick="closeSignModal()">キャンセル</button>
+        <button class="btn btn-primary" id="signSubmitBtn" onclick="submitSignedNda()">署名して提出</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var schedules = ${schedulesJson};
+    var sigCanvas, sigCtx, isDrawing = false;
+
+    // 相談予定一覧の描画
+    function renderSchedules() {
+      var list = document.getElementById('scheduleList');
+      if (!schedules || schedules.length === 0) {
+        list.innerHTML = '<div class="empty-msg">現在、相談予定はありません</div>';
+        return;
+      }
+      var html = '';
+      schedules.forEach(function(s) {
+        html += '<div class="schedule-item">' +
+          '<div class="schedule-date">' + s.date + '</div>' +
+          '<div class="schedule-info">企業名：' + s.company + '</div>' +
+          '<div class="schedule-info">担当者：' + s.staff + '</div>' +
+          '<div class="btn-group">' +
+          '<button class="btn btn-primary" onclick="openSignModal(\\'' + s.dateRaw + '\\',\\'' + s.staff + '\\',\\'' + s.company + '\\')">署名して提出</button>' +
+          '</div></div>';
+      });
+      list.innerHTML = html;
+    }
+
+    // 署名モーダル
+    function openSignModal(date, staff, company) {
+      document.getElementById('signDate').value = date;
+      document.getElementById('signStaff').value = staff;
+      document.getElementById('signCompany').value = company;
+      document.getElementById('signName').value = '';
+      document.getElementById('signStatus').textContent = '';
+      document.getElementById('signModal').classList.add('show');
+      initSignatureCanvas();
+    }
+
+    function closeSignModal() {
+      document.getElementById('signModal').classList.remove('show');
+    }
+
+    // 署名Canvas
+    function initSignatureCanvas() {
+      sigCanvas = document.getElementById('sigCanvas');
+      sigCtx = sigCanvas.getContext('2d');
+      var rect = sigCanvas.parentElement.getBoundingClientRect();
+      sigCanvas.width = rect.width - 4;
+      sigCanvas.height = 150;
+      sigCtx.strokeStyle = '#000';
+      sigCtx.lineWidth = 2;
+      sigCtx.lineCap = 'round';
+      clearSignature();
+
+      sigCanvas.addEventListener('mousedown', startDraw);
+      sigCanvas.addEventListener('mousemove', draw);
+      sigCanvas.addEventListener('mouseup', stopDraw);
+      sigCanvas.addEventListener('touchstart', startDrawTouch, { passive: false });
+      sigCanvas.addEventListener('touchmove', drawTouch, { passive: false });
+      sigCanvas.addEventListener('touchend', stopDraw);
+    }
+
+    function getPos(e) {
+      var rect = sigCanvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    function startDraw(e) { isDrawing = true; var p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }
+    function draw(e) { if (!isDrawing) return; var p = getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); }
+    function stopDraw() { isDrawing = false; }
+
+    function startDrawTouch(e) { e.preventDefault(); var t = e.touches[0]; startDraw({ clientX: t.clientX, clientY: t.clientY }); }
+    function drawTouch(e) { e.preventDefault(); var t = e.touches[0]; draw({ clientX: t.clientX, clientY: t.clientY }); }
+
+    function clearSignature() {
+      if (sigCtx) {
+        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+        sigCtx.fillStyle = '#fff';
+        sigCtx.fillRect(0, 0, sigCanvas.width, sigCanvas.height);
+      }
+    }
+
+    function isCanvasBlank() {
+      var data = sigCtx.getImageData(0, 0, sigCanvas.width, sigCanvas.height).data;
+      for (var i = 0; i < data.length; i += 4) {
+        if (data[i] < 250 || data[i+1] < 250 || data[i+2] < 250) return false;
+      }
+      return true;
+    }
+
+    // NDA提出
+    function submitSignedNda() {
+      var name = document.getElementById('signName').value.trim();
+      if (!name) { alert('氏名を入力してください'); return; }
+      if (isCanvasBlank()) { alert('署名を記入してください'); return; }
+
+      var btn = document.getElementById('signSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = '送信中...';
+      document.getElementById('signStatus').textContent = '署名入りPDFを生成しています...';
+      document.getElementById('signStatus').className = 'status-msg';
+
+      // jsPDFで署名入りPDF生成
+      var { jsPDF } = window.jspdf;
+      var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+      doc.setFontSize(16);
+      doc.text('秘密保持誓約書', 105, 25, { align: 'center' });
+      doc.setFontSize(9);
+      doc.text('養成課程在学生（オブザーバー）用', 105, 32, { align: 'center' });
+
+      var y = 45;
+      doc.setFontSize(10);
+      doc.text('相談担当者：' + document.getElementById('signStaff').value + ' 殿', 25, y);
+      y += 12;
+
+      doc.setFontSize(9);
+      var intro = '私は、「経営診断研究会 無料経営相談分科会」（以下「本分科会」といいます）が実施する無料経営相談にオブザーバーとして出席するにあたり、個人の責任として、以下の事項を遵守することを誓約いたします。';
+      var lines = doc.splitTextToSize(intro, 160);
+      doc.text(lines, 25, y);
+      y += lines.length * 5 + 8;
+
+      // 条文（簡略版）
+      var articles = [
+        '第1条（秘密情報の定義）',
+        '本誓約における「秘密情報」とは、本分科会の活動を通じて知り得た、相談企業の経営・財務・技術等の情報、関係者の個人情報、および活動中に作成された相談資料・録音データ等、一切の情報を指します。',
+        '',
+        '第2条（遵守事項）',
+        '私は、秘密情報の取り扱いについて、善良なる管理者の注意をもって遵守します。（1.第三者への非開示 2.目的外使用の禁止 3.SNS投稿禁止 4.匿名化処理 5.資料返還・廃棄）',
+        '',
+        '第3条（期間および損害賠償）',
+        '1. 本誓約の義務は、本分科会の活動終了後および養成課程修了後も存続するものとします。',
+        '2. 本誓約に違反した場合は、法的責任を負うとともに、研究会の処分に従います。'
+      ];
+
+      articles.forEach(function(line) {
+        if (!line) { y += 3; return; }
+        if (line.startsWith('第')) {
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'bold');
+          doc.text(line, 25, y);
+          doc.setFont(undefined, 'normal');
+          doc.setFontSize(9);
+          y += 7;
+        } else {
+          var ls = doc.splitTextToSize(line, 155);
+          doc.text(ls, 30, y);
+          y += ls.length * 5 + 2;
+        }
+      });
+
+      y += 5;
+      doc.line(25, y, 185, y);
+      y += 8;
+
+      doc.setFontSize(9);
+      doc.text('相談日：' + document.getElementById('signDate').value, 25, y);
+      y += 7;
+      doc.text('相談企業名：' + document.getElementById('signCompany').value, 25, y);
+      y += 10;
+
+      doc.text('【誓約者】', 25, y);
+      y += 7;
+      doc.text('氏名：' + name, 25, y);
+      y += 8;
+
+      // 署名画像を埋め込み
+      var sigImage = sigCanvas.toDataURL('image/png');
+      doc.addImage(sigImage, 'PNG', 60, y, 80, 25);
+
+      // PDFをBase64に変換
+      var pdfBase64 = doc.output('datauristring').split(',')[1];
+
+      document.getElementById('signStatus').textContent = 'アップロード中...';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            document.getElementById('signStatus').textContent = '提出完了しました';
+            document.getElementById('signStatus').className = 'status-msg success';
+            btn.textContent = '提出完了';
+          } else {
+            document.getElementById('signStatus').textContent = 'エラー: ' + result.message;
+            document.getElementById('signStatus').className = 'status-msg error';
+            btn.disabled = false;
+            btn.textContent = '署名して提出';
+          }
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('signStatus').textContent = 'エラー: ' + err.message;
+          document.getElementById('signStatus').className = 'status-msg error';
+          btn.disabled = false;
+          btn.textContent = '署名して提出';
+        })
+        .saveSignedNda({
+          observerName: name,
+          consultDate: document.getElementById('signDate').value,
+          company: document.getElementById('signCompany').value,
+          staff: document.getElementById('signStaff').value,
+          pdfBase64: pdfBase64
+        });
+    }
+
+    renderSchedules();
+  </script>
+</body>
+</html>`;
+}

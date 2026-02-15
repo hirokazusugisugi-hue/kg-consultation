@@ -195,6 +195,48 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // アンケートシステム
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // アンケートページ表示
+    if (action === 'survey') {
+      return generateSurveyPage(e);
+    }
+
+    // アンケートシートセットアップ（管理用）
+    if (action === 'setup-survey') {
+      var surveyResult = setupSurveySheet();
+      return ContentService
+        .createTextOutput(JSON.stringify(surveyResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // アンケートトリガーセットアップ（管理用）
+    if (action === 'setup-survey-trigger') {
+      var triggerResult = setupSurveyTrigger();
+      return ContentService
+        .createTextOutput(JSON.stringify(triggerResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // オブザーバー専用ページ
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // オブザーバー専用ページ表示
+    if (action === 'observer') {
+      return generateObserverPage(e);
+    }
+
+    // オブザーバーNDAシートセットアップ（管理用）
+    if (action === 'setup-observer-nda') {
+      var observerNdaResult = setupObserverNdaSheet();
+      return ContentService
+        .createTextOutput(JSON.stringify(observerNdaResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // デフォルト: ステータス確認
     return ContentService
       .createTextOutput(JSON.stringify({
@@ -206,6 +248,8 @@ function doGet(e) {
           'GET ?action=nda&token=xxx': '同意書確認ページを表示',
           'GET ?action=news': 'お知らせ取得（LP用）',
           'GET ?action=news-admin': 'お知らせ管理ページ',
+          'GET ?action=survey&token=xxx': 'アンケートページ',
+          'GET ?action=observer': 'オブザーバー専用ページ',
           'POST': '予約申込'
         }
       }))

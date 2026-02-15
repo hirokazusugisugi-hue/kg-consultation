@@ -1097,3 +1097,413 @@ function manualReminderPolling() {
 
   console.log('手動2回目送信完了: ' + year + '年' + month + '月');
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 回答集計シート生成
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * 回答集計シートを生成・更新
+ * 日程×メンバーのマトリクス表示
+ */
+function generateSummarySheet() {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+
+  // シート取得または作成
+  var sheet = ss.getSheetByName(CONFIG.SUMMARY_SHEET_NAME);
+  if (sheet) {
+    sheet.clear();
+  } else {
+    sheet = ss.insertSheet(CONFIG.SUMMARY_SHEET_NAME);
+  }
+
+  // 日程設定シートからデータ取得
+  var scheduleSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+  if (!scheduleSheet) {
+    sheet.getRange(1, 1).setValue('日程設定シートが見つかりません');
+    return;
+  }
+
+  var scheduleData = scheduleSheet.getDataRange().getValues();
+
+  // スケジュール対象メンバー取得
+  var members = getScheduleMembers();
+  var memberNames = members.map(function(m) { return m.name; });
+
+  // 月ごとにグループ化
+  var monthGroups = {};
+  for (var i = 1; i < scheduleData.length; i++) {
+    var dateVal = scheduleData[i][SCHEDULE_COLUMNS.DATE];
+    if (!dateVal) continue;
+
+    var date = dateVal instanceof Date ? dateVal : new Date(dateVal);
+    var monthKey = date.getFullYear() + '年' + (date.getMonth() + 1) + '月';
+
+    if (!monthGroups[monthKey]) {
+      monthGroups[monthKey] = [];
+    }
+
+    var timeVal = scheduleData[i][SCHEDULE_COLUMNS.TIME];
+    var timeStr;
+    if (timeVal instanceof Date) {
+      timeStr = Utilities.formatDate(timeVal, 'Asia/Tokyo', 'HH:mm');
+    } else {
+      timeStr = String(timeVal);
+    }
+
+    var dow = date.getDay();
+    var dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+    var dateLabel = (date.getMonth() + 1) + '/' + date.getDate() + '(' + dayNames[dow] + ')';
+
+    var membersStr = scheduleData[i][SCHEDULE_COLUMNS.MEMBERS]
+      ? scheduleData[i][SCHEDULE_COLUMNS.MEMBERS].toString() : '';
+    var registeredMembers = membersStr
+      ? membersStr.split(',').map(function(n) { return n.trim(); })
+      : [];
+
+    monthGroups[monthKey].push({
+      dateLabel: dateLabel,
+      time: timeStr,
+      method: scheduleData[i][SCHEDULE_COLUMNS.METHOD] || '',
+      available: scheduleData[i][SCHEDULE_COLUMNS.AVAILABLE] || '',
+      booking: scheduleData[i][SCHEDULE_COLUMNS.BOOKING_STATUS] || '',
+      score: scheduleData[i][SCHEDULE_COLUMNS.SCORE] || 0,
+      bookable: scheduleData[i][SCHEDULE_COLUMNS.BOOKABLE] || '×',
+      registeredMembers: registeredMembers
+    });
+  }
+
+  // フォーム回答状況を取得
+  var props = PropertiesService.getScriptProperties().getProperties();
+  var formResponses = {};
+  Object.keys(props).forEach(function(key) {
+    if (key.indexOf('polling_form_') !== 0 && key.indexOf('polling_confirm_form_') !== 0) return;
+    try {
+      var formInfo = JSON.parse(props[key]);
+      if (formInfo.formId) {
+        var form = FormApp.openById(formInfo.formId);
+        var responses = form.getResponses();
+        responses.forEach(function(resp) {
+          var email = resp.getRespondentEmail();
+          if (email) {
+            formResponses[email.toLowerCase()] = {
+              submittedAt: resp.getTimestamp(),
+              round: formInfo.round
+            };
+          }
+        });
+      }
+    } catch (e) {}
+  });
+
+  // シート書き込み
+  var currentRow = 1;
+
+  var monthKeys = Object.keys(monthGroups).sort();
+  monthKeys.forEach(function(monthKey) {
+    var slots = monthGroups[monthKey];
+
+    // === 月タイトル ===
+    sheet.getRange(currentRow, 1).setValue(monthKey + ' 回答集計');
+    sheet.getRange(currentRow, 1, 1, memberNames.length + 5).merge();
+    sheet.getRange(currentRow, 1).setFontSize(14).setFontWeight('bold')
+      .setBackground('#0f2350').setFontColor('#ffffff');
+    currentRow++;
+
+    // === ヘッダー行 ===
+    var headers = ['日付', '時間', '方法', '予約状況', '判定'];
+    memberNames.forEach(function(name) {
+      // 苗字のみ表示
+      headers.push(name.split(' ')[0] || name);
+    });
+    headers.push('参加数', '配置点数');
+
+    sheet.getRange(currentRow, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(currentRow, 1, 1, headers.length)
+      .setBackground('#34495e').setFontColor('#ffffff').setFontWeight('bold')
+      .setHorizontalAlignment('center');
+    currentRow++;
+
+    // === データ行 ===
+    slots.forEach(function(slot) {
+      var row = [
+        slot.dateLabel,
+        slot.time,
+        slot.method === 'オンライン' ? 'Zoom' : slot.method === '両方' ? '対面/Zoom' : slot.method,
+        slot.booking || '空き',
+        slot.booking === '予約済み' ? '×' : slot.bookable
+      ];
+
+      var participantCount = 0;
+      memberNames.forEach(function(name) {
+        if (slot.registeredMembers.indexOf(name) !== -1) {
+          row.push('○');
+          participantCount++;
+        } else {
+          row.push('×');
+        }
+      });
+
+      row.push(participantCount);
+      row.push(slot.score);
+
+      sheet.getRange(currentRow, 1, 1, row.length).setValues([row]);
+
+      // セル書式設定
+      for (var col = 0; col < memberNames.length; col++) {
+        var cell = sheet.getRange(currentRow, 6 + col);
+        if (slot.registeredMembers.indexOf(memberNames[col]) !== -1) {
+          cell.setBackground('#d4edda').setHorizontalAlignment('center');
+        } else {
+          cell.setBackground('#f8d7da').setHorizontalAlignment('center');
+        }
+      }
+
+      // 予約状況の色
+      var bookingCell = sheet.getRange(currentRow, 4);
+      if (slot.booking === '予約済み') {
+        bookingCell.setBackground('#cce5ff').setFontWeight('bold');
+      }
+
+      // 判定の色（予約済みも×扱い）
+      var bookableCell = sheet.getRange(currentRow, 5);
+      bookableCell.setHorizontalAlignment('center');
+      if (slot.booking === '予約済み') {
+        bookableCell.setBackground('#cce5ff');
+      } else if (slot.bookable === '○') {
+        bookableCell.setBackground('#d4edda');
+      } else {
+        bookableCell.setBackground('#f8d7da');
+      }
+
+      currentRow++;
+    });
+
+    // === メンバー別 参加枠数サマリ ===
+    currentRow++;
+    var summaryRow = ['', '', '', '', '参加枠数'];
+    memberNames.forEach(function(name) {
+      var count = 0;
+      slots.forEach(function(slot) {
+        if (slot.registeredMembers.indexOf(name) !== -1) count++;
+      });
+      summaryRow.push(count + '/' + slots.length);
+    });
+    summaryRow.push('', '');
+    sheet.getRange(currentRow, 1, 1, summaryRow.length).setValues([summaryRow]);
+    sheet.getRange(currentRow, 1, 1, summaryRow.length)
+      .setBackground('#eee').setFontWeight('bold').setHorizontalAlignment('center');
+    currentRow++;
+
+    // === フォーム回答状況 ===
+    var responseRow = ['', '', '', '', '回答状況'];
+    memberNames.forEach(function(name) {
+      var member = members.find(function(m) { return m.name === name; });
+      if (member && member.email) {
+        var resp = formResponses[member.email.toLowerCase()];
+        if (resp) {
+          var d = resp.submittedAt;
+          responseRow.push('済 ' + (d.getMonth() + 1) + '/' + d.getDate());
+        } else {
+          responseRow.push('未回答');
+        }
+      } else {
+        responseRow.push('メール未設定');
+      }
+    });
+    responseRow.push('', '');
+    sheet.getRange(currentRow, 1, 1, responseRow.length).setValues([responseRow]);
+
+    // 未回答を赤く
+    for (var col = 0; col < memberNames.length; col++) {
+      var respCell = sheet.getRange(currentRow, 6 + col);
+      respCell.setHorizontalAlignment('center');
+      var val = responseRow[5 + col];
+      if (val === '未回答') {
+        respCell.setBackground('#f8d7da').setFontColor('#721c24');
+      } else if (val.indexOf('済') === 0) {
+        respCell.setBackground('#d4edda').setFontColor('#155724');
+      }
+    }
+
+    currentRow += 2;
+  });
+
+  // 列幅調整
+  sheet.setColumnWidth(1, 100);  // 日付
+  sheet.setColumnWidth(2, 60);   // 時間
+  sheet.setColumnWidth(3, 80);   // 方法
+  sheet.setColumnWidth(4, 80);   // 予約状況
+  sheet.setColumnWidth(5, 60);   // 判定
+  for (var c = 0; c < memberNames.length; c++) {
+    sheet.setColumnWidth(6 + c, 70);
+  }
+  sheet.setColumnWidth(6 + memberNames.length, 60);     // 参加数
+  sheet.setColumnWidth(6 + memberNames.length + 1, 70); // 配置点数
+
+  // 行固定なし（月ごとにヘッダーがあるため）
+  sheet.setFrozenRows(0);
+
+  console.log('回答集計シートを生成しました');
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ポーリング状況確認・回答集計
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * ポーリングの全体状況を取得
+ * トリガー設定状況、フォーム作成状況、回答状況を一覧で返す
+ * @returns {Object} ポーリング状況
+ */
+function getPollingStatus() {
+  var result = {
+    success: true,
+    timestamp: new Date().toISOString(),
+    triggers: [],
+    forms: [],
+    schedule_summary: [],
+    members: []
+  };
+
+  // 1. トリガー設定状況
+  var triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(function(trigger) {
+    result.triggers.push({
+      handler: trigger.getHandlerFunction(),
+      type: trigger.getEventType().toString(),
+      sourceId: trigger.getTriggerSourceId() || ''
+    });
+  });
+
+  // 2. 保存済みフォーム情報を検索（直近6ヶ月分）
+  var props = PropertiesService.getScriptProperties().getProperties();
+  var formKeys = Object.keys(props).filter(function(k) {
+    return k.indexOf('polling_form_') === 0 || k.indexOf('polling_confirm_form_') === 0;
+  });
+
+  formKeys.sort().forEach(function(key) {
+    try {
+      var formInfo = JSON.parse(props[key]);
+      var formEntry = {
+        key: key,
+        targetYear: formInfo.targetYear,
+        targetMonth: formInfo.targetMonth,
+        round: formInfo.round,
+        createdAt: formInfo.createdAt,
+        formUrl: formInfo.formUrl || '',
+        responseCount: 0,
+        responses: []
+      };
+
+      // フォームの回答を取得
+      if (formInfo.formId) {
+        try {
+          var form = FormApp.openById(formInfo.formId);
+          var responses = form.getResponses();
+          formEntry.responseCount = responses.length;
+
+          responses.forEach(function(resp) {
+            var respData = {
+              email: resp.getRespondentEmail() || '不明',
+              submittedAt: resp.getTimestamp().toISOString(),
+              answers: {}
+            };
+
+            resp.getItemResponses().forEach(function(ir) {
+              respData.answers[ir.getItem().getTitle()] = ir.getResponse();
+            });
+
+            formEntry.responses.push(respData);
+          });
+        } catch (formErr) {
+          formEntry.error = 'フォーム取得失敗: ' + formErr.message;
+        }
+      }
+
+      result.forms.push(formEntry);
+    } catch (e) {
+      result.forms.push({ key: key, error: e.message });
+    }
+  });
+
+  // 3. 日程設定シートの集計（直近3ヶ月分）
+  try {
+    var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    var sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+    if (sheet) {
+      var data = sheet.getDataRange().getValues();
+      var monthSummary = {};
+
+      for (var i = 1; i < data.length; i++) {
+        var dateVal = data[i][SCHEDULE_COLUMNS.DATE];
+        if (!dateVal) continue;
+
+        var date = dateVal instanceof Date ? dateVal : new Date(dateVal);
+        var monthKey = date.getFullYear() + '年' + (date.getMonth() + 1) + '月';
+
+        if (!monthSummary[monthKey]) {
+          monthSummary[monthKey] = { total: 0, bookable: 0, booked: 0, closed: 0, members_set: {} };
+        }
+
+        monthSummary[monthKey].total++;
+
+        var bookable = data[i][SCHEDULE_COLUMNS.BOOKABLE];
+        var booking = data[i][SCHEDULE_COLUMNS.BOOKING_STATUS];
+        var available = data[i][SCHEDULE_COLUMNS.AVAILABLE];
+
+        if (bookable === '○') monthSummary[monthKey].bookable++;
+        if (booking === '予約済み') monthSummary[monthKey].booked++;
+        if (available === '×') monthSummary[monthKey].closed++;
+
+        // 参加メンバーの集計
+        var members = data[i][SCHEDULE_COLUMNS.MEMBERS];
+        if (members) {
+          members.toString().split(',').forEach(function(name) {
+            var n = name.trim();
+            if (n) {
+              if (!monthSummary[monthKey].members_set[n]) {
+                monthSummary[monthKey].members_set[n] = 0;
+              }
+              monthSummary[monthKey].members_set[n]++;
+            }
+          });
+        }
+      }
+
+      Object.keys(monthSummary).sort().forEach(function(monthKey) {
+        var s = monthSummary[monthKey];
+        var memberList = [];
+        Object.keys(s.members_set).forEach(function(name) {
+          memberList.push({ name: name, slots: s.members_set[name] });
+        });
+        memberList.sort(function(a, b) { return b.slots - a.slots; });
+
+        result.schedule_summary.push({
+          month: monthKey,
+          total_slots: s.total,
+          bookable_slots: s.bookable,
+          booked_slots: s.booked,
+          closed_slots: s.closed,
+          members: memberList
+        });
+      });
+    }
+  } catch (e) {
+    result.schedule_error = e.message;
+  }
+
+  // 4. メンバー一覧
+  var members = getAllMembers();
+  members.forEach(function(m) {
+    result.members.push({
+      name: m.name,
+      term: m.term,
+      type: m.type,
+      email: m.email || '未設定',
+      isScheduleTarget: m.type !== '顧問'
+    });
+  });
+
+  return result;
+}

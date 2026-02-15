@@ -76,6 +76,25 @@ const CONFIG = {
   // 回答集計シート名
   SUMMARY_SHEET_NAME: '回答集計',
 
+  // アンケートシート名
+  SURVEY_SHEET_NAME: 'アンケート',
+
+  // オブザーバーNDAシート名
+  OBSERVER_NDA_SHEET_NAME: 'オブザーバーNDA',
+
+  // オブザーバーNDA設定
+  OBSERVER_NDA: {
+    // 署名済みNDA保存先DriveフォルダID（未設定時はルート）
+    DRIVE_FOLDER_ID: '',
+    // NDA PDFテンプレートURL
+    PDF_URL: 'https://raw.githubusercontent.com/hirokazusugisugi-hue/kg-consultation/main/observer_nda.pdf'
+  },
+
+  // アンケート自動送信設定
+  SURVEY: {
+    DELAY_HOURS: 2  // 相談終了後N時間後に送信
+  },
+
   // 返信先メールアドレス
   REPLY_TO: 'kgibaconsultant@gmail.com',
 
@@ -166,4 +185,42 @@ const NEWS_COLUMNS = {
   CONTENT: 1,    // B: 内容
   VISIBLE: 2,    // C: 表示フラグ
   CREATED_AT: 3  // D: 作成日時
+};
+
+/**
+ * アンケートシートの列定義
+ */
+const SURVEY_COLUMNS = {
+  TIMESTAMP: 0,    // A: 回答日時
+  APP_ID: 1,       // B: 申込ID
+  NAME: 2,         // C: 氏名
+  COMPANY: 3,      // D: 企業名
+  Q1: 4,           // E: きっかけ（複数選択）
+  Q1_SNS: 5,       // F: SNS種別
+  Q2: 6,           // G: 手続きスムーズ（5段階）
+  Q2_COMMENT: 7,   // H: Q2コメント
+  Q3: 8,           // I: 感想（自由記述）
+  Q4: 9,           // J: 時間（5択）
+  Q5: 10,          // K: 説明わかりやすさ（5段階）
+  Q6: 11,          // L: 課題解決参考（5段階）
+  Q7: 12,          // M: 対応誠実（5段階）
+  Q8: 13,          // N: 行動アドバイス（5段階）
+  Q9: 14,          // O: また受けたい（5段階）
+  Q9_REASON: 15,   // P: Q9理由
+  Q10: 16,         // Q: 勧めたい（5段階）
+  Q10_REASON: 17,  // R: Q10理由
+  Q11: 18          // S: レポート希望
+};
+
+/**
+ * オブザーバーNDA管理の列定義
+ */
+const OBSERVER_NDA_COLUMNS = {
+  TIMESTAMP: 0,      // A: 提出日時
+  OBSERVER_NAME: 1,  // B: オブザーバー氏名
+  CONSULT_DATE: 2,   // C: 相談日
+  COMPANY: 3,        // D: 相談企業名
+  STAFF: 4,          // E: 相談担当者
+  FILE_ID: 5,        // F: Drive上のファイルID
+  FILE_URL: 6        // G: ダウンロードURL
 };
