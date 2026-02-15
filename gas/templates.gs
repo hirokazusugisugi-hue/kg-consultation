@@ -792,11 +792,11 @@ function getSurveyPageHtml(tokenData) {
     <div class="card">
       <div class="q-label">Q9. また相談を受けてみたいですか？<span class="required">※必須</span></div>
       <div class="scale-group">
-        <label><input type="radio" name="q9" value="1"><span>1<br>また<br>受けたい</span></label>
-        <label><input type="radio" name="q9" value="2"><span>2<br>少しは<br>受けたい</span></label>
+        <label><input type="radio" name="q9" value="5"><span>5<br>ぜひ<br>受けたい</span></label>
+        <label><input type="radio" name="q9" value="4"><span>4<br>受けたい</span></label>
         <label><input type="radio" name="q9" value="3"><span>3<br>どちらでも<br>ない</span></label>
-        <label><input type="radio" name="q9" value="4"><span>4<br>あまり受け<br>たくない</span></label>
-        <label><input type="radio" name="q9" value="5"><span>5<br>全く受け<br>たくない</span></label>
+        <label><input type="radio" name="q9" value="2"><span>2<br>あまり受け<br>たくない</span></label>
+        <label><input type="radio" name="q9" value="1"><span>1<br>全く受け<br>たくない</span></label>
       </div>
       <textarea id="q9Reason" placeholder="理由をお聞かせください" style="margin-top:0.5rem;"></textarea>
     </div>
@@ -805,11 +805,11 @@ function getSurveyPageHtml(tokenData) {
     <div class="card">
       <div class="q-label">Q10. 他の方にすすめたいですか？<span class="required">※必須</span></div>
       <div class="scale-group">
-        <label><input type="radio" name="q10" value="1"><span>1<br>強く<br>勧めたい</span></label>
-        <label><input type="radio" name="q10" value="2"><span>2<br>勧めたい</span></label>
+        <label><input type="radio" name="q10" value="5"><span>5<br>強く<br>勧めたい</span></label>
+        <label><input type="radio" name="q10" value="4"><span>4<br>勧めたい</span></label>
         <label><input type="radio" name="q10" value="3"><span>3<br>どちらでも<br>ない</span></label>
-        <label><input type="radio" name="q10" value="4"><span>4<br>勧め<br>たくない</span></label>
-        <label><input type="radio" name="q10" value="5"><span>5<br>絶対に勧め<br>たくない</span></label>
+        <label><input type="radio" name="q10" value="2"><span>2<br>勧め<br>たくない</span></label>
+        <label><input type="radio" name="q10" value="1"><span>1<br>絶対に勧め<br>たくない</span></label>
       </div>
       <textarea id="q10Reason" placeholder="理由をお聞かせください" style="margin-top:0.5rem;"></textarea>
     </div>
