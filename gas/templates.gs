@@ -138,7 +138,13 @@ function getConfirmedEmailBody(data) {
   let locationInfo = '';
 
   if (data.method === 'オンライン' || data.method === 'オンライン（Zoom）') {
-    locationInfo = `【オンライン相談】
+    locationInfo = data.zoomUrl
+      ? `【オンライン相談】
+Zoom URL：${data.zoomUrl}
+
+※開始時刻の5分前を目安にご参加ください
+※接続に不具合がある場合はお電話にてご連絡ください`
+      : `【オンライン相談】
 Zoomのアドレスについては、前日までに改めてメールでお送りいたします。
 
 ※開始時刻の5分前を目安にご参加ください
@@ -306,9 +312,12 @@ ${data.companyUrl ? '企業URL：' + data.companyUrl + '\n※事前リサーチ�
  * 同意書確認ページHTML（PDF埋め込み版）
  */
 function getConsentPageHtml(data, token) {
+  const pdfDirectUrl = CONFIG.CONSENT.PDF_URL || '';
   const pdfFileId = CONFIG.CONSENT.PDF_FILE_ID;
-  const pdfViewerUrl = 'https://drive.google.com/file/d/' + pdfFileId + '/preview';
-  const pdfDownloadUrl = 'https://drive.google.com/uc?export=download&id=' + pdfFileId;
+  const pdfViewerUrl = pdfDirectUrl
+    ? 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(pdfDirectUrl)
+    : 'https://drive.google.com/file/d/' + pdfFileId + '/preview';
+  const pdfDownloadUrl = pdfDirectUrl || ('https://drive.google.com/uc?export=download&id=' + pdfFileId);
 
   return `<!DOCTYPE html>
 <html lang="ja">
@@ -510,13 +519,17 @@ function getConsentPageHtml(data, token) {
     <div class="card">
       <h2>経営相談に関する同意書</h2>
       <p style="font-size:0.85rem; color:#666; margin-bottom:1rem;">関西学院大学 中小企業診断士養成課程（無料経営診断分科会）</p>
+      <div style="background:#eef3ff; border-left:4px solid #0F2350; padding:1rem 1.2rem; border-radius:0 8px 8px 0; margin-bottom:1rem; font-size:0.85rem; line-height:1.7;">
+        本相談は、<strong>中小企業診断士倫理規定</strong>に則り実施いたします。<br>
+        相談内容に関する秘密保持、誠実な対応を遵守いたします。
+      </div>
       <iframe class="pdf-viewer" src="${pdfViewerUrl}" allow="autoplay"></iframe>
       <a href="${pdfDownloadUrl}" target="_blank" class="pdf-download">PDFをダウンロード</a>
 
       <div class="consent-section">
         <div class="checkbox-group">
           <input type="checkbox" id="agreeCheck">
-          <label for="agreeCheck">上記同意書の内容を確認し、全ての内容に同意します</label>
+          <label for="agreeCheck">中小企業診断士倫理規定に則り実施される上記同意書の内容を確認し、全ての内容に同意します</label>
         </div>
 
         <div class="signature-group">

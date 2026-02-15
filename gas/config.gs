@@ -43,7 +43,9 @@ const CONFIG = {
     // GAS WebアプリのURL（デプロイ後に設定）
     WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec',
     // Google DriveにアップロードしたPDFのファイルID
-    PDF_FILE_ID: '1X_q73Mgns_MKhku_b16x6oysnVs3dnP9'
+    PDF_FILE_ID: '1X_q73Mgns_MKhku_b16x6oysnVs3dnP9',
+    // PDF直接URL（GitHub raw）
+    PDF_URL: 'https://raw.githubusercontent.com/hirokazusugisugi-hue/kg-consultation/main/consent_updated.pdf'
   },
 
   // 当日受付コード
@@ -70,6 +72,9 @@ const CONFIG = {
 
   // お知らせシート名
   NEWS_SHEET_NAME: 'お知らせ',
+
+  // 回答集計シート名
+  SUMMARY_SHEET_NAME: '回答集計',
 
   // 返信先メールアドレス
   REPLY_TO: 'kgibaconsultant@gmail.com',

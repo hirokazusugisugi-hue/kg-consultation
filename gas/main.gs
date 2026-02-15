@@ -151,6 +151,39 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 回答集計シート生成（管理用）
+    if (action === 'generate-summary') {
+      generateSummarySheet();
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          message: '回答集計シートを生成しました'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ポーリング状況確認（管理用）
+    if (action === 'polling-status') {
+      const result = getPollingStatus();
+      return ContentService
+        .createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // PDF更新（管理用: URLからPDFを取得してDriveを更新）
+    if (action === 'update-pdf') {
+      const pdfUrl = e.parameter.url;
+      if (!pdfUrl) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'urlパラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      const result = updateConsentPdfFromUrl(pdfUrl);
+      return ContentService
+        .createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // メンバーマスタセットアップ（管理用）
     if (action === 'setup-members') {
       setupMemberSheet();

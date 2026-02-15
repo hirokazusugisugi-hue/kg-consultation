@@ -234,6 +234,92 @@ function submitNdaConsent(formData) {
  * 同意完了後に相談者へ確認メールを送信
  * @param {Object} data - 申込データ
  */
+/**
+ * 同意書PDFをGoogle Driveで更新
+ * @param {string} base64Data - base64エンコードされたPDFデータ
+ * @returns {Object} 処理結果
+ */
+function updateConsentPdf(base64Data) {
+  try {
+    const fileId = CONFIG.CONSENT.PDF_FILE_ID;
+    const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), 'application/pdf', '経営相談同意書.pdf');
+    const file = DriveApp.getFileById(fileId);
+
+    // 既存ファイルの内容を更新（Drive API v2を使用）
+    const url = 'https://www.googleapis.com/upload/drive/v2/files/' + fileId + '?uploadType=media';
+    const options = {
+      method: 'put',
+      contentType: 'application/pdf',
+      payload: blob.getBytes(),
+      headers: {
+        'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
+      },
+      muteHttpExceptions: true
+    };
+
+    const response = UrlFetchApp.fetch(url, options);
+    const result = JSON.parse(response.getContentText());
+
+    if (response.getResponseCode() === 200) {
+      return { success: true, message: 'PDFを更新しました', fileId: fileId };
+    } else {
+      return { success: false, message: 'Drive API エラー: ' + response.getContentText() };
+    }
+  } catch (error) {
+    console.error('PDF更新エラー:', error);
+    return { success: false, message: error.toString() };
+  }
+}
+
+/**
+ * URLからPDFを取得してGoogle Driveに新しいファイルとして保存
+ * 旧ファイルは削除し、新ファイルのIDを返す
+ * @param {string} pdfUrl - PDFファイルのURL
+ * @returns {Object} 処理結果
+ */
+function updateConsentPdfFromUrl(pdfUrl) {
+  try {
+    var oldFileId = CONFIG.CONSENT.PDF_FILE_ID;
+
+    // URLからPDFをダウンロード
+    var dlResponse = UrlFetchApp.fetch(pdfUrl, { muteHttpExceptions: true });
+    if (dlResponse.getResponseCode() !== 200) {
+      return { success: false, message: 'PDFダウンロード失敗: HTTP ' + dlResponse.getResponseCode() };
+    }
+
+    var pdfBlob = dlResponse.getBlob().setName('経営相談同意書.pdf');
+
+    // 旧ファイルの親フォルダを取得
+    var oldFile = DriveApp.getFileById(oldFileId);
+    var folders = oldFile.getParents();
+    var parentFolder = folders.hasNext() ? folders.next() : DriveApp.getRootFolder();
+
+    // 旧ファイルの共有設定を取得
+    var oldAccess = oldFile.getSharingAccess();
+    var oldPermission = oldFile.getSharingPermission();
+
+    // 新しいファイルを同じフォルダに作成
+    var newFile = parentFolder.createFile(pdfBlob);
+
+    // 共有設定を引き継ぐ
+    newFile.setSharing(oldAccess, oldPermission);
+
+    // 旧ファイルをゴミ箱へ
+    oldFile.setTrashed(true);
+
+    var newFileId = newFile.getId();
+    return {
+      success: true,
+      message: 'PDFを更新しました。新しいファイルID: ' + newFileId,
+      newFileId: newFileId,
+      oldFileId: oldFileId
+    };
+  } catch (error) {
+    console.error('PDF更新エラー:', error);
+    return { success: false, message: error.toString() };
+  }
+}
+
 function sendConsentConfirmationToApplicant(data) {
   try {
     const subject = `【同意完了】相談同意書への同意を受領しました - ${data.id}`;
