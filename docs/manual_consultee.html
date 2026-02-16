@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>無料経営相談 相談者マニュアル</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  /* ===== Reset & Base ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0F2350;
+    --navy-light: #1a3a6e;
+    --navy-bg: #f0f3f8;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --border: #d1d5db;
+    --text: #1f2937;
+    --text-light: #6b7280;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --mono-bg: #f8f9fa;
+    --mono-border: #e2e6ea;
+  }
+
+  html { font-size: 14px; scroll-behavior: smooth; }
+
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    color: var(--text);
+    line-height: 1.8;
+    background: #f5f5f5;
+  }
+
+  /* ===== Print Styles ===== */
+  @media print {
+    body { background: #fff; font-size: 11pt; }
+    .page-wrapper { box-shadow: none; max-width: 100%; margin: 0; padding: 20mm; }
+    .toc { break-after: page; }
+    h2 { break-before: page; }
+    h2:first-of-type { break-before: auto; }
+    table { break-inside: avoid; }
+    .flowchart-step { break-inside: avoid; }
+    .no-print { display: none !important; }
+    a { color: var(--navy) !important; text-decoration: none !important; }
+    a::after { content: " (" attr(href) ")"; font-size: 9pt; color: #666; }
+    .toc a::after { content: none; }
+  }
+
+  @page { size: A4; margin: 15mm 20mm; }
+
+  /* ===== Page Layout ===== */
+  .page-wrapper {
+    max-width: 860px;
+    margin: 30px auto;
+    background: #fff;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    padding: 60px 70px;
+  }
+
+  /* ===== Cover ===== */
+  .cover {
+    text-align: center;
+    padding: 60px 0 50px;
+    border-bottom: 4px solid var(--navy);
+    margin-bottom: 50px;
+  }
+
+  .cover-icon { font-size: 48px; color: var(--navy); margin-bottom: 20px; }
+
+  .cover h1 {
+    font-size: 28px;
+    color: var(--navy);
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    font-weight: 800;
+  }
+
+  .cover .subtitle {
+    font-size: 16px;
+    color: var(--text-light);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .cover .doc-type {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 6px 28px;
+    background: var(--navy);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ===== Table of Contents ===== */
+  .toc {
+    background: var(--navy-bg);
+    border: 1px solid #d0d8e8;
+    border-radius: 8px;
+    padding: 36px 40px;
+    margin-bottom: 50px;
+  }
+
+  .toc h2 {
+    font-size: 18px;
+    color: var(--navy);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toc h2 i { font-size: 16px; }
+
+  .toc ol { list-style: none; counter-reset: toc-counter; }
+
+  .toc > ol > li { counter-increment: toc-counter; margin-bottom: 8px; }
+
+  .toc > ol > li > a {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    color: var(--navy);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+
+  .toc > ol > li > a:hover { background: #dce3f0; }
+
+  .toc > ol > li > a::before {
+    content: counter(toc-counter) ".";
+    display: inline-block;
+    width: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    flex-shrink: 0;
+  }
+
+  /* ===== Section Headings ===== */
+  h2 {
+    font-size: 22px;
+    color: var(--navy);
+    padding: 14px 0 14px 20px;
+    margin: 50px 0 24px;
+    border-left: 5px solid var(--navy);
+    background: linear-gradient(90deg, var(--navy-bg) 0%, transparent 100%);
+    border-radius: 0 6px 6px 0;
+  }
+
+  h2 i { margin-right: 10px; font-size: 20px; }
+
+  h3 {
+    font-size: 17px;
+    color: var(--navy-light);
+    margin: 30px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  h3 i { margin-right: 8px; font-size: 15px; color: var(--accent); }
+
+  h4 { font-size: 15px; color: var(--text); margin: 20px 0 10px; font-weight: 700; }
+
+  /* ===== Paragraphs & Lists ===== */
+  p { margin-bottom: 14px; }
+  ul, ol { margin: 10px 0 18px 24px; }
+  li { margin-bottom: 6px; }
+
+  /* ===== Tables ===== */
+  .table-wrapper { overflow-x: auto; margin: 16px 0 24px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  thead th {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  thead th:first-child { border-radius: 6px 0 0 0; }
+  thead th:last-child { border-radius: 0 6px 0 0; }
+
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tbody tr:hover { background: #f9fafb; }
+
+  /* ===== Flowchart ===== */
+  .flowchart {
+    margin: 20px 0 30px;
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .flowchart::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--navy), var(--accent), var(--success));
+    border-radius: 2px;
+  }
+
+  .flowchart-step {
+    position: relative;
+    margin-bottom: 28px;
+    padding: 18px 22px;
+    background: #fff;
+    border: 1px solid #e2e6ea;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .flowchart-step::before {
+    content: "";
+    position: absolute;
+    left: -30px;
+    top: 22px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--navy);
+  }
+
+  .flowchart-step.auto::before { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .flowchart-step.result::before { background: var(--success); box-shadow: 0 0 0 2px var(--success); }
+
+  .flowchart-step .step-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .flowchart-step .step-title .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 10px;
+  }
+
+  .flowchart-step .step-title .badge.auto-badge {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+
+  .flowchart-step ul { margin: 6px 0 0 18px; font-size: 13px; }
+  .flowchart-step li { margin-bottom: 4px; }
+
+  /* ===== Info Boxes ===== */
+  .info-box {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 16px 0 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .info-box i { font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+
+  .info-box.note { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  .info-box.warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .info-box.danger { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .info-box.success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+
+  /* ===== Step List ===== */
+  .step-list {
+    counter-reset: step-counter;
+    list-style: none;
+    margin: 14px 0 20px;
+    padding: 0;
+  }
+
+  .step-list > li {
+    counter-increment: step-counter;
+    padding: 10px 14px 10px 48px;
+    position: relative;
+    margin-bottom: 8px;
+    background: #f9fafb;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+  }
+
+  .step-list > li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 12px;
+    top: 10px;
+    width: 26px;
+    height: 26px;
+    background: var(--navy);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ===== Icon List ===== */
+  .icon-list {
+    list-style: none;
+    margin: 14px 0 20px;
+    padding: 0;
+  }
+
+  .icon-list li {
+    padding: 8px 14px 8px 36px;
+    position: relative;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+
+  .icon-list li i {
+    position: absolute;
+    left: 8px;
+    top: 12px;
+    font-size: 14px;
+    color: var(--navy);
+  }
+
+  /* ===== Comparison Grid ===== */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0 24px;
+  }
+
+  .compare-card {
+    border: 1px solid #e2e6ea;
+    border-radius: 10px;
+    padding: 20px;
+    background: #fff;
+  }
+
+  .compare-card h4 {
+    font-size: 15px;
+    color: var(--navy);
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .compare-card h4 i { font-size: 18px; }
+
+  .compare-card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+  }
+
+  .compare-card ul li {
+    padding: 4px 0 4px 20px;
+    position: relative;
+  }
+
+  .compare-card ul li::before {
+    content: "\f00c";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-size: 11px;
+  }
+
+  /* ===== Email Timeline ===== */
+  .email-timeline {
+    margin: 16px 0 24px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .email-timeline li {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 14px 18px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 4px solid var(--navy);
+    font-size: 13px;
+  }
+
+  .email-timeline li .email-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .email-timeline li .email-info { flex: 1; }
+  .email-timeline li .email-title { font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .email-timeline li .email-desc { color: var(--text-light); }
+
+  /* ===== Agenda ===== */
+  .agenda-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .agenda-item .agenda-time {
+    flex-shrink: 0;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 13px;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  .agenda-item .agenda-content { flex: 1; font-size: 13px; }
+  .agenda-item .agenda-content strong { color: var(--navy); }
+
+  /* ===== Footer ===== */
+  .doc-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 2px solid var(--navy);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-light);
+  }
+
+  .doc-footer .version { font-weight: 600; color: var(--navy); }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ===== Cover ===== -->
+  <div class="cover">
+    <div class="cover-icon"><i class="fas fa-building"></i></div>
+    <h1>無料経営相談<br>相談者マニュアル</h1>
+    <p class="subtitle">関西学院大学 中小企業経営診断研究会</p>
+    <span class="doc-type"><i class="fas fa-handshake"></i>&ensp;ご相談者様向けドキュメント</span>
+  </div>
+
+  <!-- ===== Table of Contents ===== -->
+  <nav class="toc">
+    <h2><i class="fas fa-list-ol"></i> 目次</h2>
+    <ol>
+      <li><a href="#sec1">無料経営相談とは</a></li>
+      <li><a href="#sec2">ご予約の流れ</a></li>
+      <li><a href="#sec3">同意書について</a></li>
+      <li><a href="#sec4">届くメールについて</a></li>
+      <li><a href="#sec5">相談方法（対面・オンライン）</a></li>
+      <li><a href="#sec6">相談当日の流れ</a></li>
+      <li><a href="#sec7">相談終了後について</a></li>
+      <li><a href="#sec8">キャンセル・日程変更</a></li>
+      <li><a href="#sec9">よくある質問（FAQ）</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===== 1. 無料経営相談とは ===== -->
+  <h2 id="sec1"><i class="fas fa-info-circle"></i> 1. 無料経営相談とは</h2>
+
+  <p>関西学院大学 中小企業経営診断研究会が実施する <strong>完全無料</strong> の経営相談サービスです。中小企業診断士の資格を持つ研究会メンバーが、経営に関するさまざまなお悩みについてご相談に応じます。</p>
+
+  <h3><i class="fas fa-list-check"></i> 相談できるテーマ</h3>
+  <ul class="icon-list">
+    <li><i class="fas fa-chart-line"></i>経営戦略・事業計画の策定</li>
+    <li><i class="fas fa-bullhorn"></i>マーケティング・販路開拓</li>
+    <li><i class="fas fa-coins"></i>財務・資金繰りの改善</li>
+    <li><i class="fas fa-users"></i>人材育成・組織づくり</li>
+    <li><i class="fas fa-laptop"></i>IT活用・DX推進</li>
+    <li><i class="fas fa-store"></i>創業・新事業立ち上げ</li>
+  </ul>
+
+  <div class="info-box success">
+    <i class="fas fa-circle-check"></i>
+    <div><strong>費用は一切かかりません。</strong>相談料・交通費等の請求はありません。お気軽にご利用ください。</div>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>相談には養成課程の在学生（オブザーバー）が見学として同席する場合があります。ご同意いただけない場合はお申し出いただければ退席いたします。</div>
+  </div>
+
+  <!-- ===== 2. ご予約の流れ ===== -->
+  <h2 id="sec2"><i class="fas fa-clipboard-list"></i> 2. ご予約の流れ</h2>
+
+  <p>ご予約はWebフォームから簡単にお申し込みいただけます。</p>
+
+  <div class="flowchart">
+    <div class="flowchart-step">
+      <div class="step-title"><i class="fas fa-globe"></i> Step 1：予約ページにアクセス</div>
+      <ul>
+        <li>予約ページ（LP）にアクセスし、「ご予約」ボタンをタップ</li>
+        <li>スマートフォン・PCどちらからでもお申し込みいただけます</li>
+      </ul>
+    </div>
+    <div class="flowchart-step">
+      <div class="step-title"><i class="fas fa-pen-to-square"></i> Step 2：申込フォームに入力</div>
+      <ul>
+        <li>お名前・貴社名・連絡先（メール・電話）</li>
+        <li>業種・役職</li>
+        <li>相談方法（対面 or オンライン）を選択</li>
+        <li>希望日時を2つまで選択</li>
+        <li>相談テーマ・相談内容の詳細を記入</li>
+        <li>企業URLがあればご入力ください（事前準備に活用します）</li>
+      </ul>
+    </div>
+    <div class="flowchart-step auto">
+      <div class="step-title"><i class="fas fa-envelope"></i> Step 3：受付確認メールが届く <span class="badge auto-badge">自動送信</span></div>
+      <ul>
+        <li>申込完了後、確認メールが届きます</li>
+        <li>メール内の <strong>同意書確認リンク</strong> から同意手続きをしてください</li>
+      </ul>
+    </div>
+    <div class="flowchart-step result">
+      <div class="step-title"><i class="fas fa-calendar-check"></i> Step 4：予約確定メールが届く <span class="badge auto-badge">自動送信</span></div>
+      <ul>
+        <li>日程調整後、確定メールが届きます</li>
+        <li>日時・場所（またはZoom URL）をご確認ください</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div><strong>同意書へのご同意が必要です。</strong>受付確認メールに記載のリンクから、同意手続きを完了してください。同意が未完了の場合、予約が確定されません。</div>
+  </div>
+
+  <!-- ===== 3. 同意書について ===== -->
+  <h2 id="sec3"><i class="fas fa-file-contract"></i> 3. 同意書について</h2>
+
+  <p>相談にあたり、「経営相談に関する同意書」へのご同意をお願いしております。これはご相談者様と相談員の双方を守るための大切な手続きです。</p>
+
+  <h3><i class="fas fa-shoe-prints"></i> 同意の手順</h3>
+
+  <ol class="step-list">
+    <li>受付確認メールに記載の <strong>「同意書確認ページ」リンク</strong> をクリック</li>
+    <li>同意書の全文をお読みください（PDFで閲覧・ダウンロード可能）</li>
+    <li>「全ての内容に同意します」にチェックを入れる</li>
+    <li>お名前を入力し「同意して送信」をタップ</li>
+  </ol>
+
+  <h3><i class="fas fa-shield-halved"></i> 同意書の主な内容</h3>
+  <ul>
+    <li><strong>秘密保持：</strong>相談で共有された情報は厳重に管理されます</li>
+    <li><strong>学術利用：</strong>教育・研究目的で匿名化した上で活用する場合があります</li>
+    <li><strong>免責事項：</strong>相談は助言の提供であり、結果を保証するものではありません</li>
+  </ul>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>同意は1回のみで完了です。同意書確認ページは1度使用すると再利用できませんのでご注意ください。</div>
+  </div>
+
+  <!-- ===== 4. 届くメールについて ===== -->
+  <h2 id="sec4"><i class="fas fa-envelope-open-text"></i> 4. 届くメールについて</h2>
+
+  <p>予約から相談終了まで、以下のメールが届きます。</p>
+
+  <ul class="email-timeline">
+    <li>
+      <div class="email-icon"><i class="fas fa-inbox"></i></div>
+      <div class="email-info">
+        <div class="email-title">受付確認メール（申込直後）</div>
+        <div class="email-desc">申込内容の確認 + 同意書確認リンクが記載されています。</div>
+      </div>
+    </li>
+    <li>
+      <div class="email-icon"><i class="fas fa-calendar-check"></i></div>
+      <div class="email-info">
+        <div class="email-title">予約確定メール（日程確定後）</div>
+        <div class="email-desc">確定日時・場所（またはZoom URL）・当日の流れ・持ち物が記載されています。</div>
+      </div>
+    </li>
+    <li>
+      <div class="email-icon"><i class="fas fa-bell"></i></div>
+      <div class="email-info">
+        <div class="email-title">リマインドメール（3日前・2日前）</div>
+        <div class="email-desc">3日前に準備案内、2日前に最終確認のメールが届きます。</div>
+      </div>
+    </li>
+    <li>
+      <div class="email-icon"><i class="fas fa-clipboard-question"></i></div>
+      <div class="email-info">
+        <div class="email-title">アンケートメール（相談終了後）</div>
+        <div class="email-desc">相談終了後にアンケートのご協力をお願いしております。</div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div>メールが届かない場合は <strong>迷惑メールフォルダ</strong> をご確認ください。それでも届かない場合は kgibaconsultant@gmail.com までご連絡ください。</div>
+  </div>
+
+  <!-- ===== 5. 相談方法 ===== -->
+  <h2 id="sec5"><i class="fas fa-map-marker-alt"></i> 5. 相談方法（対面・オンライン）</h2>
+
+  <p>ご都合に合わせて、対面またはオンライン（Zoom）をお選びいただけます。</p>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <h4><i class="fas fa-building"></i> 対面相談</h4>
+      <ul>
+        <li>場所は確定メールでご案内</li>
+        <li>受付にて「経営診断研究会の相談予約」とお伝えください</li>
+        <li>開始5分前を目安にお越しください</li>
+        <li>関連資料があればお持ちください</li>
+      </ul>
+    </div>
+    <div class="compare-card">
+      <h4><i class="fas fa-video"></i> オンライン相談（Zoom）</h4>
+      <ul>
+        <li>Zoom URLは確定メールに記載</li>
+        <li>開始5分前を目安にご入室ください</li>
+        <li>カメラON・マイクONでご参加ください</li>
+        <li>事前にZoomの接続テストを推奨</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>Zoomの接続に不具合がある場合は、確定メールに記載の連絡先までお電話ください。</div>
+  </div>
+
+  <!-- ===== 6. 相談当日の流れ ===== -->
+  <h2 id="sec6"><i class="fas fa-comments"></i> 6. 相談当日の流れ</h2>
+
+  <p>相談は約60〜90分で、以下の3つのステップで進みます。</p>
+
+  <div class="agenda-item">
+    <div class="agenda-time"><i class="fas fa-microphone"></i><br>約15分</div>
+    <div class="agenda-content">
+      <strong>1. 現状のヒアリング</strong><br>
+      まずはお話を伺います。事業内容や現在のお悩みについてお聞かせください。
+    </div>
+  </div>
+
+  <div class="agenda-item">
+    <div class="agenda-time"><i class="fas fa-lightbulb"></i><br>約30〜45分</div>
+    <div class="agenda-content">
+      <strong>2. 課題の整理・ディスカッション</strong><br>
+      課題を整理し、解決の方向性を一緒に考えます。中小企業診断士の専門的な視点からアドバイスいたします。
+    </div>
+  </div>
+
+  <div class="agenda-item">
+    <div class="agenda-time"><i class="fas fa-flag-checkered"></i><br>約15分</div>
+    <div class="agenda-content">
+      <strong>3. 今後のアクション整理</strong><br>
+      次のステップを明確にします。具体的な行動計画をお伝えします。
+    </div>
+  </div>
+
+  <h3><i class="fas fa-briefcase"></i> ご準備いただくもの</h3>
+
+  <ul class="icon-list">
+    <li><i class="fas fa-file-lines"></i>関連資料（決算書、事業計画書等）があればお持ちください（必須ではありません）</li>
+    <li><i class="fas fa-pen"></i>ご相談内容を事前に整理しておくと、より充実した時間になります</li>
+    <li><i class="fas fa-laptop"></i>オンラインの場合：PC・スマートフォン（カメラ・マイク付き）</li>
+  </ul>
+
+  <h3><i class="fas fa-user-graduate"></i> オブザーバーについて</h3>
+
+  <p>相談には、養成課程の在学生が「オブザーバー（見学者）」として同席する場合があります。オブザーバーは秘密保持誓約書に署名しており、ご相談内容の秘密は厳守されます。</p>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>オブザーバーの同席をご希望されない場合は、お気軽にお申し出ください。退席いたします。</div>
+  </div>
+
+  <!-- ===== 7. 相談終了後について ===== -->
+  <h2 id="sec7"><i class="fas fa-square-poll-vertical"></i> 7. 相談終了後について</h2>
+
+  <h3><i class="fas fa-clipboard-question"></i> アンケート</h3>
+  <p>相談終了後、アンケートのメールが届きます。今後のサービス向上のため、ご協力をお願いいたします。所要時間は約3分です。</p>
+
+  <h3><i class="fas fa-file-alt"></i> 終了後レポート</h3>
+  <p>アンケートの中で「終了後レポートを希望する」を選択いただくと、相談内容をまとめたレポートを後日お送りします。</p>
+
+  <div class="info-box success">
+    <i class="fas fa-circle-check"></i>
+    <div>ご相談は1回で終わりではありません。追加のご相談も無料で承っておりますので、お気軽にお申し込みください。</div>
+  </div>
+
+  <!-- ===== 8. キャンセル・日程変更 ===== -->
+  <h2 id="sec8"><i class="fas fa-calendar-xmark"></i> 8. キャンセル・日程変更</h2>
+
+  <p>ご都合が悪くなった場合は、できるだけ早めにご連絡ください。</p>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>内容</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>連絡先</strong></td>
+          <td>kgibaconsultant@gmail.com</td>
+        </tr>
+        <tr>
+          <td><strong>連絡時の記載事項</strong></td>
+          <td>申込ID、お名前、変更内容</td>
+        </tr>
+        <tr>
+          <td><strong>日程変更</strong></td>
+          <td>空き状況に応じて調整いたします</td>
+        </tr>
+        <tr>
+          <td><strong>キャンセル料</strong></td>
+          <td>一切かかりません</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div>当日のキャンセル・変更はお電話にてご連絡ください。担当者が対応いたします。</div>
+  </div>
+
+  <!-- ===== 9. FAQ ===== -->
+  <h2 id="sec9"><i class="fas fa-circle-question"></i> 9. よくある質問（FAQ）</h2>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 35%;">質問</th>
+          <th>回答</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>本当に無料ですか？</strong></td>
+          <td>はい、相談料・交通費等すべて無料です。費用は一切かかりません</td>
+        </tr>
+        <tr>
+          <td><strong>確認メールが届きません</strong></td>
+          <td>迷惑メールフォルダをご確認ください。それでも届かない場合は kgibaconsultant@gmail.com までご連絡ください</td>
+        </tr>
+        <tr>
+          <td><strong>同意書リンクが開けない</strong></td>
+          <td>ブラウザを変えてお試しください。解決しない場合は管理者にご連絡ください</td>
+        </tr>
+        <tr>
+          <td><strong>社員を同伴してもよいですか？</strong></td>
+          <td>はい、可能です。事前に担当者にお知らせいただけると幸いです</td>
+        </tr>
+        <tr>
+          <td><strong>相談時間はどのくらいですか？</strong></td>
+          <td>約60〜90分を目安としています</td>
+        </tr>
+        <tr>
+          <td><strong>相談内容は外部に漏れませんか？</strong></td>
+          <td>相談員・オブザーバーともに秘密保持義務を負っています。ご相談内容が外部に漏れることはありません</td>
+        </tr>
+        <tr>
+          <td><strong>2回目以降の相談は可能ですか？</strong></td>
+          <td>はい、何度でも無料でご相談いただけます。予約ページから再度お申し込みください</td>
+        </tr>
+        <tr>
+          <td><strong>当日受付は可能ですか？</strong></td>
+          <td>はい、予約ページから受付コード「9999」を入力していただくと当日受付が可能です</td>
+        </tr>
+        <tr>
+          <td><strong>Zoomがうまく繋がりません</strong></td>
+          <td>確定メールに記載の連絡先にお電話ください。電話での対応も可能です</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="doc-footer">
+    <div>
+      <span class="version">Version 1.0</span>&emsp;|&emsp;2026年2月 作成
+    </div>
+    <div>
+      <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会
+    </div>
+  </footer>
+
+</div><!-- /.page-wrapper -->
+
+</body>
+</html>
