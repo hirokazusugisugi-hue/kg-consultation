@@ -619,22 +619,22 @@
         <span class="badge">自動</span>
       </div>
       <ul>
-        <li>相談者がNDA同意 &rarr; ステータス自動更新: <span class="status-badge nda">NDA同意済</span></li>
-        <li>管理者に通知メール送信</li>
+        <li>相談者がNDA同意 &rarr; 相談方法により処理が分岐</li>
+        <li><strong>Zoom：</strong>自動で <span class="status-badge confirmed">確定</span> に更新 &rarr; 確定メールが相談者に自動送信</li>
+        <li><strong>対面：</strong><span class="status-badge nda">NDA同意済</span> に更新 &rarr; 管理者に会場確保依頼の通知</li>
       </ul>
     </div>
 
     <!-- Step 3 -->
     <div class="flowchart-step">
       <div class="step-date">
-        <i class="fas fa-check-double"></i> Step 3: 予約確定
+        <i class="fas fa-check-double"></i> Step 3: 予約確定（対面のみ）
         <span class="badge">管理者/担当者</span>
       </div>
       <ul>
-        <li>日程・担当者を確定</li>
-        <li>ステータスを <span class="status-badge confirmed">確定</span> に変更</li>
-        <li>Zoom実施の場合はQ列にZoomURLを入力</li>
-        <li>確定メールが相談者に自動送信</li>
+        <li>会場を確保し、N列（場所）を設定</li>
+        <li>ステータスを <span class="status-badge confirmed">確定</span> に変更 &rarr; 確定メールが相談者に自動送信</li>
+        <li>※Zoomの場合はStep 2で自動確定済みのためこのステップは不要</li>
       </ul>
     </div>
 
@@ -790,7 +790,7 @@
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div>ZoomURLはスプレッドシートのQ列に登録されています。確定メールに記載されるURLと同じものです。</div>
+    <div>Zoom URLはスプレッドシートのR列に登録されています。Zoom相談はNDA同意時に自動確定されるため、Zoom URLが未設定の場合は前日までに入力してください。</div>
   </div>
 
   <h3><i class="fas fa-building"></i> 対面の場合</h3>
