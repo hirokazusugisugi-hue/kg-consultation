@@ -1,6 +1,6 @@
 /**
  * トリガー処理（拡張版）
- * リマインド2日前/3日前、担当者個別通知対応
+ * リマインド前日/3日前、担当者個別通知対応
  */
 
 /**
@@ -210,7 +210,7 @@ ${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサー�
 }
 
 /**
- * 毎日のリマインド送信（2日前 + 3日前）
+ * 毎日のリマインド送信（前日 + 3日前）
  */
 function sendDailyReminders() {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
@@ -220,10 +220,10 @@ function sendDailyReminders() {
 
   const now = new Date();
 
-  // 2日後の日付
-  const twoDaysLater = new Date(now);
-  twoDaysLater.setDate(twoDaysLater.getDate() + 2);
-  const twoDaysLaterStr = Utilities.formatDate(twoDaysLater, 'Asia/Tokyo', 'yyyy/MM/dd');
+  // 翌日の日付（前日リマインド用）
+  const oneDayLater = new Date(now);
+  oneDayLater.setDate(oneDayLater.getDate() + 1);
+  const oneDayLaterStr = Utilities.formatDate(oneDayLater, 'Asia/Tokyo', 'yyyy/MM/dd');
 
   // 3日後の日付
   const threeDaysLater = new Date(now);
@@ -257,20 +257,20 @@ function sendDailyReminders() {
       console.log(`3日前リマインド送信: ${rowData.email}`);
     }
 
-    // 2日前リマインド
-    if (dateStr === twoDaysLaterStr || twoDaysLaterStr === dateStr) {
+    // 前日リマインド
+    if (dateStr === oneDayLaterStr || oneDayLaterStr === dateStr) {
       // 予約者向け（メール）
-      sendReminderEmail2DaysBefore(rowData);
+      sendReminderEmailDayBefore(rowData);
 
       // 担当者向け（LINE優先 → メールフォールバック）
       if (rowData.staff) {
-        const lineMsg = getStaffReminderLine(rowData, '2日前');
-        const emailSubject = `【2日前・最終確認】${rowData.name}様 - ${rowData.confirmedDate}`;
-        const emailBody = getStaffReminderEmail(rowData, '2日前');
+        const lineMsg = getStaffReminderLine(rowData, '前日');
+        const emailSubject = `【前日・最終確認】${rowData.name}様 - ${rowData.confirmedDate}`;
+        const emailBody = getStaffReminderEmail(rowData, '前日');
         sendStaffNotifications(rowData.staff, lineMsg, emailSubject, emailBody);
       }
 
-      console.log(`2日前リマインド送信: ${rowData.email}`);
+      console.log(`前日リマインド送信: ${rowData.email}`);
     }
   }
 }
@@ -289,11 +289,11 @@ function sendReminderEmail3DaysBefore(data) {
 }
 
 /**
- * 2日前リマインドメール送信（予約者向け）
+ * 前日リマインドメール送信（予約者向け）
  */
-function sendReminderEmail2DaysBefore(data) {
-  const subject = '【明後日のご相談について】最終確認';
-  const body = getReminderEmail2DaysBefore(data);
+function sendReminderEmailDayBefore(data) {
+  const subject = '【明日のご相談について】最終確認';
+  const body = getReminderEmailDayBefore(data);
 
   GmailApp.sendEmail(data.email, subject, body, {
     name: CONFIG.SENDER_NAME,
