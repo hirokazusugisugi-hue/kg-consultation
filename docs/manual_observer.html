@@ -243,6 +243,45 @@
   tbody tr:last-child td:last-child { border-radius: 0 0 6px 0; }
 
   /* ===== URL / Code Blocks ===== */
+  .url-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0 18px;
+    padding: 10px 14px;
+    background: var(--mono-bg);
+    border: 1px solid var(--mono-border);
+    border-radius: 6px;
+  }
+
+  .url-box .url-text {
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+    font-size: 11px;
+    word-break: break-all;
+    user-select: all;
+    cursor: text;
+    flex: 1;
+  }
+
+  .url-box .copy-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+  }
+
+  .url-box .copy-btn:hover { background: var(--navy-light); }
+  .url-box .copy-btn.copied { background: var(--success); }
+
   .url-cell {
     font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
     font-size: 11px;
@@ -477,7 +516,7 @@
     padding: 0;
   }
 
-  .step-list li {
+  .step-list > li {
     counter-increment: step-counter;
     padding: 10px 14px 10px 48px;
     position: relative;
@@ -487,7 +526,7 @@
     border: 1px solid #f0f0f0;
   }
 
-  .step-list li::before {
+  .step-list > li::before {
     content: counter(step-counter);
     position: absolute;
     left: 12px;
@@ -673,7 +712,10 @@
 
   <h3><i class="fas fa-link"></i> アクセスURL</h3>
 
-  <p><span class="url-cell">https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec?action=observer</span></p>
+  <div class="url-box">
+    <span class="url-text" id="observerUrl">https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec?action=observer</span>
+    <button class="copy-btn" onclick="copyUrl(this, 'observerUrl')"><i class="fas fa-copy"></i> コピー</button>
+  </div>
 
   <h3><i class="fas fa-puzzle-piece"></i> ページの構成</h3>
 
@@ -828,6 +870,20 @@
   </footer>
 
 </div><!-- /.page-wrapper -->
+
+<script>
+function copyUrl(btn, id) {
+  var text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.innerHTML = '<i class="fas fa-check"></i> コピー済';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.innerHTML = '<i class="fas fa-copy"></i> コピー';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
 
 </body>
 </html>
