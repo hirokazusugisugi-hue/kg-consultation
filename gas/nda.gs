@@ -125,14 +125,51 @@ function processNdaConsent(e) {
     const props = PropertiesService.getScriptProperties();
     props.deleteProperty('nda_token_' + token);
 
-    // 管理者に通知
+    // データ取得
     const data = getRowData(rowIndex);
-    notifyConsentAgreed(data, signature);
+    const isOnline = data.method && (data.method.indexOf('オンライン') >= 0 || data.method.indexOf('Zoom') >= 0 || data.method.indexOf('zoom') >= 0);
 
-    // 相談者に同意完了確認メール送信
-    sendConsentConfirmationToApplicant(data);
+    if (isOnline && data.confirmedDate) {
+      // ===== Zoom相談：自動確定フロー =====
+      const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
+        .getSheetByName(CONFIG.SHEET_NAME);
 
-    return { success: true, message: '同意が完了しました' };
+      // ステータスを「確定」に変更
+      sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.CONFIRMED);
+
+      // 日程設定シートの予約状況を「予約済み」に更新
+      var parsed = parseConfirmedDateTime(data.confirmedDate);
+      if (parsed && parsed.date) {
+        markAsBooked(parsed.date, parsed.time);
+      }
+
+      // 相談者に同意完了＋確定メール送信
+      sendConsentAndConfirmedEmail(data);
+
+      // 管理者に通知（Zoom自動確定）
+      notifyConsentAgreedAutoConfirmed(data, signature);
+
+      // 担当者への通知
+      if (data.staff) {
+        const staffLineMsg = `✅ Zoom予約自動確定\n\n申込ID: ${data.id}\nお名前: ${data.name}様\n貴社名: ${data.company}\n日時: ${data.confirmedDate}\n方法: ${data.method}\nテーマ: ${data.theme}\n${data.companyUrl ? '企業URL: ' + data.companyUrl + '\n※事前リサーチをお願いします' : ''}`;
+        const staffEmailSubject = `【予約確定・Zoom自動】${data.name}様 - ${data.confirmedDate}`;
+        const staffEmailBody = `Zoom相談のため、NDA同意完了時に自動確定しました。\n\n申込ID：${data.id}\nお名前：${data.name}様\n貴社名：${data.company}\n日時：${data.confirmedDate}\n相談方法：${data.method}\nテーマ：${data.theme}\n${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサーチにAIツールの活用を推奨します' : ''}\n\n事前準備をお願いいたします。`;
+        sendStaffNotifications(data.staff, staffLineMsg, staffEmailSubject, staffEmailBody);
+      }
+
+      console.log(`Zoom自動確定完了: ${data.email}`);
+      return { success: true, message: '同意が完了し、予約が確定しました' };
+
+    } else {
+      // ===== 対面相談：会場確保待ちフロー =====
+      // 管理者に通知（会場確保依頼）
+      notifyConsentAgreed(data, signature);
+
+      // 相談者に同意完了確認メール送信（会場確保待ち案内）
+      sendConsentConfirmationToApplicant(data);
+
+      return { success: true, message: '同意が完了しました' };
+    }
 
   } catch (error) {
     console.error('同意処理エラー:', error);
@@ -145,10 +182,12 @@ function processNdaConsent(e) {
  * @param {Object} data - 申込データ
  * @param {string} signature - 電子署名（氏名）
  */
+/**
+ * 対面相談：同意完了 → 管理者に会場確保依頼通知
+ */
 function notifyConsentAgreed(data, signature) {
-  // メール通知
-  const subject = `【同意書同意完了】${data.name}様 - ${data.id}`;
-  const body = `同意書への同意が完了しました。
+  const subject = `【同意完了・会場確保依頼】${data.name}様 - ${data.id}`;
+  const body = `同意書への同意が完了しました（対面相談）。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ■ 同意情報
@@ -156,27 +195,70 @@ function notifyConsentAgreed(data, signature) {
 申込ID：${data.id}
 お名前：${data.name}
 貴社名：${data.company}
+相談方法：${data.method}
+希望日時：${data.date1}${data.date2 ? '\n第二希望：' + data.date2 : ''}
 電子署名：${signature}
 同意日時：${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
 
-日程を確定してください。
+【対応事項】
+会場を確保し、スプレッドシートの場所（N列）を設定後、
+ステータスを「確定」に変更してください。
+確定メールが自動送信されます。
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
   CONFIG.ADMIN_EMAILS.forEach(email => {
-    GmailApp.sendEmail(email, subject, body, {
-      name: CONFIG.SENDER_NAME
-    });
+    GmailApp.sendEmail(email, subject, body, { name: CONFIG.SENDER_NAME });
   });
 
-  // LINE通知
-  const lineMessage = `📋 同意書同意完了
+  const lineMessage = `📋 同意完了（対面・会場確保依頼）
 
 申込ID: ${data.id}
 お名前: ${data.name}様
 貴社名: ${data.company}
+方法: ${data.method}
+希望日時: ${data.date1}
 同意日時: ${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
 
-日程を確定してください。`;
+→ 会場を確保してステータスを「確定」にしてください。`;
+
+  sendLineMessage(CONFIG.LINE.GROUP_ID, lineMessage);
+}
+
+/**
+ * Zoom相談：同意完了 → 自動確定通知
+ */
+function notifyConsentAgreedAutoConfirmed(data, signature) {
+  const subject = `【自動確定・Zoom】${data.name}様 - ${data.id}`;
+  const body = `Zoom相談のため、NDA同意完了時に自動確定しました。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 確定情報
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.id}
+お名前：${data.name}
+貴社名：${data.company}
+日時：${data.confirmedDate}
+相談方法：${data.method}
+担当：${data.staff || '（未割当）'}
+電子署名：${signature}
+同意日時：${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
+
+※Zoom URLが未設定の場合は、前日までに設定してください。
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+  CONFIG.ADMIN_EMAILS.forEach(email => {
+    GmailApp.sendEmail(email, subject, body, { name: CONFIG.SENDER_NAME });
+  });
+
+  const lineMessage = `✅ Zoom自動確定
+
+申込ID: ${data.id}
+お名前: ${data.name}様
+貴社名: ${data.company}
+日時: ${data.confirmedDate}
+同意日時: ${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
+
+※Zoom URLが未設定の場合は前日までに設定してください。`;
 
   sendLineMessage(CONFIG.LINE.GROUP_ID, lineMessage);
 }
@@ -335,6 +417,9 @@ function updateConsentPdfFromUrl(pdfUrl) {
   }
 }
 
+/**
+ * 同意完了確認メール送信（対面用：会場確保待ち案内）
+ */
 function sendConsentConfirmationToApplicant(data) {
   try {
     const subject = `【同意完了】相談同意書への同意を受領しました - ${data.id}`;
@@ -351,7 +436,8 @@ function sendConsentConfirmationToApplicant(data) {
 同意日時：${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-日程確定後、改めて確定メールをお送りいたします。
+現在、会場の確保を行っております。
+会場が確定次第、3日以内に予約確定メールをお送りいたします。
 しばらくお待ちください。
 
 ご不明な点がございましたら、お気軽にお問い合わせください。
@@ -366,8 +452,77 @@ URL: ${CONFIG.ORG.URL}
       name: CONFIG.SENDER_NAME,
       replyTo: CONFIG.REPLY_TO
     });
-    console.log(`同意完了確認メールを ${data.email} に送信しました`);
+    console.log(`同意完了確認メール（対面・会場確保待ち）を ${data.email} に送信しました`);
   } catch (e) {
     console.error('同意完了確認メール送信エラー:', e);
+  }
+}
+
+/**
+ * Zoom相談：同意完了＋自動確定メール送信
+ * NDA同意完了時に自動で予約確定とし、確定メールを送信する
+ */
+function sendConsentAndConfirmedEmail(data) {
+  try {
+    const zoomInfo = data.zoomUrl
+      ? `Zoom URL：${data.zoomUrl}\n\n※開始時刻の5分前を目安にご参加ください`
+      : `Zoom URLについては、前日までに改めてメールでお送りいたします。\n\n※開始時刻の5分前を目安にご参加ください`;
+
+    const subject = `【予約確定】無料経営相談のご予約が確定しました - ${data.id}`;
+    const body = `${data.name} 様
+
+相談同意書への同意を受領いたしました。ありがとうございます。
+オンライン（Zoom）相談のため、ご予約が確定しましたのでお知らせいたします。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ ご予約内容
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.id}
+日時：${data.confirmedDate}
+相談方法：${data.method}
+${data.staff ? '担当：' + data.staff : ''}
+
+【オンライン相談】
+${zoomInfo}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【当日の流れ】
+1. 現状のヒアリング（15分程度）
+   - お話を伺います
+
+2. 課題の整理・ディスカッション（30〜45分）
+   - 課題を整理し、解決の方向性を一緒に考えます
+
+3. 今後のアクション整理（15分程度）
+   - 次のステップを明確にします
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ ご準備いただくもの
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+・関連資料（決算書、事業計画書等）があればご準備ください
+  ※必須ではありません
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ キャンセル・変更について
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ご都合が悪くなった場合は、できるだけ早めにご連絡ください。
+連絡先：${CONFIG.ORG.EMAIL}
+
+ご不明な点がございましたら、お気軽にお問い合わせください。
+当日お会いできることを楽しみにしております。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${CONFIG.ORG.NAME}
+Email: ${CONFIG.ORG.EMAIL}
+URL: ${CONFIG.ORG.URL}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    GmailApp.sendEmail(data.email, subject, body, {
+      name: CONFIG.SENDER_NAME,
+      replyTo: CONFIG.REPLY_TO
+    });
+    console.log(`同意完了＋自動確定メール（Zoom）を ${data.email} に送信しました`);
+  } catch (e) {
+    console.error('同意完了＋自動確定メール送信エラー:', e);
   }
 }

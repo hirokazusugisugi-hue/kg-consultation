@@ -547,7 +547,7 @@
       </ul>
     </div>
     <div class="flowchart-step auto">
-      <div class="step-title"><i class="fas fa-envelope"></i> Step 3：受付確認メールが届く <span class="badge auto-badge">自動送信</span></div>
+      <div class="step-title"><i class="fas fa-envelope"></i> Step 3：受付確認メール + 同意手続き <span class="badge auto-badge">自動送信</span></div>
       <ul>
         <li>申込完了後、確認メールが届きます</li>
         <li>メール内の <strong>同意書確認リンク</strong> から同意手続きをしてください</li>
@@ -556,8 +556,8 @@
     <div class="flowchart-step result">
       <div class="step-title"><i class="fas fa-calendar-check"></i> Step 4：予約確定メールが届く <span class="badge auto-badge">自動送信</span></div>
       <ul>
-        <li>日程調整後、確定メールが届きます</li>
-        <li>日時・場所（またはZoom URL）をご確認ください</li>
+        <li><strong>Zoom：</strong>同意完了と同時に自動確定され、確定メールが届きます</li>
+        <li><strong>対面：</strong>会場確保後（3日以内を目安）に確定メールが届きます</li>
       </ul>
     </div>
   </div>
@@ -596,38 +596,69 @@
   <!-- ===== 4. 届くメールについて ===== -->
   <h2 id="sec4"><i class="fas fa-envelope-open-text"></i> 4. 届くメールについて</h2>
 
-  <p>予約から相談終了まで、以下のメールが届きます。</p>
+  <p>予約から相談終了まで届くメールは、相談方法（対面 / オンライン）により異なります。</p>
 
+  <h3><i class="fas fa-building"></i> 対面相談の場合（計4通）</h3>
   <ul class="email-timeline">
     <li>
       <div class="email-icon"><i class="fas fa-inbox"></i></div>
       <div class="email-info">
-        <div class="email-title">受付確認メール（申込直後）</div>
+        <div class="email-title">1. 受付確認メール（申込直後）</div>
+        <div class="email-desc">申込内容の確認 + 同意書確認リンクが記載されています。会場確保後3日以内に確定メールが届く旨もご案内します。</div>
+      </div>
+    </li>
+    <li>
+      <div class="email-icon"><i class="fas fa-file-contract"></i></div>
+      <div class="email-info">
+        <div class="email-title">2. 同意完了メール（同意手続き後）</div>
+        <div class="email-desc">同意書への同意を受領した確認メールです。会場の確保が完了次第、確定メールをお送りする旨をご案内します。</div>
+      </div>
+    </li>
+    <li>
+      <div class="email-icon"><i class="fas fa-calendar-check"></i></div>
+      <div class="email-info">
+        <div class="email-title">3. 予約確定メール（会場確保後）</div>
+        <div class="email-desc">会場が確保された段階で送信されます。確定日時・場所・当日の流れ・持ち物が記載されています。</div>
+      </div>
+    </li>
+    <li>
+      <div class="email-icon"><i class="fas fa-bell"></i></div>
+      <div class="email-info">
+        <div class="email-title">4. リマインドメール（3日前・前日）</div>
+        <div class="email-desc">3日前に準備案内、前日に最終確認のメールが届きます。</div>
+      </div>
+    </li>
+  </ul>
+
+  <h3><i class="fas fa-video"></i> オンライン相談（Zoom）の場合（計3通）</h3>
+  <ul class="email-timeline">
+    <li>
+      <div class="email-icon"><i class="fas fa-inbox"></i></div>
+      <div class="email-info">
+        <div class="email-title">1. 受付確認メール（申込直後）</div>
         <div class="email-desc">申込内容の確認 + 同意書確認リンクが記載されています。</div>
       </div>
     </li>
     <li>
       <div class="email-icon"><i class="fas fa-calendar-check"></i></div>
       <div class="email-info">
-        <div class="email-title">予約確定メール（日程確定後）</div>
-        <div class="email-desc">確定日時・場所（またはZoom URL）・当日の流れ・持ち物が記載されています。</div>
+        <div class="email-title">2. 予約確定メール（同意手続き完了後）</div>
+        <div class="email-desc">Zoom相談の場合、同意完了と同時に予約が自動確定されます。確定日時・Zoom URL・当日の流れが記載されています。</div>
       </div>
     </li>
     <li>
       <div class="email-icon"><i class="fas fa-bell"></i></div>
       <div class="email-info">
-        <div class="email-title">リマインドメール（3日前・前日）</div>
+        <div class="email-title">3. リマインドメール（3日前・前日）</div>
         <div class="email-desc">3日前に準備案内、前日に最終確認のメールが届きます。</div>
       </div>
     </li>
-    <li>
-      <div class="email-icon"><i class="fas fa-clipboard-question"></i></div>
-      <div class="email-info">
-        <div class="email-title">アンケートメール（相談終了後）</div>
-        <div class="email-desc">相談終了後にアンケートのご協力をお願いしております。</div>
-      </div>
-    </li>
   </ul>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>相談終了後には <strong>アンケートメール</strong> が届きます。サービス向上のため、ご協力をお願いいたします。</div>
+  </div>
 
   <div class="info-box warning">
     <i class="fas fa-triangle-exclamation"></i>
