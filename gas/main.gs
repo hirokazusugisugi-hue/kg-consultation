@@ -184,6 +184,56 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 日程枠追加（管理用）
+    if (action === 'add-schedule') {
+      var date = e.parameter.date;
+      var time = e.parameter.time;
+      var method = e.parameter.method || 'オンライン';
+      if (!date || !time) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'date, timeパラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+      var schedSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+      var newRow = [date, time, '○', method, '', '空き', '', '', 0, 'FALSE', '○'];
+      schedSheet.appendRow(newRow);
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: date + ' ' + time + ' (' + method + ') を追加しました' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // メンバー一括登録（管理用）
+    if (action === 'register-members') {
+      var regYear = parseInt(e.parameter.year) || new Date().getFullYear();
+      var regMonth = parseInt(e.parameter.month) || (new Date().getMonth() + 1);
+      registerAllMembersForMonth(regYear, regMonth);
+      // 回答集計も再生成
+      generateSummarySheet();
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          message: regYear + '年' + regMonth + '月の全メンバー登録＋回答集計再生成完了'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 回答集計→日程設定 一括同期（管理用）
+    if (action === 'sync-summary') {
+      var syncResult = syncAllSummaryToSchedule();
+      return ContentService
+        .createTextOutput(JSON.stringify(syncResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 回答集計onEditトリガー設定（管理用）
+    if (action === 'setup-summary-trigger') {
+      var triggerResult = setupSummaryEditTrigger();
+      return ContentService
+        .createTextOutput(JSON.stringify(triggerResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 場所列マイグレーション（管理用）
     if (action === 'migrate-location') {
       var migrateResult = migrateAddLocationColumn();
