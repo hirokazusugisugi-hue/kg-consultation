@@ -95,6 +95,19 @@ const CONFIG = {
     DELAY_HOURS: 2  // 相談終了後N時間後に送信
   },
 
+  // リーダー履歴シート名
+  LEADER_HISTORY_SHEET_NAME: 'リーダー履歴',
+
+  // レポート管理シート名
+  REPORT_SHEET_NAME: 'レポート管理',
+
+  // レポート配信設定
+  REPORT: {
+    DRIVE_FOLDER_ID: '',  // レポート保存先DriveフォルダID（未設定時はルート）
+    DEADLINE_DAYS: 3,     // レポート提出期限（日数）
+    MAX_FILE_SIZE: 5 * 1024 * 1024  // 5MB
+  },
+
   // 返信先メールアドレス
   REPLY_TO: 'kgibaconsultant@gmail.com',
 
@@ -133,7 +146,9 @@ const COLUMNS = {
   NDA_STATUS: 20,    // U: 同意書同意（済/未）
   NDA_DATE: 21,      // V: 同意日時
   COMPANY_URL: 22,   // W: 企業URL
-  WALK_IN_FLAG: 23   // X: 当日受付フラグ
+  WALK_IN_FLAG: 23,  // X: 当日受付フラグ
+  LEADER: 24,        // Y: リーダー
+  REPORT_STATUS: 25  // Z: レポート状態
 };
 
 /**
@@ -169,7 +184,9 @@ const MEMBER_COLUMNS = {
   EMAIL: 4,     // E: メール
   PHONE: 5,     // F: 電話番号
   LINE_ID: 6,   // G: LINE ID
-  NOTES: 7      // H: 備考
+  NOTES: 7,         // H: 備考
+  SPECIALTIES: 8,   // I: 得意業種
+  THEMES: 9         // J: 得意テーマ
 };
 
 /**
@@ -235,4 +252,48 @@ const OBSERVER_NDA_COLUMNS = {
   STAFF: 4,          // E: 相談担当者
   FILE_ID: 5,        // F: Drive上のファイルID
   FILE_URL: 6        // G: ダウンロードURL
+};
+
+/**
+ * レポート状態定数
+ */
+const REPORT_STATUS = {
+  NOT_REQUESTED: '未依頼',
+  REQUESTED: '依頼済',
+  UPLOADED: 'アップロード済',
+  DELIVERED: '配信済',
+  OVERDUE: '期限超過'
+};
+
+/**
+ * リーダー履歴シートの列定義
+ */
+const LEADER_HISTORY_COLUMNS = {
+  DATE: 0,           // A: 日付
+  APP_ID: 1,         // B: 申込ID
+  COMPANY: 2,        // C: 相談企業
+  INDUSTRY: 3,       // D: 業種
+  THEME: 4,          // E: テーマ
+  LEADER: 5,         // F: リーダー
+  MEMBERS: 6,        // G: 参加メンバー
+  MATCH_SCORE: 7,    // H: マッチスコア
+  REASON: 8          // I: 選定理由
+};
+
+/**
+ * レポート管理シートの列定義
+ */
+const REPORT_COLUMNS = {
+  APP_ID: 0,         // A: 申込ID
+  CONSULT_DATE: 1,   // B: 相談日
+  COMPANY: 2,        // C: 相談企業
+  LEADER: 3,         // D: リーダー
+  LEADER_EMAIL: 4,   // E: リーダーメール
+  REQUEST_DATE: 5,   // F: 依頼日時
+  DEADLINE: 6,       // G: 期限
+  UPLOAD_DATE: 7,    // H: アップロード日時
+  FILE_ID: 8,        // I: ファイルID
+  FILE_URL: 9,       // J: ファイルURL
+  DELIVERY_DATE: 10, // K: 配信日時
+  STATUS: 11         // L: ステータス
 };

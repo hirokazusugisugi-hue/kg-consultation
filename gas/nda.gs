@@ -137,23 +137,30 @@ function processNdaConsent(e) {
       // ステータスを「確定」に変更
       sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.CONFIRMED);
 
+      // Zoomミーティングを自動作成してR列に保存
+      if (!data.zoomUrl) {
+        createAndSaveZoomMeeting(data, rowIndex);
+      }
+
       // 日程設定シートの予約状況を「予約済み」に更新
       var parsed = parseConfirmedDateTime(data.confirmedDate);
       if (parsed && parsed.date) {
         markAsBooked(parsed.date, parsed.time);
       }
 
-      // 相談者に同意完了＋確定メール送信
+      // 相談者に同意完了＋確定メール送信（data.zoomUrlは自動作成済み）
       sendConsentAndConfirmedEmail(data);
 
       // 管理者に通知（Zoom自動確定）
       notifyConsentAgreedAutoConfirmed(data, signature);
 
-      // 担当者への通知
+      // 担当者への通知（Zoom URL付き）
       if (data.staff) {
-        const staffLineMsg = `✅ Zoom予約自動確定\n\n申込ID: ${data.id}\nお名前: ${data.name}様\n貴社名: ${data.company}\n日時: ${data.confirmedDate}\n方法: ${data.method}\nテーマ: ${data.theme}\n${data.companyUrl ? '企業URL: ' + data.companyUrl + '\n※事前リサーチをお願いします' : ''}`;
+        const zoomUrlInfo = data.zoomUrl ? '\nZoom URL: ' + data.zoomUrl : '';
+        const staffLineMsg = `✅ Zoom予約自動確定\n\n申込ID: ${data.id}\nお名前: ${data.name}様\n貴社名: ${data.company}\n日時: ${data.confirmedDate}\n方法: ${data.method}\nテーマ: ${data.theme}${zoomUrlInfo}\n${data.companyUrl ? '企業URL: ' + data.companyUrl + '\n※事前リサーチをお願いします' : ''}`;
         const staffEmailSubject = `【予約確定・Zoom自動】${data.name}様 - ${data.confirmedDate}`;
-        const staffEmailBody = `Zoom相談のため、NDA同意完了時に自動確定しました。\n\n申込ID：${data.id}\nお名前：${data.name}様\n貴社名：${data.company}\n日時：${data.confirmedDate}\n相談方法：${data.method}\nテーマ：${data.theme}\n${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサーチにAIツールの活用を推奨します' : ''}\n\n事前準備をお願いいたします。`;
+        const zoomUrlEmailInfo = data.zoomUrl ? '\nZoom URL：' + data.zoomUrl : '';
+        const staffEmailBody = `Zoom相談のため、NDA同意完了時に自動確定しました。\n\n申込ID：${data.id}\nお名前：${data.name}様\n貴社名：${data.company}\n日時：${data.confirmedDate}\n相談方法：${data.method}\nテーマ：${data.theme}${zoomUrlEmailInfo}\n${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサーチにAIツールの活用を推奨します' : ''}\n\n事前準備をお願いいたします。`;
         sendStaffNotifications(data.staff, staffLineMsg, staffEmailSubject, staffEmailBody);
       }
 
@@ -240,10 +247,9 @@ function notifyConsentAgreedAutoConfirmed(data, signature) {
 日時：${data.confirmedDate}
 相談方法：${data.method}
 担当：${data.staff || '（未割当）'}
+${data.zoomUrl ? 'Zoom URL：' + data.zoomUrl + '（自動作成済み）' : '※Zoom URLの自動作成に失敗しました。手動で設定してください。'}
 電子署名：${signature}
 同意日時：${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
-
-※Zoom URLが未設定の場合は、前日までに設定してください。
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
   CONFIG.ADMIN_EMAILS.forEach(email => {
@@ -439,6 +445,10 @@ function sendConsentConfirmationToApplicant(data) {
 現在、会場の確保を行っております。
 会場が確定次第、3日以内に予約確定メールをお送りいたします。
 しばらくお待ちください。
+
+※会場の都合により、ご希望の日程での開催が難しい場合は
+  別日程へのご変更をお願いする場合がございます。
+  あらかじめご了承ください。
 
 ご不明な点がございましたら、お気軽にお問い合わせください。
 

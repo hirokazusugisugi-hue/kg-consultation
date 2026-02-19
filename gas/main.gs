@@ -254,6 +254,31 @@ function doGet(e) {
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // リーダー選定 & レポート配信
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // レポートアップロードページ
+    if (action === 'report-upload') {
+      return generateReportUploadPage(e);
+    }
+
+    // リーダー履歴シートセットアップ（管理用）
+    if (action === 'setup-leader-history') {
+      var leaderResult = setupLeaderHistorySheet();
+      return ContentService
+        .createTextOutput(JSON.stringify(leaderResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // レポート管理シートセットアップ（管理用）
+    if (action === 'setup-report') {
+      var reportResult = setupReportSheet();
+      return ContentService
+        .createTextOutput(JSON.stringify(reportResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // アンケートシステム
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -308,6 +333,9 @@ function doGet(e) {
           'GET ?action=news-admin': 'お知らせ管理ページ',
           'GET ?action=survey&token=xxx': 'アンケートページ',
           'GET ?action=observer': 'オブザーバー専用ページ',
+          'GET ?action=report-upload&token=xxx': 'レポートアップロードページ',
+          'GET ?action=setup-leader-history': 'リーダー履歴シートセットアップ',
+          'GET ?action=setup-report': 'レポート管理シートセットアップ',
           'POST': '予約申込'
         }
       }))

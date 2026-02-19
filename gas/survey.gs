@@ -95,6 +95,16 @@ function submitSurveyResponse(formData) {
     // 管理者に通知
     notifySurveyResponse(formData);
 
+    // Q11でレポート希望の場合、レポート依頼を開始
+    if (formData.q11 === '希望する' && formData.applicationId) {
+      try {
+        initiateReportRequest(formData.applicationId);
+        console.log('レポート依頼開始: ' + formData.applicationId);
+      } catch (reportError) {
+        console.error('レポート依頼エラー:', reportError);
+      }
+    }
+
     return { success: true, message: 'アンケートのご回答ありがとうございました' };
   } catch (error) {
     console.error('アンケート保存エラー:', error);

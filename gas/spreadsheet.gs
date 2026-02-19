@@ -39,7 +39,9 @@ function saveToSpreadsheet(data, isWalkIn) {
     '',                       // U: 同意書同意
     '',                       // V: 同意日時
     data.companyUrl || '',    // W: 企業URL
-    isWalkIn ? 'TRUE' : 'FALSE'  // X: 当日受付フラグ
+    isWalkIn ? 'TRUE' : 'FALSE',  // X: 当日受付フラグ
+    '',                       // Y: リーダー
+    ''                        // Z: レポート状態
   ];
 
   sheet.appendRow(newRow);
@@ -54,7 +56,7 @@ function getRowData(rowIndex) {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
     .getSheetByName(CONFIG.SHEET_NAME);
 
-  const row = sheet.getRange(rowIndex, 1, 1, 24).getValues()[0];
+  const row = sheet.getRange(rowIndex, 1, 1, 26).getValues()[0];
 
   return {
     timestamp: row[COLUMNS.TIMESTAMP],
@@ -80,7 +82,9 @@ function getRowData(rowIndex) {
     ndaStatus: row[COLUMNS.NDA_STATUS],
     ndaDate: row[COLUMNS.NDA_DATE],
     companyUrl: row[COLUMNS.COMPANY_URL],
-    walkInFlag: row[COLUMNS.WALK_IN_FLAG]
+    walkInFlag: row[COLUMNS.WALK_IN_FLAG],
+    leader: row[COLUMNS.LEADER],
+    reportStatus: row[COLUMNS.REPORT_STATUS]
   };
 }
 
@@ -125,7 +129,9 @@ function setupSpreadsheetHeaders() {
     '同意書同意',       // U
     '同意日時',         // V
     '企業URL',          // W
-    '当日受付フラグ'     // X
+    '当日受付フラグ',    // X
+    'リーダー',         // Y
+    'レポート状態'       // Z
   ];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -161,6 +167,8 @@ function setupSpreadsheetHeaders() {
   sheet.setColumnWidth(22, 150); // V: 同意日時
   sheet.setColumnWidth(23, 250); // W: 企業URL
   sheet.setColumnWidth(24, 100); // X: 当日受付フラグ
+  sheet.setColumnWidth(25, 100); // Y: リーダー
+  sheet.setColumnWidth(26, 100); // Z: レポート状態
 
   // 1行目を固定
   sheet.setFrozenRows(1);

@@ -569,7 +569,8 @@
       <li><a href="#sec4">相談当日の対応</a></li>
       <li><a href="#sec5">相談終了後の対応</a></li>
       <li><a href="#sec6">アンケートシステムについて</a></li>
-      <li><a href="#sec7">よくある質問（FAQ）</a></li>
+      <li><a href="#sec7">リーダー選定・レポート配信</a></li>
+      <li><a href="#sec8">よくある質問（FAQ）</a></li>
     </ol>
   </nav>
 
@@ -701,16 +702,19 @@
     <span class="col-id">K列</span><span>希望日時1</span>
     <span class="col-id">L列</span><span>希望日時2</span>
     <span class="col-id">M列</span><span>相談方法</span>
-    <span class="col-id">N列</span><span>ステータス</span>
-    <span class="col-id">O列</span><span>担当者</span>
-    <span class="col-id">P列</span><span>確定日時</span>
-    <span class="col-id">Q列</span><span>ZoomURL</span>
-    <span class="col-id">R列</span><span>ヒアリングシート</span>
-    <span class="col-id">S列</span><span>備考</span>
-    <span class="col-id">T列</span><span>NDA同意</span>
-    <span class="col-id">U列</span><span>NDA同意日時</span>
-    <span class="col-id">V列</span><span>企業URL</span>
-    <span class="col-id">W列</span><span>当日受付フラグ</span>
+    <span class="col-id">N列</span><span>場所</span>
+    <span class="col-id">O列</span><span>ステータス</span>
+    <span class="col-id">P列</span><span>担当者</span>
+    <span class="col-id">Q列</span><span>確定日時</span>
+    <span class="col-id">R列</span><span>ZoomURL（自動生成）</span>
+    <span class="col-id">S列</span><span>ヒアリングシート</span>
+    <span class="col-id">T列</span><span>備考</span>
+    <span class="col-id">U列</span><span>NDA同意</span>
+    <span class="col-id">V列</span><span>NDA同意日時</span>
+    <span class="col-id">W列</span><span>企業URL</span>
+    <span class="col-id">X列</span><span>当日受付フラグ</span>
+    <span class="col-id">Y列</span><span>リーダー（自動選定）</span>
+    <span class="col-id">Z列</span><span>レポート状態</span>
   </div>
 
   <h4><i class="fas fa-arrow-right"></i> ステータスの流れ</h4>
@@ -744,27 +748,27 @@
       </thead>
       <tbody>
         <tr>
-          <td><strong>N列</strong></td>
+          <td><strong>O列</strong></td>
           <td>ステータス</td>
           <td>相談の進捗に応じてステータスを変更</td>
         </tr>
         <tr>
-          <td><strong>O列</strong></td>
+          <td><strong>P列</strong></td>
           <td>担当者</td>
           <td>担当者名を入力</td>
         </tr>
         <tr>
-          <td><strong>P列</strong></td>
+          <td><strong>Q列</strong></td>
           <td>確定日時</td>
           <td>相談の確定日時を入力</td>
         </tr>
         <tr>
-          <td><strong>Q列</strong></td>
+          <td><strong>R列</strong></td>
           <td>ZoomURL</td>
-          <td>Zoom実施の場合にURLを入力</td>
+          <td>Zoom APIにより自動生成（手動入力も可）</td>
         </tr>
         <tr>
-          <td><strong>S列</strong></td>
+          <td><strong>T列</strong></td>
           <td>備考</td>
           <td>相談に関するメモを記入</td>
         </tr>
@@ -790,7 +794,7 @@
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div>Zoom URLはスプレッドシートのR列に登録されています。Zoom相談はNDA同意時に自動確定されるため、Zoom URLが未設定の場合は前日までに入力してください。</div>
+    <div>Zoom URLはNDA同意による自動確定時にZoom APIで自動作成され、スプレッドシートのR列に保存されます。リマインドメール（3日前・前日）にもURLが自動記載されます。</div>
   </div>
 
   <h3><i class="fas fa-building"></i> 対面の場合</h3>
@@ -820,13 +824,14 @@
 
   <ol class="step-list">
     <li>スプレッドシートのステータスを <span class="status-badge done">完了</span> に変更</li>
-    <li>必要に応じて備考欄（S列）にメモを記入</li>
+    <li>必要に応じて備考欄（T列）にメモを記入</li>
+    <li><strong>リーダーが自動選定</strong>され、Y列に記録されます</li>
     <li>アンケートメールは2時間後に自動送信されます（手動送信不要）</li>
   </ol>
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div>アンケートの回答結果はスプレッドシートの「アンケート」シートに自動記録されます。</div>
+    <div>アンケートの回答結果はスプレッドシートの「アンケート」シートに自動記録されます。リーダー選定・レポート配信の詳細は <a href="#sec7">7. リーダー選定・レポート配信</a> を参照してください。</div>
   </div>
 
   <!-- ===== 6. アンケートシステムについて ===== -->
@@ -907,16 +912,52 @@
 
   <ul>
     <li>管理者にも回答通知メールが届きます</li>
-    <li>レポート希望（Q11）が「はい」の場合は、別途レポート作成の対応が必要です</li>
+    <li>レポート希望（Q11）が「はい」の場合、リーダーにレポート作成依頼が<strong>自動送信</strong>されます</li>
   </ul>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>レポート配信は自動化されています。詳細は次のセクションをご覧ください。</div>
+  </div>
+
+  <!-- ===== 7. リーダー選定・レポート配信 ===== -->
+  <h2 id="sec7"><i class="fas fa-crown"></i> 7. リーダー選定・レポート配信</h2>
+
+  <h3><i class="fas fa-user-tie"></i> 7.1 リーダー自動選定</h3>
+
+  <p>ステータスを <span class="status-badge done">完了</span> に変更すると、参加メンバーの中から<strong>リーダーが自動選定</strong>されます。</p>
+
+  <ul>
+    <li><strong>対象:</strong> 1期/2期の診断士のみ（オブザーバーは対象外）</li>
+    <li><strong>選定基準:</strong> 得意業種・得意テーマのマッチ度 + 履歴の公平性</li>
+    <li>結果はスプレッドシートの<strong>Y列</strong>に自動記録されます</li>
+  </ul>
+
+  <h3><i class="fas fa-file-alt"></i> 7.2 レポート配信の流れ</h3>
+
+  <p>アンケートでレポートを希望した相談者に対し、以下のフローで自動配信されます。</p>
+
+  <ol class="step-list">
+    <li>相談者がアンケートQ11で「希望する」を回答</li>
+    <li>リーダー（Y列）に<strong>レポート作成依頼メール</strong>が自動送信</li>
+    <li>リーダーが専用ページからPDF/Wordファイルをアップロード</li>
+    <li>相談者に<strong>診断報告書が自動配信</strong>されます</li>
+  </ol>
 
   <div class="info-box warning">
     <i class="fas fa-triangle-exclamation"></i>
-    <div><strong>レポート希望への対応:</strong> Q11でレポート希望「はい」の回答があった場合、管理者と連携してレポートの作成・送付を行ってください。</div>
+    <div><strong>提出期限:</strong> レポートの提出期限は相談日から<strong>3日以内</strong>です。期限が近づくとリマインドメールが届きます。期限を過ぎると相談者にレポートを届けられない場合があります。</div>
   </div>
 
-  <!-- ===== 7. よくある質問（FAQ） ===== -->
-  <h2 id="sec7"><i class="fas fa-circle-question"></i> 7. よくある質問（FAQ）</h2>
+  <h3><i class="fas fa-cog"></i> 7.3 担当者の操作</h3>
+  <ul>
+    <li>リーダー選定・レポート配信は<strong>すべて自動</strong>で行われます</li>
+    <li>レポート作成依頼メールが届いたら、期限内にアップロードしてください</li>
+    <li>Z列でレポート状態（未依頼/依頼済/アップロード済/配信済/期限超過）を確認できます</li>
+  </ul>
+
+  <!-- ===== 8. よくある質問（FAQ） ===== -->
+  <h2 id="sec8"><i class="fas fa-circle-question"></i> 8. よくある質問（FAQ）</h2>
 
   <div class="table-wrapper">
     <table>
@@ -950,7 +991,7 @@
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 1.0</span>&emsp;|&emsp;2026年2月 作成
+      <span class="version">Version 3.0</span>&emsp;|&emsp;2026年2月 作成 / 更新（Zoom API・リーダー選定・レポート配信）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

@@ -31,7 +31,9 @@ function getAllMembers() {
       email: row[MEMBER_COLUMNS.EMAIL],
       phone: row[MEMBER_COLUMNS.PHONE],
       lineId: row[MEMBER_COLUMNS.LINE_ID],
-      notes: row[MEMBER_COLUMNS.NOTES]
+      notes: row[MEMBER_COLUMNS.NOTES],
+      specialties: row[MEMBER_COLUMNS.SPECIALTIES] ? row[MEMBER_COLUMNS.SPECIALTIES].toString() : '',
+      themes: row[MEMBER_COLUMNS.THEMES] ? row[MEMBER_COLUMNS.THEMES].toString() : ''
     });
   }
 
@@ -80,7 +82,7 @@ function getMembersByNames(memberNames) {
   const allMembers = getAllMembers();
 
   return names.map(name => {
-    return allMembers.find(m => m.name === name) || { name: name, term: '', cert: '', type: '', email: '', phone: '', lineId: '', notes: '' };
+    return allMembers.find(m => m.name === name) || { name: name, term: '', cert: '', type: '', email: '', phone: '', lineId: '', notes: '', specialties: '', themes: '' };
   });
 }
 
@@ -169,7 +171,7 @@ function setupMemberSheet() {
   }
 
   // ヘッダー設定
-  const headers = ['氏名', '期', '資格', '区分', 'メール', '電話番号', 'LINE ID', '備考'];
+  const headers = ['氏名', '期', '資格', '区分', 'メール', '電話番号', 'LINE ID', '備考', '得意業種', '得意テーマ'];
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 
   // ヘッダー行の書式
@@ -187,25 +189,42 @@ function setupMemberSheet() {
   sheet.setColumnWidth(6, 120);  // 電話番号
   sheet.setColumnWidth(7, 200);  // LINE ID
   sheet.setColumnWidth(8, 200);  // 備考
+  sheet.setColumnWidth(9, 200);  // 得意業種
+  sheet.setColumnWidth(10, 200); // 得意テーマ
 
   // 1行目を固定
   sheet.setFrozenRows(1);
 
   // サンプルデータを投入
   const sampleData = [
-    ['杉山 宏和', '1期', '診断士', '正会員', 'hirokazusugisugi@gmail.com', '', '', ''],
-    ['川崎 真規', '1期', '診断士', '正会員', 'stevenm.kawasaki@gmail.com', '', '', 'TA'],
-    ['原 真人', '1期', '診断士', '正会員', 'm.hara.2006@gmail.com', '', '', ''],
-    ['小椋 孝博', '2期', '診断士', '正会員', 'takahiro09.03.21@gmail.com', '', '', ''],
-    ['秋月 仁志', '2期', '診断士', '正会員', 'akizukihitoshi@gmail.com', '', '', ''],
-    ['谷村 真里', '0期', '', '顧問', 'mari_tanimura@k-mba.com', '', '', ''],
-    ['野田 慎士', '3期', '', 'オブザーバー', 'jimi320320320@gmail.com', '', '', ''],
-    ['高乘 麻美', '4期', '', 'オブザーバー', 'asami.koujou@gmail.com', '', '', ''],
-    ['村本 将之', '4期', '', 'オブザーバー', 'kastu.mura3.teru@gmail.com', '', '', ''],
-    ['織田 美智子', '4期', '', 'オブザーバー', 'amdt.ked@gmail.com', '', '', '']
+    ['杉山 宏和', '1期', '診断士', '正会員', 'hirokazusugisugi@gmail.com', '', '', '', '製造業,小売業', '経営戦略,マーケティング'],
+    ['川崎 真規', '1期', '診断士', '正会員', 'stevenm.kawasaki@gmail.com', '', '', 'TA', 'IT,サービス業', '財務,IT活用'],
+    ['原 真人', '1期', '診断士', '正会員', 'm.hara.2006@gmail.com', '', '', '', '製造業,建設業', '生産管理,品質管理'],
+    ['小椋 孝博', '2期', '診断士', '正会員', 'takahiro09.03.21@gmail.com', '', '', '', '小売業,飲食業', '人事,組織'],
+    ['秋月 仁志', '2期', '診断士', '正会員', 'akizukihitoshi@gmail.com', '', '', '', 'サービス業,IT', 'マーケティング,新規事業'],
+    ['谷村 真里', '0期', '', '顧問', 'mari_tanimura@k-mba.com', '', '', '', '', ''],
+    ['野田 慎士', '3期', '', 'オブザーバー', 'jimi320320320@gmail.com', '', '', '', '', ''],
+    ['高乘 麻美', '4期', '', 'オブザーバー', 'asami.koujou@gmail.com', '', '', '', '', ''],
+    ['村本 将之', '4期', '', 'オブザーバー', 'kastu.mura3.teru@gmail.com', '', '', '', '', ''],
+    ['織田 美智子', '4期', '', 'オブザーバー', 'amdt.ked@gmail.com', '', '', '', '', '']
   ];
 
   sheet.getRange(2, 1, sampleData.length, sampleData[0].length).setValues(sampleData);
 
   console.log('メンバーマスタシートのセットアップが完了しました');
+}
+
+/**
+ * 参加メンバーから1期/2期の診断士（リーダー候補）を抽出
+ * @param {string} memberNames - カンマ区切りのメンバー名
+ * @returns {Array<Object>} リーダー候補メンバーの配列
+ */
+function getLeaderCandidates(memberNames) {
+  if (!memberNames) return [];
+
+  const members = getMembersByNames(memberNames);
+  return members.filter(function(m) {
+    var term = m.term ? m.term.toString() : '';
+    return term === '1期' || term === '2期';
+  });
 }

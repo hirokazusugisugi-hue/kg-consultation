@@ -38,7 +38,7 @@ ${consentSection}
 1. 上記リンクから相談同意書をご確認・ご同意ください
 ${data.method === 'オンライン' || data.method === 'オンライン（Zoom）'
 ? '2. 同意完了後、予約確定メールをお送りいたします'
-: '2. 同意完了後、会場を確保いたします\n3. 会場確保後、3日以内に予約確定メールをお送りいたします'}
+: '2. 同意完了後、会場を確保いたします\n3. 会場確保後、3日以内に予約確定メールをお送りいたします\n\n※会場の都合により、ご希望の日程での開催が難しい場合は\n  別日程へのご変更をお願いする場合がございます。\n  あらかじめご了承ください。'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ■ ご注意事項
@@ -287,6 +287,9 @@ ${data.companyUrl ? '企業URL: ' + data.companyUrl : ''}
  * 担当者向けメールリマインド（フォールバック用）
  */
 function getStaffReminderEmail(data, daysBeforeLabel) {
+  const isOnline = data.method === 'オンライン' || data.method === 'オンライン（Zoom）';
+  const zoomLine = isOnline && data.zoomUrl ? 'Zoom URL：' + data.zoomUrl : '';
+
   return `【${daysBeforeLabel}】担当相談のリマインド
 
 ${daysBeforeLabel}に以下の相談が予定されています。
@@ -300,7 +303,7 @@ ${daysBeforeLabel}に以下の相談が予定されています。
 日時：${data.confirmedDate}
 相談方法：${data.method}
 テーマ：${data.theme}
-${data.companyUrl ? '企業URL：' + data.companyUrl + '\n※事前リサーチにご活用ください' : ''}
+${zoomLine ? zoomLine + '\n' : ''}${data.companyUrl ? '企業URL：' + data.companyUrl + '\n※事前リサーチにご活用ください' : ''}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 事前準備をお願いいたします。`;
@@ -819,6 +822,9 @@ function getSurveyPageHtml(tokenData) {
     <!-- Q11 -->
     <div class="card">
       <div class="q-label">Q11. 後日、終了後レポートを希望しますか？</div>
+      <div style="background:#fff8e1; border:1px solid #ffe082; border-radius:8px; padding:0.75rem 1rem; margin-bottom:0.75rem; font-size:0.85rem; color:#795548;">
+        <strong>&#9888; ご注意：</strong>レポートは相談日から<strong>3日以内</strong>に作成・配信されます。アンケートのご回答が相談日から3日を過ぎた場合、レポートをお届けできない場合がございます。レポートをご希望の方は、お早めにアンケートにご回答ください。
+      </div>
       <div class="radio-group">
         <label><input type="radio" name="q11" value="希望する"> 希望する</label>
         <label><input type="radio" name="q11" value="希望しない"> 希望しない</label>
@@ -1207,4 +1213,117 @@ function getObserverPageHtml(schedules) {
   </script>
 </body>
 </html>`;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// レポート配信メールテンプレート
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * リーダーへのレポート作成依頼メール
+ */
+function getReportRequestEmailBody(data) {
+  return `${data.leaderName} 様
+
+お疲れ様です。
+下記の経営相談について、診断報告書の作成をお願いいたします。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 相談概要
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.applicationId}
+企業名：${data.company}
+業種：${data.industry || ''}
+テーマ：${data.theme || ''}
+相談日：${data.confirmedDate || ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【レポートアップロード】
+以下のリンクからPDFまたはWordファイルをアップロードしてください。
+
+アップロードページ: ${data.uploadUrl}
+
+【提出期限】
+${data.deadlineStr}（相談日から3日以内）
+
+※ファイルサイズは5MB以内でお願いいたします。
+※アップロード後、相談者様に自動配信されます。
+
+ご不明な点がございましたら、お気軽にお問い合わせください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${CONFIG.ORG.NAME}
+Email: ${CONFIG.ORG.EMAIL}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+}
+
+/**
+ * 相談者へのレポート配信メール
+ */
+function getReportDeliveryEmailBody(data) {
+  return `${data.name} 様
+
+先日は、関西学院大学 中小企業経営診断研究会の無料経営相談をご利用いただき、
+誠にありがとうございました。
+
+相談内容をもとに作成した診断報告書をお届けいたします。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 報告書情報
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.applicationId}
+貴社名：${data.company}
+相談テーマ：${data.theme || ''}
+相談日：${data.confirmedDate || ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【診断報告書ダウンロード】
+${data.fileUrl}
+
+※上記リンクから報告書をダウンロードいただけます。
+※本報告書の内容は秘密情報として取り扱われます。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 今後について
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+報告書の内容についてご不明な点がございましたら、
+お気軽にお問い合わせください。
+
+また、追加のご相談も随時受け付けております。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${CONFIG.ORG.NAME}
+Email: ${CONFIG.ORG.EMAIL}
+URL: ${CONFIG.ORG.URL}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+}
+
+/**
+ * リーダーへのリマインドメール
+ */
+function getReportReminderEmailBody(data) {
+  return `${data.leaderName} 様
+
+お疲れ様です。
+下記の診断報告書について、提出期限のリマインドです。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 対象案件
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.applicationId}
+企業名：${data.company}
+提出期限：${data.deadlineStr}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+報告書の提出がまだお済みでない場合は、
+お早めにアップロードをお願いいたします。
+
+※依頼メールに記載のアップロードリンクからご提出ください。
+
+ご不明な点がございましたら、お気軽にお問い合わせください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${CONFIG.ORG.NAME}
+Email: ${CONFIG.ORG.EMAIL}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 }

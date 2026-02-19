@@ -1285,6 +1285,7 @@
         <li><a href="#sec7"><span class="toc-num">7</span> アンケート・オブザーバーNDAフロー</a></li>
         <li><a href="#sec8"><span class="toc-num">8</span> 2ヶ月制限ロジック</a></li>
         <li><a href="#sec9"><span class="toc-num">9</span> セキュリティ</a></li>
+        <li><a href="#sec10"><span class="toc-num">10</span> リーダー選定・レポート配信</a></li>
       </ol>
     </nav>
 
@@ -1407,6 +1408,18 @@
           <i class="fa-solid fa-user-graduate comp-icon" style="color: #2c7a7b;"></i>
           <div><strong>オブザーバー専用ページ</strong> &mdash; 養成課程在学生（オブザーバー）向けポータル。相談予定一覧の確認、タッチ対応署名パッドによるNDA署名・PDF提出が可能。署名済みNDAはGoogle Driveに自動保存。</div>
         </li>
+        <li>
+          <i class="fa-solid fa-video comp-icon" style="color: #2563eb;"></i>
+          <div><strong>Zoom API連携</strong> &mdash; Server-to-Server OAuthを使用してZoomミーティングを自動作成。予約確定時にミーティングを作成しJoin URLをスプレッドシートに保存。キャンセル時は自動削除。<code>zoom.gs</code>で実装。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-crown comp-icon" style="color: #d97706;"></i>
+          <div><strong>リーダー自動選定</strong> &mdash; 相談完了時に参加メンバー（1期/2期診断士）から自動でリーダーを選定。得意業種・テーママッチ（最大+7pt）と履歴ペナルティ（-2pt/回）で公平に選定。結果はY列とリーダー履歴シートに記録。<code>leader.gs</code>で実装。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-file-alt comp-icon" style="color: #059669;"></i>
+          <div><strong>レポート配信システム</strong> &mdash; アンケートQ11でレポート希望時にリーダーへ自動依頼。専用アップロードページでPDF/Word提出後、相談者に自動配信。期限管理（3日）とリマインド機能付き。<code>report.gs</code>で実装。</div>
+        </li>
       </ul>
     </section>
 
@@ -1444,7 +1457,10 @@
     ├── <span class="highlight">survey.gs</span>         <span class="comment"># アンケートシステム（自動送信・回答保存）</span>
     ├── <span class="highlight">observer.gs</span>       <span class="comment"># オブザーバー専用ページ（NDA署名）</span>
     ├── <span class="file">templates.gs</span>      <span class="comment"># メール・HTMLテンプレート</span>
-    └── <span class="file">triggers.gs</span>       <span class="comment"># 時限トリガー設定</span></div>
+    ├── <span class="file">triggers.gs</span>       <span class="comment"># 時限トリガー設定</span>
+    ├── <span class="highlight">zoom.gs</span>           <span class="comment"># Zoom API連携（ミーティング自動作成・削除）</span>
+    ├── <span class="highlight">leader.gs</span>         <span class="comment"># リーダー自動選定（専門性スコア・履歴管理）</span>
+    └── <span class="highlight">report.gs</span>         <span class="comment"># レポート配信（依頼・アップロード・自動配信）</span></div>
     </section>
 
     <!-- ===== Section 3: 相談者の予約フロー ===== -->
@@ -1846,6 +1862,21 @@
               <td>アンケート自動送信トリガー設定（管理用）</td>
             </tr>
             <tr>
+              <td><span class="api-endpoint">?action=report-upload&amp;token=xxx</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>レポートアップロードページを表示（トークン認証）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=setup-leader-history</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>リーダー履歴シート初期化（管理用）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=setup-report</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>レポート管理シート初期化（管理用）</td>
+            </tr>
+            <tr>
               <td><span class="api-endpoint">（本体URL）</span></td>
               <td><span class="method-badge method-post">POST</span></td>
               <td>予約申込処理（JSON形式で送信）</td>
@@ -2030,7 +2061,7 @@
           <i class="fa-solid fa-globe-lock"></i>
           <div>
             <strong>APIアクセス制限</strong><br>
-            GAS Web Appのデプロイ設定により、アクセス範囲を制御。公開APIエンドポイントは必要最小限のアクション（schedule, news, nda, survey, observer）のみを受け付けます。
+            GAS Web Appのデプロイ設定により、アクセス範囲を制御。公開APIエンドポイントは必要最小限のアクション（schedule, news, nda, survey, observer, report-upload）のみを受け付けます。
           </div>
         </li>
         <li>
@@ -2043,6 +2074,80 @@
       </ul>
     </section>
 
+    <!-- ===== Section 10: リーダー選定・レポート配信 ===== -->
+    <section class="section" id="sec10">
+      <div class="section-header">
+        <span class="section-number">10</span>
+        <h2 class="section-title">リーダー選定・レポート配信</h2>
+        <i class="fa-solid fa-crown section-icon"></i>
+      </div>
+
+      <p class="section-desc">相談完了後のリーダー自動選定と、診断報告書の配信フローです。</p>
+
+      <h3 style="margin-top: 1.5rem; color: var(--navy);"><i class="fa-solid fa-user-tie"></i> リーダー自動選定フロー</h3>
+
+      <div class="flow">
+        <div class="flow-step">
+          <i class="fa-solid fa-flag-checkered flow-step-icon"></i>
+          <div class="flow-step-text"><strong>ステータス→完了</strong></div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-users flow-step-icon"></i>
+          <div class="flow-step-text"><strong>候補抽出</strong><br><small>1期/2期診断士のみ</small></div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-calculator flow-step-icon"></i>
+          <div class="flow-step-text"><strong>スコア算出</strong><br><small>業種+3, テーマ+3, KW+1, 履歴-2</small></div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-crown flow-step-icon"></i>
+          <div class="flow-step-text"><strong>リーダー確定</strong><br><small>Y列＋履歴シート記録</small></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 2rem; color: var(--navy);"><i class="fa-solid fa-file-alt"></i> レポート配信フロー</h3>
+
+      <div class="flow">
+        <div class="flow-step">
+          <i class="fa-solid fa-clipboard-check flow-step-icon"></i>
+          <div class="flow-step-text"><strong>アンケートQ11</strong><br><small>「希望する」回答</small></div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-envelope flow-step-icon"></i>
+          <div class="flow-step-text"><strong>リーダーへ依頼</strong><br><small>作成依頼メール自動送信</small></div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-upload flow-step-icon"></i>
+          <div class="flow-step-text"><strong>アップロード</strong><br><small>専用ページでPDF/Word提出</small></div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-paper-plane flow-step-icon"></i>
+          <div class="flow-step-text"><strong>相談者に配信</strong><br><small>DLリンク付きメール自動送信</small></div>
+        </div>
+      </div>
+
+      <ul class="component-list" style="margin-top: 1.5rem;">
+        <li>
+          <i class="fa-solid fa-clock comp-icon" style="color: var(--orange);"></i>
+          <div><strong>期限管理</strong> &mdash; 提出期限は相談日から3日以内（<code>CONFIG.REPORT.DEADLINE_DAYS</code>で変更可）。期限前にリマインドメールを自動送信。期限超過時はステータスを「期限超過」に更新。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-database comp-icon" style="color: var(--navy);"></i>
+          <div><strong>データ記録</strong> &mdash; 予約管理シートY列（リーダー）・Z列（レポート状態）に自動記録。リーダー履歴シート・レポート管理シートに詳細を保存。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-hard-drive comp-icon" style="color: #059669;"></i>
+          <div><strong>ファイル管理</strong> &mdash; アップロードされたレポートはGoogle Driveに保存（<code>CONFIG.REPORT.DRIVE_FOLDER_ID</code>で保存先指定可）。最大5MB。</div>
+        </li>
+      </ul>
+    </section>
+
   </div>
 
   <!-- ===== Footer ===== -->
@@ -2050,7 +2155,7 @@
     <div class="footer-divider"></div>
     <p>無料経営相談予約システム &mdash; システム全体構成図</p>
     <p>関西学院大学 中小企業経営診断研究会</p>
-    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 2.0 &mdash; 2026-02-15 更新（アンケート・オブザーバー機能追加）</p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 4.0 &mdash; 2026-02-19 更新（Zoom API・リーダー選定・レポート配信追加）</p>
   </footer>
 
 </body>

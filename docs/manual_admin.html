@@ -576,6 +576,8 @@
       <li><a href="#sec11">GASコードの更新手順</a></li>
       <li><a href="#sec12">トラブルシューティング</a></li>
       <li><a href="#sec13">設定変更（config.gs）</a></li>
+      <li><a href="#sec14">リーダー自動選定</a></li>
+      <li><a href="#sec15">レポート配信システム</a></li>
     </ol>
   </nav>
 
@@ -738,16 +740,19 @@
     <span class="col-id">K列</span><span>希望日時1</span>
     <span class="col-id">L列</span><span>希望日時2</span>
     <span class="col-id">M列</span><span>相談方法</span>
-    <span class="col-id">N列</span><span>ステータス</span>
-    <span class="col-id">O列</span><span>担当者</span>
-    <span class="col-id">P列</span><span>確定日時</span>
-    <span class="col-id">Q列</span><span>ZoomURL</span>
-    <span class="col-id">R列</span><span>ヒアリングシート</span>
-    <span class="col-id">S列</span><span>備考</span>
-    <span class="col-id">T列</span><span>NDA同意</span>
-    <span class="col-id">U列</span><span>NDA同意日時</span>
-    <span class="col-id">V列</span><span>企業URL</span>
-    <span class="col-id">W列</span><span>当日受付フラグ</span>
+    <span class="col-id">N列</span><span>場所</span>
+    <span class="col-id">O列</span><span>ステータス</span>
+    <span class="col-id">P列</span><span>担当者</span>
+    <span class="col-id">Q列</span><span>確定日時</span>
+    <span class="col-id">R列</span><span>ZoomURL（Zoom API自動生成）</span>
+    <span class="col-id">S列</span><span>ヒアリングシート</span>
+    <span class="col-id">T列</span><span>備考</span>
+    <span class="col-id">U列</span><span>NDA同意</span>
+    <span class="col-id">V列</span><span>NDA同意日時</span>
+    <span class="col-id">W列</span><span>企業URL</span>
+    <span class="col-id">X列</span><span>当日受付フラグ</span>
+    <span class="col-id">Y列</span><span>リーダー（自動選定）</span>
+    <span class="col-id">Z列</span><span>レポート状態</span>
   </div>
 
   <h4><i class="fas fa-arrow-right"></i> ステータスの流れ</h4>
@@ -775,8 +780,11 @@
     <span class="col-id">C列</span><span>資格</span>
     <span class="col-id">D列</span><span>区分</span>
     <span class="col-id">E列</span><span>メールアドレス</span>
-    <span class="col-id">F列</span><span>LINE ID</span>
-    <span class="col-id">G列</span><span>備考</span>
+    <span class="col-id">F列</span><span>電話番号</span>
+    <span class="col-id">G列</span><span>LINE ID</span>
+    <span class="col-id">H列</span><span>備考</span>
+    <span class="col-id">I列</span><span>得意業種（リーダー選定用）</span>
+    <span class="col-id">J列</span><span>得意テーマ（リーダー選定用）</span>
   </div>
 
   <div class="info-box warning">
@@ -903,7 +911,7 @@
   <ol class="step-list">
     <li>相談者がNDA同意を完了 &rarr; <strong>自動で</strong>ステータスが <span class="status-badge confirmed">確定</span> に更新されます</li>
     <li>確定メールが相談者に自動送信されます</li>
-    <li>Zoom URLが未設定の場合は、<strong>前日までにR列にZoom URLを入力</strong>してください</li>
+    <li>Zoomミーティングが <strong>自動作成</strong> され、R列にURLが保存されます</li>
   </ol>
 
   <h4><i class="fas fa-building"></i> 対面相談の場合</h4>
@@ -916,7 +924,7 @@
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div><strong>Zoomの場合</strong>はNDA同意完了時に自動確定されるため、管理者による手動のステータス変更は不要です。Zoom URLの設定のみ確認してください。</div>
+    <div><strong>Zoomの場合</strong>はNDA同意完了時に自動確定され、Zoomミーティングも自動作成されます。管理者による手動操作は不要です。自動作成に失敗した場合のみR列にURLを手動入力してください。</div>
   </div>
 
   <!-- 6.3 当日受付 -->
@@ -1148,6 +1156,11 @@
           <td>Driveフォルダ権限不足</td>
           <td>DRIVE_FOLDER_IDの権限を確認、またはIDを空にしてルートフォルダに保存</td>
         </tr>
+        <tr>
+          <td>Zoomミーティングが自動作成されない</td>
+          <td>Zoom API認証情報の未設定またはスコープ不足</td>
+          <td>GASエディタの「プロジェクトの設定」→「スクリプトプロパティ」で <strong>ZOOM_ACCOUNT_ID / ZOOM_CLIENT_ID / ZOOM_CLIENT_SECRET</strong> が設定されているか確認してください。また、Zoom MarketplaceでアプリのScopeに <code>meeting:write:admin</code> が含まれているか確認してください。</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -1202,6 +1215,21 @@
           <td>署名済みNDA保存先フォルダ</td>
           <td>空（ルートフォルダ）</td>
         </tr>
+        <tr>
+          <td><code>ZOOM_ACCOUNT_ID</code><br><code>ZOOM_CLIENT_ID</code><br><code>ZOOM_CLIENT_SECRET</code></td>
+          <td>Zoom API認証情報（スクリプトプロパティに設定）</td>
+          <td>Zoom Marketplaceで取得</td>
+        </tr>
+        <tr>
+          <td><code>REPORT.DEADLINE_DAYS</code></td>
+          <td>レポート提出期限（日数）</td>
+          <td>3（日）</td>
+        </tr>
+        <tr>
+          <td><code>REPORT.MAX_FILE_SIZE</code></td>
+          <td>レポートファイルサイズ上限</td>
+          <td>5MB</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -1211,10 +1239,95 @@
     <div><code>config.gs</code> を変更した場合は、必ず <a href="#sec11">11. GASコードの更新手順</a> に従ってデプロイを更新してください。</div>
   </div>
 
+  <!-- ===== 14. リーダー自動選定 ===== -->
+  <h2 id="sec14"><i class="fas fa-crown"></i> 14. リーダー自動選定</h2>
+
+  <p>相談のステータスが <span class="status-badge done">完了</span> に変更されると、参加メンバーの中からリーダーが<strong>自動選定</strong>されます。</p>
+
+  <h3><i class="fas fa-filter"></i> 14.1 選定対象</h3>
+  <ul>
+    <li>参加メンバー（H列）のうち、<strong>1期/2期の診断士</strong>のみが対象です</li>
+    <li>オブザーバー（3期/4期）はリーダー候補になりません</li>
+  </ul>
+
+  <h3><i class="fas fa-calculator"></i> 14.2 選定ロジック</h3>
+  <p>以下のスコアを合算し、最も高いメンバーをリーダーに選定します。</p>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>評価項目</th><th>スコア</th><th>説明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>業種マッチ</td><td>+3</td><td>メンバーマスタI列の得意業種と相談企業の業種が一致</td></tr>
+        <tr><td>テーママッチ</td><td>+3</td><td>メンバーマスタJ列の得意テーマと相談テーマが一致</td></tr>
+        <tr><td>キーワードマッチ</td><td>+1</td><td>相談内容に得意分野のキーワードが含まれる</td></tr>
+        <tr><td>履歴ペナルティ</td><td>-2</td><td>直近5回の相談でリーダーを担当していた場合</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>同点の場合はランダムで選定されます。選定結果は <strong>Y列</strong> に自動記録され、<strong>リーダー履歴シート</strong> にも詳細が保存されます。</div>
+  </div>
+
+  <h3><i class="fas fa-cog"></i> 14.3 管理者の操作</h3>
+  <ul>
+    <li>リーダー選定は自動で行われるため、通常は操作不要です</li>
+    <li>Y列を手動で変更することで、リーダーを上書きすることも可能です</li>
+    <li>メンバーマスタの <strong>I列（得意業種）・J列（得意テーマ）</strong> を適切に設定しておくと、選定精度が向上します</li>
+  </ul>
+
+  <!-- ===== 15. レポート配信システム ===== -->
+  <h2 id="sec15"><i class="fas fa-file-alt"></i> 15. レポート配信システム</h2>
+
+  <p>相談後のアンケートでレポートを希望した相談者に対し、リーダーが作成した診断報告書を自動配信するシステムです。</p>
+
+  <h3><i class="fas fa-arrow-right"></i> 15.1 フロー</h3>
+  <ol class="step-list">
+    <li>相談完了後、アンケートが自動送信されます（2時間後）</li>
+    <li>相談者がアンケートQ11で「レポートを希望する」を選択</li>
+    <li>リーダー（Y列）に<strong>レポート作成依頼メール</strong>が自動送信されます</li>
+    <li>リーダーが専用アップロードページからPDF/Wordファイルを提出</li>
+    <li>アップロード完了後、相談者に<strong>診断報告書</strong>が自動配信されます</li>
+  </ol>
+
+  <h3><i class="fas fa-clock"></i> 15.2 期限管理</h3>
+  <ul>
+    <li>提出期限: 相談日から <strong>3日以内</strong></li>
+    <li>ファイルサイズ上限: <strong>5MB</strong></li>
+    <li>期限が近づくとリーダーに<strong>リマインドメール</strong>が自動送信されます</li>
+    <li>Z列で各案件のレポート状態（未依頼/依頼済/アップロード済/配信済/期限超過）を確認できます</li>
+  </ul>
+
+  <h3><i class="fas fa-database"></i> 15.3 レポート管理シート</h3>
+  <p><strong>レポート管理シート</strong>に、全案件のレポート進捗が自動記録されます。</p>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>申込ID</span>
+    <span class="col-id">B列</span><span>相談日</span>
+    <span class="col-id">C列</span><span>相談企業</span>
+    <span class="col-id">D列</span><span>リーダー</span>
+    <span class="col-id">E列</span><span>リーダーメール</span>
+    <span class="col-id">F列</span><span>依頼日時</span>
+    <span class="col-id">G列</span><span>期限</span>
+    <span class="col-id">H列</span><span>アップロード日時</span>
+    <span class="col-id">I列</span><span>ファイルID</span>
+    <span class="col-id">J列</span><span>ファイルURL</span>
+    <span class="col-id">K列</span><span>配信日時</span>
+    <span class="col-id">L列</span><span>ステータス</span>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>レポート管理シートが存在しない場合は、ウェブアプリURL + <code>?action=setup-report</code> にアクセスすると自動作成されます。リーダー履歴シートも同様に <code>?action=setup-leader-history</code> で作成できます。</div>
+  </div>
+
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 2.0</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新
+      <span class="version">Version 4.0</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新（Zoom API・リーダー選定・レポート配信）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

@@ -122,6 +122,20 @@ function handleStatusChange(rowIndex, oldStatus, newStatus) {
       data.location = location;
     }
 
+    // オンライン相談の場合、Zoomミーティングを自動作成
+    if (isOnline && !data.zoomUrl) {
+      var zoomUrl = createAndSaveZoomMeeting(data, rowIndex);
+      if (zoomUrl) {
+        SpreadsheetApp.getUi().alert(
+          '【Zoom自動作成完了】\n\nZoomミーティングを自動作成しました。\nR列にURLが保存されました。\n\nURL: ' + zoomUrl
+        );
+      } else {
+        SpreadsheetApp.getUi().alert(
+          '【Zoom自動作成失敗】\n\nZoomミーティングの自動作成に失敗しました。\nZoom API設定を確認するか、R列にURLを手動入力してください。\n\n※確定メールには「前日までにお送りします」と記載されます。'
+        );
+      }
+    }
+
     // 日程設定シートの予約状況を「予約済み」に更新
     var parsed = parseConfirmedDateTime(data.confirmedDate);
     if (parsed.date) {
@@ -145,6 +159,9 @@ function handleStatusChange(rowIndex, oldStatus, newStatus) {
 テーマ: ${data.theme}
 ${data.companyUrl ? '企業URL: ' + data.companyUrl + '\n※事前リサーチをお願いします' : ''}`;
 
+      const staffIsOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0 || method.indexOf('zoom') >= 0;
+      const staffZoomLine = staffIsOnline && data.zoomUrl ? '\nZoom URL：' + data.zoomUrl : '';
+
       const staffEmailBody = `予約が確定しました。
 
 申込ID：${data.id}
@@ -152,7 +169,7 @@ ${data.companyUrl ? '企業URL: ' + data.companyUrl + '\n※事前リサーチ�
 貴社名：${data.company}
 日時：${data.confirmedDate}
 相談方法：${data.method}
-テーマ：${data.theme}
+テーマ：${data.theme}${staffZoomLine}
 ${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサーチにAIツールの活用を推奨します' : ''}
 
 事前準備をお願いいたします。`;
@@ -191,6 +208,13 @@ ${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサー�
 
   // 完了に変更された場合
   if (newStatus === STATUS.COMPLETED) {
+    // リーダー自動選定
+    try {
+      autoSelectLeaderOnComplete(rowIndex);
+    } catch (leaderError) {
+      console.error('リーダー選定エラー:', leaderError);
+    }
+
     sendLineStatusNotification(data, newStatus);
   }
 
@@ -203,6 +227,12 @@ ${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサー�
         var freed = markAsAvailable(cancelParsed.date, cancelParsed.time);
         console.log(`日程設定シート同期（キャンセル）: ${cancelParsed.date} ${cancelParsed.time || ''} → ${freed ? '空き' : '該当なし'}`);
       }
+    }
+
+    // Zoomミーティングを削除
+    if (data.zoomUrl) {
+      var deleted = deleteZoomMeeting(data.zoomUrl);
+      console.log(`Zoomミーティング削除: ${deleted ? '成功' : '失敗またはスキップ'}`);
     }
 
     sendLineStatusNotification(data, newStatus);
@@ -330,5 +360,6 @@ function setupAllTriggers() {
   setupFirstPollingTrigger();
   setupReminderPollingTrigger();
   setupFinalizeScheduleTrigger();
+  setupReportDeadlineTrigger();
   console.log('すべてのトリガーを設定しました');
 }
