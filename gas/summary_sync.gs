@@ -361,7 +361,8 @@ function updateSummaryRowCounts(sheet, dataRow, headerRow) {
 
       // 判定列（E列）も更新
       var specialFlag = false; // 回答集計からは特別対応フラグは読まない
-      var bookable = getBookableStatus(score, specialFlag);
+      var diagCount = countDiagnosticians(fullNames.join(', '));
+      var bookable = getBookableStatus(score, specialFlag, diagCount);
       // 予約済みでなければ判定を更新
       var bookingStatus = String(dataValues[3]).trim();
       if (bookingStatus !== '予約済み') {

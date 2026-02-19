@@ -122,7 +122,8 @@ function recalculateScheduleScores() {
 
     if (memberNames) {
       const score = calculateStaffScore(memberNames.toString());
-      const bookable = getBookableStatus(score, specialFlag);
+      const diagCount = countDiagnosticians(memberNames.toString());
+      const bookable = getBookableStatus(score, specialFlag, diagCount);
 
       // I列: 配置点数を更新
       sheet.getRange(i + 1, SCHEDULE_COLUMNS.SCORE + 1).setValue(score);

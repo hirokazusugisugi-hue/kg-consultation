@@ -115,15 +115,32 @@ function calculateStaffScore(memberNames) {
 }
 
 /**
+ * 診断士（1期・2期）の人数を返す
+ * @param {string} memberNames - カンマ区切りのメンバー名
+ * @returns {number} 診断士の人数
+ */
+function countDiagnosticians(memberNames) {
+  if (!memberNames) return 0;
+  const members = getMembersByNames(memberNames);
+  return members.filter(function(m) {
+    var term = m.term ? m.term.toString() : '';
+    return term === '1期' || term === '2期';
+  }).length;
+}
+
+/**
  * 予約可能判定
- * - 配置点数 >= 4（診断士2名以上）→ ○
- * - 配置点数 >= 2 かつ 特別対応フラグ = TRUE → ○
+ * - 診断士（1期・2期）が1名以上 かつ 配置点数 >= 4 → ○
+ * - 診断士（1期・2期）が1名以上 かつ 配置点数 >= 2 かつ 特別対応フラグ = TRUE → ○
  * - それ以外 → ×
  * @param {number} score - 配置点数
  * @param {boolean} specialFlag - 特別対応フラグ（プロコン・指導教員同席）
+ * @param {number} diagCount - 診断士（1期・2期）の人数
  * @returns {string} '○' or '×'
  */
-function getBookableStatus(score, specialFlag) {
+function getBookableStatus(score, specialFlag, diagCount) {
+  if (typeof diagCount === 'undefined') diagCount = 0;
+  if (diagCount < 1) return '×';
   if (score >= 4) {
     return '○';
   }

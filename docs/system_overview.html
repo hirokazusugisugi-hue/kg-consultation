@@ -1756,6 +1756,7 @@
           予約可能条件
         </div>
         <p>
+          <strong>前提:</strong> <strong>診断士（1期/2期）1名以上</strong>が必須<br>
           <strong>条件A:</strong> 合計 <strong>4ポイント以上</strong><br>
           <strong>条件B:</strong> 合計 <strong>2ポイント以上</strong> かつ <strong>特別対応フラグ</strong>あり
         </p>
@@ -1773,10 +1774,10 @@
           <span class="score-example-text">診断士 1名 + オブザーバー 2名</span>
           <span class="score-example-note">4pt &mdash; 予約可能</span>
         </div>
-        <div class="score-example ok">
-          <span class="score-example-icon"><i class="fa-solid fa-circle-check"></i></span>
-          <span class="score-example-text">オブザーバー 4名</span>
-          <span class="score-example-note">4pt &mdash; 予約可能</span>
+        <div class="score-example ng">
+          <span class="score-example-icon"><i class="fa-solid fa-circle-xmark"></i></span>
+          <span class="score-example-text">オブザーバー 4名（診断士なし）</span>
+          <span class="score-example-note">4pt &mdash; 予約不可 <span style="font-size:0.72rem;">（診断士0名）</span></span>
         </div>
         <div class="score-example ng">
           <span class="score-example-icon"><i class="fa-solid fa-circle-xmark"></i></span>

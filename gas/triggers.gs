@@ -69,7 +69,8 @@ function recalculateScheduleScoreForRow(rowIndex, sheet) {
 
   if (memberNames) {
     const score = calculateStaffScore(memberNames.toString());
-    const bookable = getBookableStatus(score, specialFlag);
+    const diagCount = countDiagnosticians(memberNames.toString());
+    const bookable = getBookableStatus(score, specialFlag, diagCount);
 
     sheet.getRange(rowIndex, SCHEDULE_COLUMNS.SCORE + 1).setValue(score);
     sheet.getRange(rowIndex, SCHEDULE_COLUMNS.BOOKABLE + 1).setValue(bookable);
