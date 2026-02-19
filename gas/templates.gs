@@ -28,7 +28,7 @@ function getConfirmationEmailBody(data, consentUrl) {
 申込ID：${data.id}
 お名前：${data.name}
 貴社名：${data.company}
-ご連絡先：${data.email} / ${data.phone}
+ご連絡先：${data.email}
 ご希望日時：${data.date1}${data.date2 ? '\n第二希望：' + data.date2 : ''}
 相談方法：${data.method}
 相談テーマ：${data.theme}
@@ -48,6 +48,9 @@ ${data.method === 'オンライン' || data.method === 'オンライン（Zoom�
 ・日程の変更・キャンセルは上記メールアドレスまでご連絡ください
 
 ご不明な点がございましたら、お気軽にお問い合わせください。
+
+【ご相談の流れ・よくある質問】
+相談者マニュアル: https://hirokazusugisugi-hue.github.io/kg-consultation/docs/manual_consultee.html
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${CONFIG.ORG.NAME}
@@ -145,12 +148,12 @@ function getConfirmedEmailBody(data) {
 Zoom URL：${data.zoomUrl}
 
 ※開始時刻の5分前を目安にご参加ください
-※接続に不具合がある場合はお電話にてご連絡ください`
+※接続に不具合がある場合は、こちらからご連絡を差し上げることがあります`
       : `【オンライン相談】
 Zoomのアドレスについては、前日までに改めてメールでお送りいたします。
 
 ※開始時刻の5分前を目安にご参加ください
-※接続に不具合がある場合はお電話にてご連絡ください`;
+※接続に不具合がある場合は、こちらからご連絡を差し上げることがあります`;
   } else {
     const loc = data.location || '（後日ご案内）';
     locationInfo = `【対面相談】
@@ -198,6 +201,9 @@ ${locationInfo}
 
 ご不明な点がございましたら、お気軽にお問い合わせください。
 当日お会いできることを楽しみにしております。
+
+【ご相談の流れ・よくある質問】
+相談者マニュアル: https://hirokazusugisugi-hue.github.io/kg-consultation/docs/manual_consultee.html
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${CONFIG.ORG.NAME}
@@ -268,42 +274,99 @@ Email: ${CONFIG.ORG.EMAIL}
 }
 
 /**
- * 担当者向けLINEリマインドメッセージ
+ * 担当者向けLINEリマインドメッセージ（拡張版）
+ * @param {Object} data - 予約データ（rowData）
+ * @param {string} daysBeforeLabel - "1週間前" or "3日前"
+ * @param {Array<Object>} memberList - 参加メンバー情報の配列 [{name, term, type}]
  */
-function getStaffReminderLine(data, daysBeforeLabel) {
-  return `📋 ${daysBeforeLabel}リマインド
+function getStaffReminderLine(data, daysBeforeLabel, memberList) {
+  const memberNames = memberList ? memberList.map(function(m) { return m.name; }).join(', ') : (data.staff || '');
+  const isOnline = data.method === 'オンライン' || data.method === 'オンライン（Zoom）';
+  const venue = isOnline ? 'Zoom' : (data.location || '未定');
 
-申込ID: ${data.id}
-お名前: ${data.name}様
-貴社名: ${data.company}
+  return `📋 【${daysBeforeLabel}】担当相談リマインド
+
 日時: ${data.confirmedDate}
-方法: ${data.method}
+会場: ${venue}${isOnline && data.zoomUrl ? '\nZoom: ' + data.zoomUrl : ''}
+相談者: ${data.name}様（${data.company}）
+電話: ${data.phone || '未登録'}
 テーマ: ${data.theme}
 ${data.companyUrl ? '企業URL: ' + data.companyUrl : ''}
+リーダー: ${data.leader || '未選定'}
+担当メンバー: ${memberNames}
+
+📖 担当者マニュアル:
+https://hirokazusugisugi-hue.github.io/kg-consultation/docs/manual_staff.html
+
+📝 オブザーバー専用ページ:
+${CONFIG.CONSENT.WEB_APP_URL}?action=observer
+
 事前準備をお願いします。`;
 }
 
 /**
- * 担当者向けメールリマインド（フォールバック用）
+ * 担当者向けメールリマインド（拡張版）
+ * @param {Object} data - 予約データ（rowData）
+ * @param {string} daysBeforeLabel - "1週間前" or "3日前"
+ * @param {Array<Object>} memberList - 参加メンバー情報の配列 [{name, term, type}]
  */
-function getStaffReminderEmail(data, daysBeforeLabel) {
+function getStaffReminderEmail(data, daysBeforeLabel, memberList) {
   const isOnline = data.method === 'オンライン' || data.method === 'オンライン（Zoom）';
-  const zoomLine = isOnline && data.zoomUrl ? 'Zoom URL：' + data.zoomUrl : '';
+
+  let venueInfo = '';
+  if (isOnline) {
+    venueInfo = 'Zoom' + (data.zoomUrl ? '\nZoom URL：' + data.zoomUrl : '');
+  } else {
+    venueInfo = data.location || '（未定）';
+  }
+
+  let memberSection = '';
+  if (memberList && memberList.length > 0) {
+    memberSection = memberList.map(function(m) {
+      const role = m.term ? '（' + m.term + '）' : '';
+      return '  ' + m.name + ' ' + role;
+    }).join('\n');
+  } else {
+    memberSection = '  ' + (data.staff || '未定');
+  }
 
   return `【${daysBeforeLabel}】担当相談のリマインド
 
 ${daysBeforeLabel}に以下の相談が予定されています。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-■ 相談内容
+■ 日時・会場
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 申込ID：${data.id}
-お名前：${data.name}様
-貴社名：${data.company}
 日時：${data.confirmedDate}
 相談方法：${data.method}
+会場：${venueInfo}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 相談者情報
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+氏名：${data.name} 様
+企業名：${data.company}
+メール：${data.email}
+電話番号：${data.phone || '未登録'}
 テーマ：${data.theme}
-${zoomLine ? zoomLine + '\n' : ''}${data.companyUrl ? '企業URL：' + data.companyUrl + '\n※事前リサーチにご活用ください' : ''}
+${data.companyUrl ? '企業URL：' + data.companyUrl + '\n※事前リサーチにご活用ください' : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 担当メンバー
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+リーダー：${data.leader || '未選定'}
+
+${memberSection}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 参考リンク
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+担当者マニュアル:
+https://hirokazusugisugi-hue.github.io/kg-consultation/docs/manual_staff.html
+
+オブザーバー専用ページ（NDA提出状況確認）:
+${CONFIG.CONSENT.WEB_APP_URL}?action=observer
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 事前準備をお願いいたします。`;

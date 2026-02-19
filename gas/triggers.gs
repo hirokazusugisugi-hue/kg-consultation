@@ -241,7 +241,9 @@ ${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサー�
 }
 
 /**
- * 毎日のリマインド送信（前日 + 3日前）
+ * 毎日のリマインド送信
+ * 相談者向け: 3日前 + 前日
+ * 担当者向け: 1週間前 + 3日前
  */
 function sendDailyReminders() {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
@@ -251,15 +253,20 @@ function sendDailyReminders() {
 
   const now = new Date();
 
-  // 翌日の日付（前日リマインド用）
+  // 翌日の日付（相談者・前日リマインド用）
   const oneDayLater = new Date(now);
   oneDayLater.setDate(oneDayLater.getDate() + 1);
   const oneDayLaterStr = Utilities.formatDate(oneDayLater, 'Asia/Tokyo', 'yyyy/MM/dd');
 
-  // 3日後の日付
+  // 3日後の日付（相談者・3日前 + 担当者・3日前）
   const threeDaysLater = new Date(now);
   threeDaysLater.setDate(threeDaysLater.getDate() + 3);
   const threeDaysLaterStr = Utilities.formatDate(threeDaysLater, 'Asia/Tokyo', 'yyyy/MM/dd');
+
+  // 7日後の日付（担当者・1週間前）
+  const sevenDaysLater = new Date(now);
+  sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+  const sevenDaysLaterStr = Utilities.formatDate(sevenDaysLater, 'Asia/Tokyo', 'yyyy/MM/dd');
 
   for (let i = 1; i < data.length; i++) {
     const status = data[i][COLUMNS.STATUS];
@@ -272,38 +279,72 @@ function sendDailyReminders() {
     const dateStr = confirmedDate.toString().substring(0, 10).replace(/-/g, '/');
     const rowData = getRowData(i + 1);
 
-    // 3日前リマインド
-    if (dateStr === threeDaysLaterStr || threeDaysLaterStr === dateStr) {
-      // 予約者向け（メール）
+    // ── 担当者向け: 1週間前リマインド ──
+    if (dateStr === sevenDaysLaterStr) {
+      sendStaffReminderWithMembers_(rowData, '1週間前');
+      console.log(`担当者1週間前リマインド送信: ${rowData.id}`);
+    }
+
+    // ── 相談者 + 担当者向け: 3日前リマインド ──
+    if (dateStr === threeDaysLaterStr) {
+      // 相談者向け（メール）
       sendReminderEmail3DaysBefore(rowData);
 
-      // 担当者向け（LINE優先 → メールフォールバック）
-      if (rowData.staff) {
-        const lineMsg = getStaffReminderLine(rowData, '3日前');
-        const emailSubject = `【3日前リマインド】${rowData.name}様 - ${rowData.confirmedDate}`;
-        const emailBody = getStaffReminderEmail(rowData, '3日前');
-        sendStaffNotifications(rowData.staff, lineMsg, emailSubject, emailBody);
-      }
+      // 担当者向け
+      sendStaffReminderWithMembers_(rowData, '3日前');
 
       console.log(`3日前リマインド送信: ${rowData.email}`);
     }
 
-    // 前日リマインド
-    if (dateStr === oneDayLaterStr || oneDayLaterStr === dateStr) {
-      // 予約者向け（メール）
+    // ── 相談者向け: 前日リマインド ──
+    if (dateStr === oneDayLaterStr) {
       sendReminderEmailDayBefore(rowData);
-
-      // 担当者向け（LINE優先 → メールフォールバック）
-      if (rowData.staff) {
-        const lineMsg = getStaffReminderLine(rowData, '前日');
-        const emailSubject = `【前日・最終確認】${rowData.name}様 - ${rowData.confirmedDate}`;
-        const emailBody = getStaffReminderEmail(rowData, '前日');
-        sendStaffNotifications(rowData.staff, lineMsg, emailSubject, emailBody);
-      }
-
       console.log(`前日リマインド送信: ${rowData.email}`);
     }
   }
+}
+
+/**
+ * 担当者向けリマインド送信（メンバー情報付き）
+ * 日程設定シートから参加メンバーを取得し、リマインドに含める
+ */
+function sendStaffReminderWithMembers_(rowData, daysBeforeLabel) {
+  if (!rowData.staff) return;
+
+  // 日程設定シートから参加メンバーを取得
+  const memberList = getScheduleMembersForDate_(rowData.confirmedDate);
+
+  const lineMsg = getStaffReminderLine(rowData, daysBeforeLabel, memberList);
+  const emailSubject = `【${daysBeforeLabel}】${rowData.name}様（${rowData.company}） - ${rowData.confirmedDate}`;
+  const emailBody = getStaffReminderEmail(rowData, daysBeforeLabel, memberList);
+  sendStaffNotifications(rowData.staff, lineMsg, emailSubject, emailBody);
+}
+
+/**
+ * 日程設定シートから指定日の参加メンバー情報を取得
+ * @param {string} confirmedDate - 確定日時
+ * @returns {Array<Object>} [{name, term, type}]
+ */
+function getScheduleMembersForDate_(confirmedDate) {
+  if (!confirmedDate) return [];
+
+  const dateStr = confirmedDate.toString().substring(0, 10).replace(/-/g, '/');
+  const schedSheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
+    .getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+
+  if (!schedSheet) return [];
+
+  const schedData = schedSheet.getDataRange().getValues();
+  for (let i = 1; i < schedData.length; i++) {
+    const schedDate = schedData[i][SCHEDULE_COLUMNS.DATE];
+    if (!schedDate) continue;
+    const schedDateStr = Utilities.formatDate(new Date(schedDate), 'Asia/Tokyo', 'yyyy/MM/dd');
+    if (schedDateStr === dateStr && schedData[i][SCHEDULE_COLUMNS.MEMBERS]) {
+      return getMembersByNames(schedData[i][SCHEDULE_COLUMNS.MEMBERS].toString())
+        .map(function(m) { return { name: m.name, term: m.term, type: m.type }; });
+    }
+  }
+  return [];
 }
 
 /**
