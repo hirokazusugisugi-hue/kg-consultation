@@ -70,7 +70,7 @@ function createZoomMeeting(data) {
         join_before_host: false,
         mute_upon_entry: true,
         audio: 'voip',
-        auto_recording: 'none'
+        auto_recording: 'cloud'
       }
     };
 
@@ -196,6 +196,25 @@ function convertToZoomDateTime(confirmedDate) {
   }
 
   return null;
+}
+
+/**
+ * Zoom認証情報をスクリプトプロパティに一括設定
+ * GASエディタで実行してください
+ * @param {string} accountId
+ * @param {string} clientId
+ * @param {string} clientSecret
+ */
+function setupZoomCredentials(accountId, clientId, clientSecret) {
+  const props = PropertiesService.getScriptProperties();
+  props.setProperties({
+    'ZOOM_ACCOUNT_ID': accountId,
+    'ZOOM_CLIENT_ID': clientId,
+    'ZOOM_CLIENT_SECRET': clientSecret
+  });
+  console.log('Zoom認証情報を設定しました');
+  // 接続テストを実行
+  return testZoomConnection();
 }
 
 /**
