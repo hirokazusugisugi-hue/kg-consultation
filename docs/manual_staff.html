@@ -674,6 +674,20 @@
       </ul>
     </div>
 
+    <!-- Cancellation -->
+    <div class="flowchart-step" style="border-left: 3px solid var(--danger);">
+      <div class="step-date">
+        <i class="fas fa-ban" style="color: var(--danger);"></i> キャンセル発生時
+        <span class="badge" style="background: #fee2e2; color: #991b1b;">自動通知</span>
+      </div>
+      <ul>
+        <li>相談者がキャンセルメールを送信 &rarr; <strong>10分以内に自動検知</strong></li>
+        <li>担当者にキャンセル通知メール + LINE通知が届きます</li>
+        <li>日程枠の解放・Zoom削除も自動実行されます</li>
+        <li>スプレッドシートでステータスが手動変更された場合も同様に通知されます</li>
+      </ul>
+    </div>
+
   </div>
 
   <!-- ===== 3. 予約管理の操作方法 ===== -->
@@ -998,6 +1012,10 @@
           <td>オブザーバーがNDAを出していない</td>
           <td>オブザーバーにNDAの提出を直接促してください。</td>
         </tr>
+        <tr>
+          <td>相談者からキャンセルの連絡を受けた</td>
+          <td>相談者に kgibaconsultant@gmail.com へメール送信を依頼してください。「キャンセル」と記載されたメールを送信すれば、システムが自動で処理します。手動でスプレッドシートのステータスを「キャンセル」に変更することもできます。</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -1005,7 +1023,7 @@
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 3.2</span>&emsp;|&emsp;2026年2月 作成 / 更新（リマインド改修・マニュアルリンク追加）
+      <span class="version">Version 3.3</span>&emsp;|&emsp;2026年2月 作成 / 更新（キャンセル自動通知追加）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

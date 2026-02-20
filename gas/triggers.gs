@@ -432,6 +432,17 @@ function processCancellation(rowIndex, rowData, source) {
     GmailApp.sendEmail(email, adminSubject, adminBody, { name: CONFIG.SENDER_NAME });
   });
 
+  // 相談者にキャンセル受領確認メール送信
+  if (rowData.email) {
+    var confirmBody = getCancellationConfirmEmail(rowData);
+    GmailApp.sendEmail(rowData.email,
+      '【キャンセル受付完了】無料経営相談のキャンセルを承りました',
+      confirmBody,
+      { name: CONFIG.SENDER_NAME, replyTo: CONFIG.REPLY_TO }
+    );
+    console.log('キャンセル確認メール送信: ' + rowData.email);
+  }
+
   console.log('キャンセル処理完了: ' + rowData.id + ' (' + source + ')');
 }
 
@@ -573,16 +584,8 @@ function checkCancellationEmails() {
       // ステータスをキャンセルに更新
       sheet.getRange(booking.rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.CANCELLED);
 
-      // キャンセル処理実行
+      // キャンセル処理実行（相談者への確認メールもprocessCancellation内で送信）
       processCancellation(booking.rowIndex, rowData, 'メール検知');
-
-      // 相談者にキャンセル確認メール送信
-      var confirmBody = getCancellationConfirmEmail(rowData);
-      GmailApp.sendEmail(senderEmail,
-        '【キャンセル受付完了】無料経営相談のキャンセルを承りました',
-        confirmBody,
-        { name: CONFIG.SENDER_NAME, replyTo: CONFIG.REPLY_TO }
-      );
 
       console.log('キャンセル自動検知: ' + booking.id + ' (' + senderEmail + ')');
     }

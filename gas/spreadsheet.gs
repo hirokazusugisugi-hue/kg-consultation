@@ -75,7 +75,9 @@ function getRowData(rowIndex) {
     location: row[COLUMNS.LOCATION],
     status: row[COLUMNS.STATUS],
     staff: row[COLUMNS.STAFF],
-    confirmedDate: row[COLUMNS.CONFIRMED_DATE],
+    confirmedDate: row[COLUMNS.CONFIRMED_DATE] instanceof Date
+      ? Utilities.formatDate(row[COLUMNS.CONFIRMED_DATE], 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')
+      : row[COLUMNS.CONFIRMED_DATE],
     zoomUrl: row[COLUMNS.ZOOM_URL],
     hearingSheet: row[COLUMNS.HEARING_SHEET],
     notes: row[COLUMNS.NOTES],

@@ -578,6 +578,7 @@
       <li><a href="#sec13">設定変更（config.gs）</a></li>
       <li><a href="#sec14">リーダー自動選定</a></li>
       <li><a href="#sec15">レポート配信システム</a></li>
+      <li><a href="#sec16">Google Drive自動保存</a></li>
     </ol>
   </nav>
 
@@ -942,6 +943,23 @@
     <div>当日受付コードは <code>config.gs</code> の <code>WALK_IN_CODE</code> で変更可能です。デフォルト値は <code>9999</code> です。</div>
   </div>
 
+  <!-- 6.4 キャンセル自動検知 -->
+  <h3><i class="fas fa-envelope-open"></i> 6.4 キャンセル自動検知</h3>
+  <p>相談者からのキャンセルメールを自動検知し、以下の処理を実行します。</p>
+  <ul>
+    <li>Gmail受信トレイを <strong>10分おき</strong> にスキャン</li>
+    <li>「キャンセル」「取消」「取り消し」「中止」を含むメールを検知</li>
+    <li>該当予約のステータスを <span class="status-badge cancel">キャンセル</span> に自動更新</li>
+    <li>日程枠の解放 + Zoomミーティング削除（該当する場合）</li>
+    <li>担当者・リーダー・参加予定メンバー全員にメール + LINE通知</li>
+    <li>相談者にキャンセル受付確認メールを自動送信</li>
+    <li>処理済みメールには「キャンセル処理済」ラベルを付与</li>
+  </ul>
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>スプレッドシート上でステータスを手動で「キャンセル」に変更した場合も、同様の処理（日程解放・Zoom削除・メンバー通知）が自動実行されます。</div>
+  </div>
+
   <!-- ===== 7. メンバー管理 ===== -->
   <h2 id="sec7"><i class="fas fa-user-gear"></i> 7. メンバー管理</h2>
 
@@ -1066,7 +1084,7 @@
 
   <p>GASエディタを開き、左メニューの「トリガー」（<i class="fas fa-clock"></i> 時計アイコン）をクリックして確認します。</p>
 
-  <p><strong>以下の4つのトリガーが登録されていることを確認してください:</strong></p>
+  <p><strong>以下の5つのトリガーが登録されていることを確認してください:</strong></p>
 
   <div style="margin: 16px 0 20px;">
     <div class="trigger-item">
@@ -1085,11 +1103,15 @@
       <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> sendSurveyEmails</span>
       <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 1時間おき</span>
     </div>
+    <div class="trigger-item">
+      <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> checkCancellationEmails</span>
+      <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 10分おき</span>
+    </div>
   </div>
 
   <div class="info-box danger">
     <i class="fas fa-circle-exclamation"></i>
-    <div><strong>トリガーが消えた場合:</strong> GASエディタで <code>setupAllTriggers()</code> 関数を実行してください。これにより4つのトリガーが再設定されます。</div>
+    <div><strong>トリガーが消えた場合:</strong> GASエディタで <code>setupAllTriggers()</code> 関数を実行してください。これにより5つのトリガーが再設定されます。</div>
   </div>
 
   <!-- ===== 11. GASコードの更新手順 ===== -->
@@ -1162,6 +1184,16 @@
           <td>Zoomミーティングが自動作成されない</td>
           <td>Zoom API認証情報の未設定またはスコープ不足</td>
           <td>GASエディタの「プロジェクトの設定」→「スクリプトプロパティ」で <strong>ZOOM_ACCOUNT_ID / ZOOM_CLIENT_ID / ZOOM_CLIENT_SECRET</strong> が設定されているか確認してください。また、Zoom MarketplaceでアプリのScopeに <code>meeting:write:admin</code> が含まれているか確認してください。</td>
+        </tr>
+        <tr>
+          <td>キャンセルメールが検知されない</td>
+          <td>トリガー未設定 or メールアドレス不一致</td>
+          <td>checkCancellationEmailsトリガーが設定されているか確認。相談者のメールアドレスが予約管理シートE列と一致しているか確認してください</td>
+        </tr>
+        <tr>
+          <td>Driveにファイルが保存されない</td>
+          <td>Drive権限未承認</td>
+          <td>GASエディタで任意の関数を手動実行し、Drive権限の承認ダイアログを完了してください</td>
         </tr>
       </tbody>
     </table>
@@ -1326,10 +1358,36 @@
     <div>レポート管理シートが存在しない場合は、ウェブアプリURL + <code>?action=setup-report</code> にアクセスすると自動作成されます。リーダー履歴シートも同様に <code>?action=setup-leader-history</code> で作成できます。</div>
   </div>
 
+  <!-- ===== 16. Google Drive自動保存 ===== -->
+  <h2 id="sec16"><i class="fas fa-cloud-arrow-up"></i> 16. Google Drive自動保存</h2>
+  <p>各種データがGoogle Driveのフォルダに自動保存されます。</p>
+  <h3><i class="fas fa-folder-open"></i> 16.1 フォルダ構成</h3>
+  <div class="column-list">
+    <span class="col-id">KG無料経営相談/</span><span>親フォルダ</span>
+    <span class="col-id">├ 申込概要/</span><span>申込フォームの入力内容（テキストファイル）</span>
+    <span class="col-id">├ アンケート/</span><span>アンケート回答内容（テキストファイル）</span>
+    <span class="col-id">└ 診断報告書/</span><span>リーダーがアップロードしたレポートファイル</span>
+  </div>
+  <h3><i class="fas fa-cogs"></i> 16.2 自動保存のタイミング</h3>
+  <div class="table-wrapper">
+  <table>
+  <thead><tr><th>データ</th><th>保存タイミング</th><th>ファイル形式</th></tr></thead>
+  <tbody>
+  <tr><td><strong>申込概要</strong></td><td>予約申込時（doPost）</td><td>テキストファイル（.txt）</td></tr>
+  <tr><td><strong>アンケート回答</strong></td><td>アンケート送信時</td><td>テキストファイル（.txt）</td></tr>
+  <tr><td><strong>診断報告書</strong></td><td>リーダーがアップロード時</td><td>PDF / Word</td></tr>
+  </tbody>
+  </table>
+  </div>
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>フォルダIDはGASのスクリプトプロパティ（<code>DRIVE_FOLDER_SUMMARY</code>、<code>DRIVE_FOLDER_SURVEY</code>、<code>DRIVE_FOLDER_REPORT</code>）に保存されています。フォルダを変更する場合はスクリプトプロパティを更新してください。</div>
+  </div>
+
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 4.0</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新（Zoom API・リーダー選定・レポート配信）
+      <span class="version">Version 4.1</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新（キャンセル自動検知・Drive自動保存追加）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

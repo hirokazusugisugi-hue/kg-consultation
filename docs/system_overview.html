@@ -1286,6 +1286,7 @@
         <li><a href="#sec8"><span class="toc-num">8</span> 2ヶ月制限ロジック</a></li>
         <li><a href="#sec9"><span class="toc-num">9</span> セキュリティ</a></li>
         <li><a href="#sec10"><span class="toc-num">10</span> リーダー選定・レポート配信</a></li>
+        <li><a href="#sec11"><span class="toc-num">11</span> キャンセル自動検知・Drive自動保存</a></li>
       </ol>
     </nav>
 
@@ -1419,6 +1420,14 @@
         <li>
           <i class="fa-solid fa-file-alt comp-icon" style="color: #059669;"></i>
           <div><strong>レポート配信システム</strong> &mdash; アンケートQ11でレポート希望時にリーダーへ自動依頼。専用アップロードページでPDF/Word提出後、相談者に自動配信。期限管理（3日）とリマインド機能付き。<code>report.gs</code>で実装。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-envelope-open comp-icon" style="color: #dc2626;"></i>
+          <div><strong>キャンセル自動検知</strong> &mdash; Gmail受信箱を10分おきにスキャンし、相談者からのキャンセルメールを自動検知。ステータスを「キャンセル」に更新し、日程解放・Zoom削除・メンバー全員通知・確認メール送信を自動実行。<code>triggers.gs</code>で実装。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-cloud-arrow-up comp-icon" style="color: #059669;"></i>
+          <div><strong>Google Drive自動保存</strong> &mdash; 申込概要・アンケート回答・診断報告書をGoogle Driveの専用フォルダに自動保存。フォルダIDはスクリプトプロパティで管理。<code>config.gs</code>の<code>getDriveFolder()</code>ヘルパーで統一的にアクセス。</div>
         </li>
       </ul>
     </section>
@@ -2149,6 +2158,67 @@
       </ul>
     </section>
 
+    <!-- ===== Section 11: キャンセル自動検知・Drive自動保存 ===== -->
+    <section class="section" id="sec11">
+      <div class="section-header">
+        <span class="section-number">11</span>
+        <h2 class="section-title">キャンセル自動検知・Drive自動保存</h2>
+        <i class="fa-solid fa-envelope-open section-icon"></i>
+      </div>
+
+      <p class="section-desc">キャンセルメールの自動検知フローと、各種データのGoogle Drive自動保存の仕組みです。</p>
+
+      <div style="font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 12px;">
+        <i class="fa-solid fa-ban" style="margin-right: 6px;"></i> キャンセル自動検知フロー
+      </div>
+
+      <div class="flow">
+        <div class="flow-step">
+          <i class="fa-solid fa-envelope flow-step-icon"></i>
+          <div class="flow-step-text"><strong>相談者がキャンセルメール送信</strong><br>kgibaconsultant@gmail.com 宛</div>
+        </div>
+        <div class="flow-connector branch">
+          <div class="connector-line"></div>
+          <div class="connector-arrow"></div>
+        </div>
+        <div class="flow-branch-group">
+          <div class="flow-branch-title"><i class="fa-solid fa-cogs"></i> GAS 自動処理（10分おき）</div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>Gmail検索:「キャンセル OR 取消 OR 取り消し OR 中止」</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>送信者メールアドレスと予約管理シートを照合</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>ステータスを「キャンセル」に更新</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>日程枠を解放（markAsAvailable）</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>Zoomミーティング自動削除</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>リーダー・担当者・参加メンバーにメール＋LINE通知</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>相談者にキャンセル確認メール送信</span></div>
+          <div class="flow-branch-item"><i class="fa-solid fa-circle"></i><span>処理済みメールに「キャンセル処理済」ラベル付与</span></div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.95rem; font-weight: 700; color: var(--navy); margin: 32px 0 12px;">
+        <i class="fa-solid fa-cloud-arrow-up" style="margin-right: 6px;"></i> Google Drive自動保存
+      </div>
+
+      <ul class="component-list">
+        <li>
+          <i class="fa-solid fa-file-lines comp-icon" style="color: var(--blue);"></i>
+          <div><strong>申込概要</strong> &mdash; 予約申込時（doPost）にフォーム入力内容をテキストファイルとして「申込概要」フォルダに自動保存。<code>saveApplicationSummaryToDrive()</code>で実装。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-clipboard-check comp-icon" style="color: var(--orange);"></i>
+          <div><strong>アンケート回答</strong> &mdash; アンケート送信時にQ1〜Q11の全回答をテキストファイルとして「アンケート」フォルダに自動保存。<code>saveSurveyResponseToDrive()</code>で実装。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-file-alt comp-icon" style="color: #059669;"></i>
+          <div><strong>診断報告書</strong> &mdash; リーダーがアップロードしたPDF/Wordファイルを「診断報告書」フォルダに保存。<code>getDriveFolder()</code>ヘルパーで統一管理。</div>
+        </li>
+      </ul>
+
+      <div class="info-box info" style="margin-top: 20px;">
+        <div class="info-box-title"><i class="fa-solid fa-info-circle"></i> フォルダID管理</div>
+        <p>DriveフォルダIDはGASのスクリプトプロパティ（<code>DRIVE_FOLDER_SUMMARY</code>、<code>DRIVE_FOLDER_SURVEY</code>、<code>DRIVE_FOLDER_REPORT</code>）に保存されています。<code>getDriveFolder()</code>ヘルパー関数がプロパティ→CONFIG→ルートフォルダの順にフォールバックします。</p>
+      </div>
+    </section>
+
   </div>
 
   <!-- ===== Footer ===== -->
@@ -2156,7 +2226,7 @@
     <div class="footer-divider"></div>
     <p>無料経営相談予約システム &mdash; システム全体構成図</p>
     <p>関西学院大学 中小企業経営診断研究会</p>
-    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 4.0 &mdash; 2026-02-19 更新（Zoom API・リーダー選定・レポート配信追加）</p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 4.1 &mdash; 2026-02-20 更新（キャンセル自動検知・Drive自動保存追加）</p>
   </footer>
 
 </body>
