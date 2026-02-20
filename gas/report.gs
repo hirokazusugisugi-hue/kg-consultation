@@ -98,7 +98,7 @@ function initiateReportRequest(applicationId) {
   GmailApp.sendEmail(leaderMember.email,
     '【レポート作成依頼】' + rowData.company + '様 - 診断報告書',
     emailBody,
-    { name: CONFIG.SENDER_NAME, replyTo: CONFIG.REPLY_TO }
+    { name: CONFIG.SENDER_NAME, replyTo: CONFIG.REPLY_TO, cc: 'hirokazusugisugi@gmail.com' }
   );
 
   console.log('レポート依頼送信: ' + rowData.leader + ' (' + leaderMember.email + ')');
@@ -465,7 +465,7 @@ function deliverReportToConsultee(applicationId, fileUrl) {
   GmailApp.sendEmail(rowData.email,
     '【診断報告書のお届け】' + rowData.company + '様 - 経営相談レポート',
     emailBody,
-    { name: CONFIG.SENDER_NAME, replyTo: CONFIG.REPLY_TO }
+    { name: CONFIG.SENDER_NAME, replyTo: CONFIG.REPLY_TO, cc: 'hirokazusugisugi@gmail.com' }
   );
 
   // レポート管理シート・予約管理シートのステータスを「配信済」に更新
@@ -559,7 +559,7 @@ function sendReportReminder(reportRow) {
   GmailApp.sendEmail(leaderEmail,
     '【リマインド】診断報告書の提出期限が近づいています',
     emailBody,
-    { name: CONFIG.SENDER_NAME, replyTo: CONFIG.REPLY_TO }
+    { name: CONFIG.SENDER_NAME, replyTo: CONFIG.REPLY_TO, cc: 'hirokazusugisugi@gmail.com' }
   );
 }
 
