@@ -148,9 +148,8 @@ function handleStatusChange(rowIndex, oldStatus, newStatus) {
     sendConfirmedEmail(data);
     console.log(`確定メール送信完了: ${data.email}`);
 
-    // 担当者への通知（企業URL情報を含む）
-    if (data.staff) {
-      const staffLineMsg = `✅ 予約確定
+    // 担当者・管理者への通知（企業URL情報を含む）
+    const staffLineMsg = `✅ 予約確定
 
 申込ID: ${data.id}
 お名前: ${data.name}様
@@ -160,10 +159,10 @@ function handleStatusChange(rowIndex, oldStatus, newStatus) {
 テーマ: ${data.theme}
 ${data.companyUrl ? '企業URL: ' + data.companyUrl + '\n※事前リサーチをお願いします' : ''}`;
 
-      const staffIsOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0 || method.indexOf('zoom') >= 0;
-      const staffZoomLine = staffIsOnline && data.zoomUrl ? '\nZoom URL：' + data.zoomUrl : '';
+    const staffIsOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0 || method.indexOf('zoom') >= 0;
+    const staffZoomLine = staffIsOnline && data.zoomUrl ? '\nZoom URL：' + data.zoomUrl : '';
 
-      const staffEmailBody = `予約が確定しました。
+    const confirmEmailBody = `予約が確定しました。
 
 申込ID：${data.id}
 お名前：${data.name}様
@@ -175,12 +174,55 @@ ${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサー�
 
 事前準備をお願いいたします。`;
 
+    const confirmEmailSubject = `【予約確定】${data.name}様（${data.company}） - ${data.confirmedDate}`;
+
+    var confirmedSentEmails = {};
+
+    // P列の担当者に通知
+    if (data.staff) {
       sendStaffNotifications(
         data.staff,
         staffLineMsg,
-        `【予約確定】${data.name}様 - ${data.confirmedDate}`,
-        staffEmailBody
+        confirmEmailSubject,
+        confirmEmailBody
       );
+      var cStaffNames = data.staff.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+      cStaffNames.forEach(function(name) {
+        var m = getMemberByName(name);
+        if (m && m.email) confirmedSentEmails[m.email] = true;
+      });
+    }
+
+    // 日程設定シートの参加メンバー全員にも確定通知（P列と重複しない分）
+    var confirmMembers = getScheduleMembersForDate_(data.confirmedDate);
+    if (confirmMembers && confirmMembers.length > 0) {
+      confirmMembers.forEach(function(cm) {
+        var m = getMemberByName(cm.name);
+        if (m && m.email && !confirmedSentEmails[m.email]) {
+          GmailApp.sendEmail(m.email, confirmEmailSubject, confirmEmailBody, {
+            name: CONFIG.SENDER_NAME
+          });
+          if (m.lineId) sendLineMessage(m.lineId, staffLineMsg);
+          confirmedSentEmails[m.email] = true;
+          console.log('確定通知（参加メンバー）: ' + cm.name + ' (' + m.email + ')');
+        }
+      });
+    }
+
+    // 誰にも送れなかった場合は管理者にフォールバック
+    if (Object.keys(confirmedSentEmails).length === 0) {
+      CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+        GmailApp.sendEmail(adminEmail, confirmEmailSubject, confirmEmailBody, {
+          name: CONFIG.SENDER_NAME
+        });
+      });
+      console.log('確定通知: 担当者・メンバー未設定のため管理者にフォールバック');
+    }
+
+    // リーダー履歴に「予定」として記録
+    if (data.leader) {
+      var schedMembers = getParticipatingMembers(data.confirmedDate) || '';
+      recordLeaderAssignment(data, data.leader, schedMembers, 0, '手動設定', '予定');
     }
 
     // LINE通知
@@ -261,7 +303,9 @@ function sendDailyReminders() {
       continue;
     }
 
-    const dateStr = confirmedDate.toString().substring(0, 10).replace(/-/g, '/');
+    const dateStr = (confirmedDate instanceof Date || (typeof confirmedDate === 'object' && typeof confirmedDate.getTime === 'function'))
+      ? Utilities.formatDate(confirmedDate, 'Asia/Tokyo', 'yyyy/MM/dd')
+      : confirmedDate.toString().substring(0, 10).replace(/-/g, '/');
     const rowData = getRowData(i + 1);
 
     // ── 担当者向け: 1週間前リマインド ──
@@ -290,19 +334,57 @@ function sendDailyReminders() {
 }
 
 /**
- * 担当者向けリマインド送信（メンバー情報付き）
- * 日程設定シートから参加メンバーを取得し、リマインドに含める
+ * 相談担当者・オブザーバー向けリマインド送信
+ * P列（担当者）＋ 日程設定シートの参加メンバー全員に送信
  */
 function sendStaffReminderWithMembers_(rowData, daysBeforeLabel) {
-  if (!rowData.staff) return;
-
   // 日程設定シートから参加メンバーを取得
   const memberList = getScheduleMembersForDate_(rowData.confirmedDate);
 
   const lineMsg = getStaffReminderLine(rowData, daysBeforeLabel, memberList);
   const emailSubject = `【${daysBeforeLabel}】${rowData.name}様（${rowData.company}） - ${rowData.confirmedDate}`;
   const emailBody = getStaffReminderEmail(rowData, daysBeforeLabel, memberList);
-  sendStaffNotifications(rowData.staff, lineMsg, emailSubject, emailBody);
+
+  var sentEmails = {};
+
+  // P列の担当者に通知
+  if (rowData.staff) {
+    sendStaffNotifications(rowData.staff, lineMsg, emailSubject, emailBody);
+    // 送信済みメールアドレスを記録（重複防止）
+    var staffNames = rowData.staff.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+    staffNames.forEach(function(name) {
+      var member = getMemberByName(name);
+      if (member && member.email) sentEmails[member.email] = true;
+    });
+  }
+
+  // 日程設定シートの参加メンバー全員にリマインド送信（P列と重複しない分）
+  if (memberList && memberList.length > 0) {
+    memberList.forEach(function(m) {
+      var member = getMemberByName(m.name);
+      if (member && member.email && !sentEmails[member.email]) {
+        GmailApp.sendEmail(member.email, emailSubject, emailBody, {
+          name: CONFIG.SENDER_NAME
+        });
+        // LINE IDがあればLINEも送信
+        if (member.lineId) {
+          sendLineMessage(member.lineId, lineMsg);
+        }
+        sentEmails[member.email] = true;
+        console.log('リマインド送信（参加メンバー）: ' + m.name + ' (' + member.email + ')');
+      }
+    });
+  }
+
+  // 誰にも送れなかった場合は管理者にフォールバック
+  if (Object.keys(sentEmails).length === 0) {
+    CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+      GmailApp.sendEmail(adminEmail, emailSubject, emailBody, {
+        name: CONFIG.SENDER_NAME
+      });
+    });
+    console.log('リマインド: 担当者・メンバー未設定のため管理者にフォールバック');
+  }
 }
 
 /**
@@ -313,7 +395,9 @@ function sendStaffReminderWithMembers_(rowData, daysBeforeLabel) {
 function getScheduleMembersForDate_(confirmedDate) {
   if (!confirmedDate) return [];
 
-  const dateStr = confirmedDate.toString().substring(0, 10).replace(/-/g, '/');
+  const dateStr = (confirmedDate instanceof Date || (typeof confirmedDate === 'object' && typeof confirmedDate.getTime === 'function'))
+    ? Utilities.formatDate(confirmedDate, 'Asia/Tokyo', 'yyyy/MM/dd')
+    : confirmedDate.toString().substring(0, 10).replace(/-/g, '/');
   const schedSheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
     .getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
 
@@ -625,4 +709,86 @@ function setupCancellationEmailTrigger() {
     .create();
 
   console.log('キャンセルメール検知トリガーをセットアップしました（10分おき）');
+}
+
+/**
+ * 指定行の予約について、日程設定シートの参加メンバー全員に確定通知を送信
+ * ScriptPropertiesの PENDING_NOTIFY_ROW に行番号をセットして呼び出す
+ */
+function sendScheduledStaffNotification() {
+  var props = PropertiesService.getScriptProperties();
+  var rowStr = props.getProperty('PENDING_NOTIFY_ROW');
+  if (!rowStr) {
+    console.log('PENDING_NOTIFY_ROW が未設定です');
+    return;
+  }
+
+  var rowIndex = parseInt(rowStr);
+  props.deleteProperty('PENDING_NOTIFY_ROW');
+
+  // 一回限りのトリガーを削除
+  var triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'sendScheduledStaffNotification') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  var data = getRowData(rowIndex);
+  if (!data.id) {
+    console.log('行 ' + rowIndex + ' にデータがありません');
+    return;
+  }
+
+  var method = data.method || '';
+  var isOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0;
+  var zoomLine = isOnline && data.zoomUrl ? '\nZoom URL：' + data.zoomUrl : '';
+
+  var lineMsg = '✅ 予約確定\n\n' +
+    '申込ID: ' + data.id + '\n' +
+    'お名前: ' + data.name + '様\n' +
+    '貴社名: ' + data.company + '\n' +
+    '日時: ' + data.confirmedDate + '\n' +
+    '方法: ' + data.method + '\n' +
+    'テーマ: ' + data.theme +
+    (data.companyUrl ? '\n企業URL: ' + data.companyUrl + '\n※事前リサーチをお願いします' : '');
+
+  var emailSubject = '【予約確定】' + data.name + '様（' + data.company + '） - ' + data.confirmedDate;
+  var emailBody = '予約が確定しました。\n\n' +
+    '申込ID：' + data.id + '\n' +
+    'お名前：' + data.name + '様\n' +
+    '貴社名：' + data.company + '\n' +
+    '日時：' + data.confirmedDate + '\n' +
+    '相談方法：' + data.method + '\n' +
+    'テーマ：' + data.theme + zoomLine +
+    (data.companyUrl ? '\n\n企業URL：' + data.companyUrl + '\n※事前リサーチにAIツールの活用を推奨します' : '') +
+    '\n\n事前準備をお願いいたします。';
+
+  var sentEmails = {};
+
+  // P列の担当者
+  if (data.staff) {
+    sendStaffNotifications(data.staff, lineMsg, emailSubject, emailBody);
+    var staffNames = data.staff.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+    staffNames.forEach(function(name) {
+      var m = getMemberByName(name);
+      if (m && m.email) sentEmails[m.email] = true;
+    });
+  }
+
+  // 日程設定シートの参加メンバー
+  var memberList = getScheduleMembersForDate_(data.confirmedDate);
+  if (memberList && memberList.length > 0) {
+    memberList.forEach(function(cm) {
+      var m = getMemberByName(cm.name);
+      if (m && m.email && !sentEmails[m.email]) {
+        GmailApp.sendEmail(m.email, emailSubject, emailBody, { name: CONFIG.SENDER_NAME });
+        if (m.lineId) sendLineMessage(m.lineId, lineMsg);
+        sentEmails[m.email] = true;
+        console.log('確定通知送信: ' + cm.name + ' (' + m.email + ')');
+      }
+    });
+  }
+
+  console.log('スケジュール確定通知完了: 行' + rowIndex + ', 送信数: ' + Object.keys(sentEmails).length);
 }

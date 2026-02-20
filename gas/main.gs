@@ -277,6 +277,58 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // シートデータ読み取り（管理用）
+    if (action === 'read-sheet') {
+      var sheetName = e.parameter.sheet || CONFIG.SHEET_NAME;
+      var readSheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(sheetName);
+      if (!readSheet) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'シート "' + sheetName + '" が見つかりません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var allData = readSheet.getDataRange().getValues();
+      var rows = [];
+      for (var ri = 0; ri < allData.length; ri++) {
+        var rowArr = [];
+        for (var ci = 0; ci < allData[ri].length; ci++) {
+          var val = allData[ri][ci];
+          rowArr.push((val instanceof Date)
+            ? Utilities.formatDate(val, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss')
+            : (val !== null && val !== undefined ? val.toString() : ''));
+        }
+        rows.push(rowArr);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, sheet: sheetName, totalRows: rows.length, rows: rows }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 行データ診断（管理用）
+    if (action === 'row-info') {
+      var infoRow = parseInt(e.parameter.row);
+      if (!infoRow || infoRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var infoData = getRowData(infoRow);
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          row: infoRow,
+          id: infoData.id || null,
+          name: infoData.name || null,
+          company: infoData.company || null,
+          method: infoData.method || null,
+          status: infoData.status || null,
+          confirmedDate: infoData.confirmedDate ? infoData.confirmedDate.toString() : null,
+          zoomUrl: infoData.zoomUrl || null,
+          email: infoData.email || null,
+          staff: infoData.staff || null,
+          leader: infoData.leader || null
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // Zoom URL再作成＋確定メール再送（管理用）
     if (action === 'retry-zoom') {
       var retryRow = parseInt(e.parameter.row);
@@ -298,6 +350,12 @@ function doGet(e) {
           .createTextOutput(JSON.stringify({ success: false, message: 'オンライン相談ではありません（method: ' + retryMethod + '）' }))
           .setMimeType(ContentService.MimeType.JSON);
       }
+      // 確定日時チェック
+      if (!retryData.confirmedDate) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '確定日時（Q列）が未設定です。スプレッドシートで確定日時を入力してからリトライしてください。', id: retryData.id }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
       // Zoom作成
       var retryZoomUrl = retryData.zoomUrl;
       if (!retryZoomUrl) {
@@ -305,7 +363,12 @@ function doGet(e) {
       }
       if (!retryZoomUrl) {
         return ContentService
-          .createTextOutput(JSON.stringify({ success: false, message: 'Zoomミーティング作成に失敗しました。Zoom API設定を確認してください。' }))
+          .createTextOutput(JSON.stringify({
+            success: false,
+            message: 'Zoomミーティング作成に失敗しました。',
+            confirmedDate: retryData.confirmedDate ? retryData.confirmedDate.toString() : null,
+            convertedTime: convertToZoomDateTime(retryData.confirmedDate)
+          }))
           .setMimeType(ContentService.MimeType.JSON);
       }
       // 確定メール再送
@@ -317,6 +380,76 @@ function doGet(e) {
           zoomUrl: retryZoomUrl,
           email: retryData.email,
           applicationId: retryData.id
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // セル書き込み（管理用）
+    if (action === 'write-cell') {
+      var wcRow = parseInt(e.parameter.row);
+      var wcCol = parseInt(e.parameter.col);
+      var wcVal = e.parameter.value || '';
+      var wcSheet = e.parameter.sheet || CONFIG.SHEET_NAME;
+      var wcFormat = e.parameter.format || '';
+      if (!wcRow || !wcCol) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row, col パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var ws = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(wcSheet);
+      if (!ws) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'シート "' + wcSheet + '" が見つかりません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var cell = ws.getRange(wcRow, wcCol);
+      cell.setValue(wcVal);
+      // format=header の場合、隣接するヘッダーセルの書式をコピー
+      if (wcFormat === 'header' && wcCol > 1) {
+        var refCell = ws.getRange(wcRow, wcCol - 1);
+        cell.setBackground(refCell.getBackground());
+        cell.setFontColor(refCell.getFontColor());
+        cell.setFontWeight(refCell.getFontWeight());
+        cell.setFontSize(refCell.getFontSize());
+        cell.setHorizontalAlignment(refCell.getHorizontalAlignment());
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, sheet: wcSheet, row: wcRow, col: wcCol, value: wcVal, formatted: wcFormat === 'header' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 確定通知の時限送信設定（管理用）
+    if (action === 'schedule-notify') {
+      var notifyRow = parseInt(e.parameter.row);
+      var notifyHour = parseInt(e.parameter.hour || '8');
+      if (!notifyRow || notifyRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      // 行番号をプロパティに保存
+      PropertiesService.getScriptProperties().setProperty('PENDING_NOTIFY_ROW', notifyRow.toString());
+      // 既存の同名トリガーを削除
+      ScriptApp.getProjectTriggers().forEach(function(t) {
+        if (t.getHandlerFunction() === 'sendScheduledStaffNotification') {
+          ScriptApp.deleteTrigger(t);
+        }
+      });
+      // トリガー日時を計算（days=0で当日、days=1で翌日、デフォルト0）
+      var daysOffset = parseInt(e.parameter.days || '0');
+      var targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + daysOffset);
+      targetDate.setHours(notifyHour, 0, 0, 0);
+      ScriptApp.newTrigger('sendScheduledStaffNotification')
+        .timeBased()
+        .at(targetDate)
+        .create();
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          message: '確定通知を ' + Utilities.formatDate(targetDate, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm') + ' に送信予約しました',
+          row: notifyRow,
+          scheduledAt: Utilities.formatDate(targetDate, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }

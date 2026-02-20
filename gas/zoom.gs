@@ -171,8 +171,8 @@ function createAndSaveZoomMeeting(data, rowIndex) {
 function convertToZoomDateTime(confirmedDate) {
   if (!confirmedDate) return null;
 
-  // Date型の場合
-  if (confirmedDate instanceof Date) {
+  // Date型の場合（instanceof が失敗する場合に備え、getTime() の存在もチェック）
+  if (confirmedDate instanceof Date || (typeof confirmedDate === 'object' && typeof confirmedDate.getTime === 'function')) {
     return Utilities.formatDate(confirmedDate, 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ss");
   }
 
@@ -185,6 +185,16 @@ function convertToZoomDateTime(confirmedDate) {
       match[2].padStart(2, '0') + '-' +
       match[3].padStart(2, '0') + 'T' +
       match[4].padStart(2, '0') + ':' + match[5] + ':00';
+  }
+
+  // "Day Mon DD YYYY HH:mm:ss GMT+0900" パターン（Date.toString()形式）
+  var monthMap = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  var dateStrMatch = str.match(/\w+\s+(\w+)\s+(\d{1,2})\s+(\d{4})\s+(\d{2}):(\d{2})/);
+  if (dateStrMatch && monthMap[dateStrMatch[1]]) {
+    return dateStrMatch[3] + '-' +
+      monthMap[dateStrMatch[1]] + '-' +
+      dateStrMatch[2].padStart(2, '0') + 'T' +
+      dateStrMatch[4] + ':' + dateStrMatch[5] + ':00';
   }
 
   // 日付のみの場合は10:00をデフォルトに

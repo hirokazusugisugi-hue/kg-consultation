@@ -879,6 +879,30 @@
     <span class="col-id">G列</span><span>ダウンロードURL</span>
   </div>
 
+  <!-- 4.7 リーダー履歴シート -->
+  <h3><i class="fas fa-crown"></i> 4.7 リーダー履歴シート</h3>
+
+  <p>リーダー選定の履歴を管理するシートです。確定時に「予定」、完了時に「完了」として記録されます。</p>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>ステータス（予定 / 完了）</span>
+    <span class="col-id">B列</span><span>相談日時</span>
+    <span class="col-id">C列</span><span>申込ID</span>
+    <span class="col-id">D列</span><span>相談企業</span>
+    <span class="col-id">E列</span><span>リーダー</span>
+    <span class="col-id">F列</span><span>業種</span>
+    <span class="col-id">G列</span><span>テーマ</span>
+    <span class="col-id">H列</span><span>参加メンバー</span>
+    <span class="col-id">I列</span><span>マッチスコア</span>
+    <span class="col-id">J列</span><span>選定理由</span>
+    <span class="col-id">K列</span><span>登録日</span>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>A列のステータスには条件付き書式が設定されています。<strong>「予定」は黄色</strong>、<strong>「完了」は緑色</strong>で表示されます。シートが存在しない場合は <code>?action=setup-leader-history</code> で自動作成できます。</div>
+  </div>
+
   <!-- ===== 5. お知らせ管理 ===== -->
   <h2 id="sec5"><i class="fas fa-bullhorn"></i> 5. お知らせ管理</h2>
 
@@ -915,6 +939,7 @@
     <li>相談者がNDA同意を完了 &rarr; <strong>自動で</strong>ステータスが <span class="status-badge confirmed">確定</span> に更新されます</li>
     <li>確定メールが相談者に自動送信されます</li>
     <li>Zoomミーティングが <strong>自動作成</strong> され、R列にURLが保存されます</li>
+    <li>日程設定シートH列の<strong>参加メンバー全員</strong>に確定通知メール・LINE通知が送信されます</li>
   </ol>
 
   <h4><i class="fas fa-building"></i> 対面相談の場合</h4>
@@ -923,11 +948,17 @@
     <li>管理者に「会場確保依頼」の通知が届きます</li>
     <li>会場を確保し、<strong>N列（場所）</strong>を設定します</li>
     <li>ステータスを <span class="status-badge confirmed">確定</span> に変更 &rarr; 確定メールが相談者に自動送信されます</li>
+    <li>日程設定シートH列の<strong>参加メンバー全員</strong>に確定通知メール・LINE通知が送信されます</li>
   </ol>
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
     <div><strong>Zoomの場合</strong>はNDA同意完了時に自動確定され、Zoomミーティングも自動作成されます。管理者による手動操作は不要です。自動作成に失敗した場合のみR列にURLを手動入力してください。</div>
+  </div>
+
+  <div class="info-box success">
+    <i class="fas fa-circle-check"></i>
+    <div><strong>確定通知・リマインドの送信先:</strong> 日程設定シートのH列（参加メンバー）に登録されている全メンバーに送信されます。メンバーが未登録の場合のみ管理者メールアドレスにフォールバックします。</div>
   </div>
 
   <!-- 6.3 当日受付 -->
@@ -1084,7 +1115,7 @@
 
   <p>GASエディタを開き、左メニューの「トリガー」（<i class="fas fa-clock"></i> 時計アイコン）をクリックして確認します。</p>
 
-  <p><strong>以下の5つのトリガーが登録されていることを確認してください:</strong></p>
+  <p><strong>以下の7つのトリガーが登録されていることを確認してください:</strong></p>
 
   <div style="margin: 16px 0 20px;">
     <div class="trigger-item">
@@ -1107,11 +1138,19 @@
       <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> checkCancellationEmails</span>
       <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 10分おき</span>
     </div>
+    <div class="trigger-item">
+      <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> sendDailyReminders</span>
+      <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 毎日 9:00（3日前・前日リマインド）</span>
+    </div>
+    <div class="trigger-item">
+      <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> onSheetEdit</span>
+      <span class="trigger-schedule"><i class="fas fa-edit" style="margin-right: 4px;"></i> スプレッドシート編集時（ステータス変更検知）</span>
+    </div>
   </div>
 
   <div class="info-box danger">
     <i class="fas fa-circle-exclamation"></i>
-    <div><strong>トリガーが消えた場合:</strong> GASエディタで <code>setupAllTriggers()</code> 関数を実行してください。これにより5つのトリガーが再設定されます。</div>
+    <div><strong>トリガーが消えた場合:</strong> GASエディタで <code>setupAllTriggers()</code> 関数を実行してください。これにより全トリガーが再設定されます。</div>
   </div>
 
   <!-- ===== 11. GASコードの更新手順 ===== -->
@@ -1276,7 +1315,7 @@
   <!-- ===== 14. リーダー自動選定 ===== -->
   <h2 id="sec14"><i class="fas fa-crown"></i> 14. リーダー自動選定</h2>
 
-  <p>相談のステータスが <span class="status-badge done">完了</span> に変更されると、参加メンバーの中からリーダーが<strong>自動選定</strong>されます。</p>
+  <p>予約が <span class="status-badge confirmed">確定</span> になった時点でリーダーが「予定」として記録され、<span class="status-badge done">完了</span> になると「完了」に更新されます。リーダーが未設定の場合は完了時に参加メンバーの中から<strong>自動選定</strong>されます。</p>
 
   <h3><i class="fas fa-filter"></i> 14.1 選定対象</h3>
   <ul>
@@ -1303,14 +1342,29 @@
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div>同点の場合はランダムで選定されます。選定結果は <strong>Y列</strong> に自動記録され、<strong>リーダー履歴シート</strong> にも詳細が保存されます。</div>
+    <div>同点の場合はランダムで選定されます。選定結果は <strong>Y列</strong> に自動記録され、<strong>リーダー履歴シート</strong>（<a href="#sec4">4.7参照</a>）にも詳細が保存されます。</div>
   </div>
 
-  <h3><i class="fas fa-cog"></i> 14.3 管理者の操作</h3>
+  <h3><i class="fas fa-history"></i> 14.3 リーダー履歴の流れ</h3>
+
+  <div class="status-flow">
+    <span class="status-badge provisional">確定時: 予定</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge confirmed">完了時: 完了</span>
+  </div>
+
+  <ul>
+    <li>ステータスが <span class="status-badge confirmed">確定</span> に変更された時点で、リーダー履歴シートに<strong>「予定」</strong>として記録されます</li>
+    <li>ステータスが <span class="status-badge done">完了</span> に変更されると、既存の「予定」行が<strong>「完了」</strong>に自動更新されます</li>
+    <li>手動でリーダーを設定した場合も、同様に「手動設定」として記録されます</li>
+  </ul>
+
+  <h3><i class="fas fa-cog"></i> 14.4 管理者の操作</h3>
   <ul>
     <li>リーダー選定は自動で行われるため、通常は操作不要です</li>
     <li>Y列を手動で変更することで、リーダーを上書きすることも可能です</li>
     <li>メンバーマスタの <strong>I列（得意業種）・J列（得意テーマ）</strong> を適切に設定しておくと、選定精度が向上します</li>
+    <li>リーダー履歴シートで過去の選定結果やスコアを確認できます</li>
   </ul>
 
   <!-- ===== 15. レポート配信システム ===== -->
@@ -1387,7 +1441,7 @@
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 4.1</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新（キャンセル自動検知・Drive自動保存追加）
+      <span class="version">Version 4.2</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新（リーダー履歴・確定通知改善・リマインド強化）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

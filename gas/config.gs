@@ -293,15 +293,17 @@ const REPORT_STATUS = {
  * リーダー履歴シートの列定義
  */
 const LEADER_HISTORY_COLUMNS = {
-  DATE: 0,           // A: 日付
-  APP_ID: 1,         // B: 申込ID
-  COMPANY: 2,        // C: 相談企業
-  INDUSTRY: 3,       // D: 業種
-  THEME: 4,          // E: テーマ
-  LEADER: 5,         // F: リーダー
-  MEMBERS: 6,        // G: 参加メンバー
-  MATCH_SCORE: 7,    // H: マッチスコア
-  REASON: 8          // I: 選定理由
+  STATUS: 0,         // A: ステータス
+  CONSULT_DATE: 1,   // B: 相談日時
+  APP_ID: 2,         // C: 申込ID
+  COMPANY: 3,        // D: 相談企業
+  LEADER: 4,         // E: リーダー
+  INDUSTRY: 5,       // F: 業種
+  THEME: 6,          // G: テーマ
+  MEMBERS: 7,        // H: 参加メンバー
+  MATCH_SCORE: 8,    // I: マッチスコア
+  REASON: 9,         // J: 選定理由
+  DATE: 10           // K: 登録日
 };
 
 /**

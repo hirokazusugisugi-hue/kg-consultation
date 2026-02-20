@@ -159,8 +159,9 @@ function calculateFairnessWeight(memberName) {
  * @param {string} memberNames - 参加メンバー名（カンマ区切り）
  * @param {number} score - マッチスコア
  * @param {string} reason - 選定理由
+ * @param {string} status - ステータス（'予定' or '完了'）
  */
-function recordLeaderAssignment(data, leaderName, memberNames, score, reason) {
+function recordLeaderAssignment(data, leaderName, memberNames, score, reason, status) {
   var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
   var sheet = ss.getSheetByName(CONFIG.LEADER_HISTORY_SHEET_NAME);
 
@@ -170,19 +171,46 @@ function recordLeaderAssignment(data, leaderName, memberNames, score, reason) {
   }
 
   var row = [
-    new Date(),        // A: 日付
-    data.id,           // B: 申込ID
-    data.company,      // C: 相談企業
-    data.industry,     // D: 業種
-    data.theme,        // E: テーマ
-    leaderName,        // F: リーダー
-    memberNames,       // G: 参加メンバー
-    score,             // H: マッチスコア
-    reason             // I: 選定理由
+    status || '予定',        // A: ステータス
+    data.confirmedDate || '',// B: 相談日時
+    data.id,                // C: 申込ID
+    data.company,           // D: 相談企業
+    leaderName,             // E: リーダー
+    data.industry,          // F: 業種
+    data.theme,             // G: テーマ
+    memberNames,            // H: 参加メンバー
+    score,                  // I: マッチスコア
+    reason,                 // J: 選定理由
+    new Date()              // K: 登録日
   ];
 
   sheet.appendRow(row);
-  console.log('リーダー履歴に記録: ' + leaderName + ' (スコア: ' + score + ')');
+  console.log('リーダー履歴に記録: ' + leaderName + ' (' + (status || '予定') + ')');
+}
+
+/**
+ * リーダー履歴シートの既存行のステータスを更新
+ * @param {string} appId - 申込ID
+ * @param {string} newStatus - 新しいステータス
+ * @param {string} [newLeader] - リーダー変更がある場合
+ */
+function updateLeaderHistoryStatus(appId, newStatus, newLeader) {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.LEADER_HISTORY_SHEET_NAME);
+  if (!sheet || sheet.getLastRow() <= 1) return false;
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (data[i][LEADER_HISTORY_COLUMNS.APP_ID] === appId) {
+      sheet.getRange(i + 1, LEADER_HISTORY_COLUMNS.STATUS + 1).setValue(newStatus);
+      if (newLeader) {
+        sheet.getRange(i + 1, LEADER_HISTORY_COLUMNS.LEADER + 1).setValue(newLeader);
+      }
+      console.log('リーダー履歴ステータス更新: ' + appId + ' → ' + newStatus);
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -192,9 +220,15 @@ function recordLeaderAssignment(data, leaderName, memberNames, score, reason) {
 function autoSelectLeaderOnComplete(rowIndex) {
   var data = getRowData(rowIndex);
 
-  // 既にリーダーが設定されている場合はスキップ
+  // 既にリーダーが設定されている場合 → 履歴を「完了」に更新のみ
   if (data.leader) {
-    console.log('リーダー既設定のためスキップ: ' + data.leader);
+    var updated = updateLeaderHistoryStatus(data.id, '完了');
+    if (!updated) {
+      // 履歴に「予定」行がない場合（手動設定など）は新規追加
+      var memberNames = getParticipatingMembers(data.confirmedDate) || '';
+      recordLeaderAssignment(data, data.leader, memberNames, 0, '手動設定', '完了');
+    }
+    console.log('リーダー既設定 → 履歴を完了に更新: ' + data.leader);
     return;
   }
 
@@ -217,8 +251,11 @@ function autoSelectLeaderOnComplete(rowIndex) {
     .getSheetByName(CONFIG.SHEET_NAME);
   sheet.getRange(rowIndex, COLUMNS.LEADER + 1).setValue(result.leaderName);
 
-  // リーダー履歴に記録
-  recordLeaderAssignment(data, result.leaderName, memberNames, result.score, result.reason);
+  // 履歴の「予定」行を「完了」に更新、なければ新規追加
+  var updated = updateLeaderHistoryStatus(data.id, '完了', result.leaderName);
+  if (!updated) {
+    recordLeaderAssignment(data, result.leaderName, memberNames, result.score, result.reason, '完了');
+  }
 
   console.log('リーダー自動選定完了: ' + result.leaderName + ' (行: ' + rowIndex + ')');
 }
@@ -267,7 +304,7 @@ function setupLeaderHistorySheet() {
     sheet = ss.insertSheet(CONFIG.LEADER_HISTORY_SHEET_NAME);
   }
 
-  var headers = ['日付', '申込ID', '相談企業', '業種', 'テーマ', 'リーダー', '参加メンバー', 'マッチスコア', '選定理由'];
+  var headers = ['ステータス', '相談日時', '申込ID', '相談企業', 'リーダー', '業種', 'テーマ', '参加メンバー', 'マッチスコア', '選定理由', '登録日'];
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 
   var headerRange = sheet.getRange(1, 1, 1, headers.length);
@@ -275,15 +312,32 @@ function setupLeaderHistorySheet() {
   headerRange.setFontColor('#ffffff');
   headerRange.setFontWeight('bold');
 
-  sheet.setColumnWidth(1, 120);  // 日付
-  sheet.setColumnWidth(2, 120);  // 申込ID
-  sheet.setColumnWidth(3, 150);  // 相談企業
-  sheet.setColumnWidth(4, 100);  // 業種
-  sheet.setColumnWidth(5, 120);  // テーマ
-  sheet.setColumnWidth(6, 100);  // リーダー
-  sheet.setColumnWidth(7, 250);  // 参加メンバー
-  sheet.setColumnWidth(8, 100);  // マッチスコア
-  sheet.setColumnWidth(9, 250);  // 選定理由
+  sheet.setColumnWidth(1, 80);   // ステータス
+  sheet.setColumnWidth(2, 150);  // 相談日時
+  sheet.setColumnWidth(3, 120);  // 申込ID
+  sheet.setColumnWidth(4, 150);  // 相談企業
+  sheet.setColumnWidth(5, 100);  // リーダー
+  sheet.setColumnWidth(6, 100);  // 業種
+  sheet.setColumnWidth(7, 120);  // テーマ
+  sheet.setColumnWidth(8, 250);  // 参加メンバー
+  sheet.setColumnWidth(9, 100);  // マッチスコア
+  sheet.setColumnWidth(10, 250); // 選定理由
+  sheet.setColumnWidth(11, 120); // 登録日
+
+  // ステータスの条件付き書式（A列）
+  var statusRange = sheet.getRange('A2:A500');
+  var rules = [];
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo('予定')
+    .setBackground('#fff3cd')
+    .setRanges([statusRange])
+    .build());
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo('完了')
+    .setBackground('#d4edda')
+    .setRanges([statusRange])
+    .build());
+  sheet.setConditionalFormatRules(rules);
 
   sheet.setFrozenRows(1);
 
