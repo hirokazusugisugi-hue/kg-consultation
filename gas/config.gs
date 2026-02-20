@@ -120,6 +120,21 @@ const CONFIG = {
 };
 
 /**
+ * Driveフォルダを取得（ScriptProperties優先、CONFIG fallback）
+ * @param {string} propKey - ScriptPropertiesのキー
+ * @param {string} configFallback - CONFIGの値（フォールバック）
+ * @returns {Folder} Google Driveフォルダ
+ */
+function getDriveFolder(propKey, configFallback) {
+  var folderId = PropertiesService.getScriptProperties().getProperty(propKey);
+  if (!folderId && configFallback) folderId = configFallback;
+  if (folderId) {
+    try { return DriveApp.getFolderById(folderId); } catch (e) { /* fallback to root */ }
+  }
+  return DriveApp.getRootFolder();
+}
+
+/**
  * スプレッドシートの列定義
  */
 const COLUMNS = {

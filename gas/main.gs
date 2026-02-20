@@ -48,6 +48,9 @@ function doPost(e) {
     // 担当者にメール通知
     sendAdminNotification(data);
 
+    // 申込概要をDriveに自動保存
+    saveApplicationSummaryToDrive(data, applicationId);
+
     // LINE通知
     sendLineNotification(data);
 
@@ -562,5 +565,43 @@ function sendConfirmedEmail(data) {
     name: CONFIG.SENDER_NAME,
     replyTo: CONFIG.REPLY_TO
   });
+}
+
+/**
+ * 申込概要をDriveに自動保存
+ * @param {Object} data - フォームデータ
+ * @param {string} applicationId - 申込ID
+ */
+function saveApplicationSummaryToDrive(data, applicationId) {
+  try {
+    var folder = getDriveFolder('DRIVE_FOLDER_SUMMARY', '');
+    var content = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      '申込概要\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      '申込ID：' + applicationId + '\n' +
+      '申込日時：' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm') + '\n\n' +
+      '■ 申込者情報\n' +
+      'お名前：' + (data.name || '') + '\n' +
+      '企業名：' + (data.company || '') + '\n' +
+      'メール：' + (data.email || '') + '\n' +
+      '電話番号：' + (data.phone || '') + '\n' +
+      '役職：' + (data.position || '') + '\n' +
+      '業種：' + (data.industry || '') + '\n' +
+      '企業URL：' + (data.companyUrl || '') + '\n\n' +
+      '■ 相談内容\n' +
+      '相談テーマ：' + (data.theme || '') + '\n' +
+      '相談内容：' + (data.content || '') + '\n\n' +
+      '■ 希望日程\n' +
+      '希望日時1：' + (data.date1 || '') + '\n' +
+      '希望日時2：' + (data.date2 || '') + '\n' +
+      '相談方法：' + (data.method || '') + '\n' +
+      '備考：' + (data.remarks || '') + '\n';
+
+    var fileName = applicationId + '_申込概要.txt';
+    folder.createFile(fileName, content, MimeType.PLAIN_TEXT);
+    console.log('申込概要保存: ' + fileName);
+  } catch (e) {
+    console.error('申込概要保存エラー:', e);
+  }
 }
 

@@ -92,6 +92,9 @@ function submitSurveyResponse(formData) {
 
     sheet.appendRow(row);
 
+    // アンケート回答をDriveにファイル保存
+    saveSurveyResponseToDrive(formData);
+
     // 管理者に通知
     notifySurveyResponse(formData);
 
@@ -262,4 +265,43 @@ function setupSurveyTrigger() {
     .create();
 
   return { success: true, message: 'アンケート送信トリガーをセットアップしました' };
+}
+
+/**
+ * アンケート回答をDriveにファイル保存
+ * @param {Object} formData - アンケート回答データ
+ */
+function saveSurveyResponseToDrive(formData) {
+  try {
+    var folder = getDriveFolder('DRIVE_FOLDER_SURVEY', '');
+    var content = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      'アンケート回答\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      '回答日時：' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm') + '\n' +
+      '申込ID：' + (formData.applicationId || '') + '\n' +
+      'お名前：' + (formData.name || '') + '\n' +
+      '企業名：' + (formData.company || '') + '\n\n' +
+      '■ 回答内容\n' +
+      'Q1 きっかけ：' + (formData.q1 || '') + '\n' +
+      'Q1 SNS種別：' + (formData.q1Sns || '') + '\n' +
+      'Q2 手続きスムーズ：' + (formData.q2 || '') + '\n' +
+      'Q2 コメント：' + (formData.q2Comment || '') + '\n' +
+      'Q3 感想：' + (formData.q3 || '') + '\n' +
+      'Q4 時間：' + (formData.q4 || '') + '\n' +
+      'Q5 説明わかりやすさ：' + (formData.q5 || '') + '\n' +
+      'Q6 課題解決参考：' + (formData.q6 || '') + '\n' +
+      'Q7 対応誠実：' + (formData.q7 || '') + '\n' +
+      'Q8 行動アドバイス：' + (formData.q8 || '') + '\n' +
+      'Q9 また受けたい：' + (formData.q9 || '') + '\n' +
+      'Q9 理由：' + (formData.q9Reason || '') + '\n' +
+      'Q10 勧めたい：' + (formData.q10 || '') + '\n' +
+      'Q10 理由：' + (formData.q10Reason || '') + '\n' +
+      'Q11 レポート希望：' + (formData.q11 || '') + '\n';
+
+    var fileName = (formData.applicationId || 'unknown') + '_アンケート.txt';
+    folder.createFile(fileName, content, MimeType.PLAIN_TEXT);
+    console.log('アンケートDrive保存: ' + fileName);
+  } catch (e) {
+    console.error('アンケートDrive保存エラー:', e);
+  }
 }

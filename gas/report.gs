@@ -371,13 +371,8 @@ function submitReportUpload(formData) {
       return { success: false, message: 'ファイルサイズが5MBを超えています' };
     }
 
-    // Driveに保存
-    var folder;
-    if (CONFIG.REPORT.DRIVE_FOLDER_ID) {
-      folder = DriveApp.getFolderById(CONFIG.REPORT.DRIVE_FOLDER_ID);
-    } else {
-      folder = DriveApp.getRootFolder();
-    }
+    // Driveに保存（ScriptProperties優先、CONFIG fallback）
+    var folder = getDriveFolder('DRIVE_FOLDER_REPORT', CONFIG.REPORT.DRIVE_FOLDER_ID);
 
     var fileName = tokenData.applicationId + '_report_' + formData.fileName;
     var file = folder.createFile(blob.setName(fileName));
