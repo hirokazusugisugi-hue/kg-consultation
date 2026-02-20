@@ -1375,8 +1375,8 @@
 
         @media (max-width: 600px) {
             .maps-grid { grid-template-columns: 1fr; }
-            .building-photo { height: 250px; }
-            .map-card img { height: 200px; }
+            .building-photo { height: 180px; }
+            .map-card img { height: 160px; }
         }
 
         /* ── FOOTER ── */
@@ -1871,6 +1871,19 @@
             flex-shrink: 0;
         }
 
+        .flow-step-simple h4 .step-num-sub {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(15,35,80,0.35);
+            color: #fff;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
         .flow-step-simple p {
             font-size: 0.88rem;
             color: var(--text-light);
@@ -1964,8 +1977,8 @@
         }
 
         @media (max-width: 600px) {
-            .can-do-grid { grid-template-columns: 1fr; }
-            .cases-grid-simple { grid-template-columns: 1fr; gap: 2rem; }
+            .can-do-grid { grid-template-columns: 1fr 1fr; }
+            .cases-grid-simple { grid-template-columns: 1fr; gap: 1.2rem; }
         }
 
         /* ── CONSULTATION TOPICS ── */
@@ -1991,7 +2004,8 @@
             border-radius: 10px;
         }
 
-        .topic-option input[type="radio"] { display: none; }
+        .topic-option input[type="radio"],
+        .topic-option input[type="checkbox"] { display: none; }
 
         .topic-option i {
             color: var(--text-muted);
@@ -2014,37 +2028,223 @@
             color: rgba(255,255,255,0.8);
         }
 
-        /* ── RESPONSIVE ── */
+        /* ── RESPONSIVE: TABLET ── */
         @media (max-width: 900px) {
-            .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .about-grid { grid-template-columns: 1fr; gap: 2rem; }
             .service-grid { grid-template-columns: 1fr; }
             .access-grid { grid-template-columns: 1fr; }
-            .access-map { min-height: 350px; }
+            .access-map { min-height: 300px; }
             .topic-options { grid-template-columns: repeat(2, 1fr); }
-            .footer-inner { flex-direction: column; gap: 2rem; }
+            .footer-inner { flex-direction: column; gap: 1.5rem; }
             .members-grid { grid-template-columns: repeat(2, 1fr); }
             .observer-grid { grid-template-columns: repeat(2, 1fr); }
             .time-slots { grid-template-columns: repeat(2, 1fr); }
         }
 
+        /* ── RESPONSIVE: MOBILE ── */
         @media (max-width: 600px) {
-            .members-grid { grid-template-columns: 1fr; }
-            .observer-grid { grid-template-columns: 1fr; }
-            .topic-options { grid-template-columns: 1fr; }
-            .hero-title { font-size: 2.2rem; }
-            .nav-list { display: none; }
-            .service-grid { grid-template-columns: 1fr; }
-            .form-box { padding: 2rem; }
-            .motto::before, .motto::after { display: none; }
-            .form-row { flex-direction: column; gap: 0; }
-            .form-row .form-group { margin-bottom: 1.8rem; }
-            .method-options { flex-direction: column; }
-            .time-slots { grid-template-columns: repeat(2, 1fr); }
-            .hero-features { flex-direction: column; gap: 0.8rem; }
-            .access-maps-row { grid-template-columns: 1fr; }
-            .building-photo { height: 200px; }
+            html { font-size: 15px; }
+
+            /* ── Global spacing reduction ── */
+            .container { padding: 0 1.2rem; }
+
+            .about-section,
+            .service-section,
+            .faq-section,
+            .access-section,
+            .contact-section,
+            .flow-section,
+            .members-section {
+                padding: 40px 0;
+            }
+
+            .section-header { margin-bottom: 1.2rem; }
+            .section-header .section-crest { display: none; }
+            .section-eyebrow { font-size: 0.6rem; margin-bottom: 0.3rem; }
+            .section-title { font-size: 1.4rem; }
+            .section-desc { font-size: 0.82rem; margin-top: 0.6rem; line-height: 1.8; }
+
+            /* ── Header ── */
+            .header { padding: 0.8rem 1.2rem; }
+            .header.scrolled { padding: 0.6rem 1.2rem; }
             .header-logo-img { height: 22px; }
             .logo-sub { display: none; }
+            .nav-list { display: none; }
+
+            /* ── Hero: compact & punchy ── */
+            .hero {
+                min-height: auto;
+                padding: 6rem 0 3.5rem;
+            }
+            .hero-circle-1 { width: 500px; height: 500px; }
+            .hero-circle-2 { width: 380px; height: 380px; }
+            .hero-crest { width: 200px; height: 200px; }
+            .hero-content { padding: 0 1rem; }
+
+            .motto { font-size: 0.65rem; margin-bottom: 0.8rem; letter-spacing: 0.15em; }
+
+            .hero-free-tag { margin-bottom: 1rem; }
+            .hero-free-tag::before, .hero-free-tag::after { width: 24px; }
+            .free-label { font-size: 0.8rem; letter-spacing: 0.15em; }
+
+            .hero-title { font-size: 2rem; margin-bottom: 1rem; line-height: 1.2; }
+            .hero-subtitle { font-size: 0.88rem; margin-bottom: 1.5rem; line-height: 1.8; }
+            .hero-features { flex-direction: row; gap: 1.5rem; margin-bottom: 1.8rem; }
+            .hero-feature { font-size: 0.78rem; }
+
+            .btn { padding: 0.85rem 2rem; font-size: 0.85rem; }
+            .hero-scroll { bottom: 1rem; font-size: 0.6rem; }
+            .hero-scroll .line { height: 20px; }
+
+            /* ── News bar ── */
+            .news-bar-inner { padding: 0 1.2rem; gap: 0.8rem; }
+            .news-text { font-size: 0.75rem; }
+            .news-more { font-size: 0.65rem; }
+
+            /* ── About ── */
+            .about-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+            .about-left h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+            .about-left p { font-size: 0.88rem; line-height: 1.8; }
+            .about-cards { gap: 0.8rem; }
+            .about-card { padding: 1.2rem 1.4rem; border-radius: 12px; }
+            .about-card h3 { font-size: 0.9rem; }
+            .about-card p { font-size: 0.8rem; line-height: 1.6; }
+
+            /* ── Service: 2-col compact grid ── */
+            .service-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+            .service-card {
+                flex-direction: column;
+                padding: 1rem;
+                gap: 0.6rem;
+                border-radius: 12px;
+            }
+            .service-icon { width: 36px; height: 36px; border-radius: 10px; font-size: 0.9rem; }
+            .service-card h3 { font-size: 0.82rem; margin-bottom: 0.15rem; }
+            .service-card p { font-size: 0.72rem; line-height: 1.5; }
+
+            /* ── Flow section ── */
+            .concern-list { padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; }
+            .concern-list ul { padding-left: 1.2rem; }
+            .concern-list li { font-size: 0.82rem; line-height: 1.6; margin-bottom: 0.4rem; }
+
+            .can-do-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+            .can-do-item { padding: 0.8rem; border-radius: 10px; }
+            .can-do-item i { font-size: 0.9rem; }
+            .can-do-item span { font-size: 0.75rem; }
+            .can-do-note { font-size: 0.72rem; }
+
+            .flow-steps-simple { gap: 0; }
+            .flow-step-simple { padding: 1.2rem 0; }
+            .flow-step-simple h4 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+            .flow-step-simple p { font-size: 0.8rem; line-height: 1.7; }
+            .step-num { width: 26px; height: 26px; font-size: 0.72rem; }
+
+            .cases-grid-simple { grid-template-columns: 1fr; gap: 1.2rem; }
+            .case-item { border-radius: 12px; }
+            .case-item-header { padding: 1rem; }
+            .case-item-content { padding: 1rem; }
+            .case-item-title { font-size: 0.88rem; }
+            .case-item-label { font-size: 0.68rem; }
+            .case-item-list li { font-size: 0.78rem; }
+
+            /* ── Members: ultra-compact cards ── */
+            .generation-block { margin-bottom: 1.4rem; }
+            .gen-header { margin-bottom: 0.6rem; gap: 0.5rem; }
+            .gen-badge { font-size: 0.58rem; padding: 0.25rem 0.6rem; }
+            .gen-title { font-size: 0.9rem; }
+            .gen-role { font-size: 0.65rem; }
+
+            .members-grid { grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+            .member-card {
+                padding: 0.6rem 0.7rem;
+                border-radius: 10px;
+                display: block;
+            }
+            .member-avatar { display: none; }
+            .member-name {
+                font-size: 0.78rem;
+                margin-bottom: 0.25rem;
+                display: block;
+            }
+            .member-tag { font-size: 0.5rem; padding: 0.12rem 0.35rem; border-radius: 3px; }
+            .member-tags { gap: 0.15rem; }
+            .member-skills { margin-top: 0.25rem; padding-top: 0.25rem; }
+            .member-skills-label { font-size: 0.48rem; margin-bottom: 0.15rem; }
+
+            .observer-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+            .observer-card { padding: 0.7rem 0.9rem; border-radius: 10px; gap: 0.6rem; }
+            .observer-avatar { width: 28px; height: 28px; font-size: 0.55rem; }
+            .observer-name { font-size: 0.75rem; }
+
+            /* ── FAQ ── */
+            .faq-question { padding: 0.8rem 0; font-size: 0.82rem; }
+            .faq-icon { width: 22px; height: 22px; font-size: 0.75rem; }
+            .faq-answer { font-size: 0.78rem; line-height: 1.7; }
+            .faq-item.active .faq-answer { padding-bottom: 0.8rem; }
+            .faq-icon { width: 24px; height: 24px; font-size: 0.75rem; }
+
+            /* ── Access ── */
+            .building-photo { height: 180px; }
+            .access-maps-row { grid-template-columns: 1fr; gap: 0.8rem; }
+            .map-item-label { font-size: 0.7rem; }
+            .access-info h3 { font-size: 1.05rem; margin-bottom: 0.8rem; }
+            .access-address { font-size: 0.82rem; margin-bottom: 1.2rem; }
+            .access-route { padding: 0.8rem 0; gap: 0.8rem; }
+            .route-icon { width: 30px; height: 30px; font-size: 0.65rem; }
+            .route-info strong { font-size: 0.82rem; }
+            .route-info span { font-size: 0.72rem; }
+            .access-note { padding: 0.8rem 1rem; font-size: 0.75rem; border-radius: 10px; }
+            .access-map { min-height: 260px; border-radius: 14px; }
+
+            /* ── Contact form ── */
+            .form-box { padding: 1.5rem; border-radius: 16px; }
+            .form-label { font-size: 0.8rem; margin-bottom: 0.4rem; }
+            .form-control { padding: 12px 14px; font-size: 0.85rem; border-radius: 10px; }
+            .form-group { margin-bottom: 1.2rem; }
+            .form-row { flex-direction: column; gap: 0; }
+            .form-row .form-group { margin-bottom: 1.2rem; }
+            .form-notice { padding: 0.8rem 1rem; font-size: 0.72rem; border-radius: 8px; margin-bottom: 1.2rem; }
+            .form-btn { padding: 0.85rem; font-size: 0.85rem; border-radius: 10px; }
+
+            .method-options { flex-direction: row; gap: 0.35rem; }
+            .method-option {
+                padding: 0.45rem 0.4rem;
+                border-radius: 8px;
+            }
+            .method-option i { font-size: 0.85rem; margin-bottom: 0.15rem; }
+            .method-option .method-name { font-size: 0.68rem; margin-bottom: 0.1rem; }
+            .method-option .method-desc { font-size: 0.52rem; }
+
+            .topic-options { grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+            .topic-option { padding: 0.5rem 0.6rem; font-size: 0.7rem; border-radius: 8px; }
+
+            .calendar-section { margin-bottom: 1.2rem; }
+            .calendar-day { padding: 0.5rem 0; font-size: 0.75rem; }
+            .calendar-day-header { font-size: 0.6rem; }
+            .time-slots { grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+            .time-slot { padding: 0.6rem; font-size: 0.75rem; }
+            .selected-date-display { font-size: 0.8rem; padding: 0.5rem 0.8rem; }
+
+            /* ── Footer ── */
+            .footer { padding: 2rem 0 1.5rem; }
+            .footer-inner { flex-direction: column; gap: 1.2rem; padding-bottom: 1.2rem; margin-bottom: 1rem; }
+            .footer-logo-img { height: 20px; }
+            .footer-brand p { font-size: 0.68rem; }
+            .footer-links { gap: 1.2rem; }
+            .footer-links a { font-size: 0.65rem; }
+            .footer-copy { font-size: 0.6rem; }
+
+            /* ── BGM player ── */
+            .bgm-player { bottom: 0.8rem; right: 0.8rem; padding: 0.3rem 0.6rem; }
+            .bgm-toggle { width: 24px; height: 24px; font-size: 0.5rem; }
+
+            /* ── Modal ── */
+            .submit-modal { padding: 2rem 1.5rem; border-radius: 20px; }
+            .submit-modal h3 { font-size: 1.1rem; }
+            .submit-modal p { font-size: 0.82rem; }
+
+            /* ── Misc ── */
+            .motto::before, .motto::after { display: none; }
         }
 
         /* ── HAMBURGER MENU ── */
@@ -2062,6 +2262,10 @@
 
         @media (max-width: 600px) {
             .hamburger { display: flex; align-items: center; justify-content: center; }
+        }
+
+        body.menu-open .header {
+            z-index: 1060;
         }
 
         .mobile-menu-overlay {
@@ -2360,8 +2564,8 @@
                     <p>本サイトの予約フォームからご希望の日時・相談方法（対面/オンライン）を選択してお申し込みください。相談テーマや内容は簡単にご記入いただくだけで結構です。</p>
                 </div>
                 <div class="flow-step-simple">
-                    <h4><span class="step-num">2</span>事前ヒアリング</h4>
-                    <p>ご予約後、担当者より確認のご連絡をいたします。相談当日に向けて、お悩みの内容や現状を簡単にお伺いする場合があります。</p>
+                    <h4><span class="step-num-sub">2</span>事前ヒアリング</h4>
+                    <p>事前にヒアリングシートにご記入いただくケースがあります。また基本的には不要ですが、事前に資料のご提示をお願いするケースがあります。</p>
                 </div>
                 <div class="flow-step-simple">
                     <h4><span class="step-num">3</span>相談実施（60〜90分）</h4>
@@ -2630,6 +2834,13 @@
                     </div>
                     <div class="faq-answer">相談内容に応じて、分析レポートや提言書を作成する場合があります。ただし、あくまで助言・提言という位置づけであり、最終的な意思決定は経営者ご自身にお任せしています。</div>
                 </div>
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>相談の録音・録画はされますか？</span>
+                        <div class="faq-icon">+</div>
+                    </div>
+                    <div class="faq-answer">文字起こしやAIの活用による業務効率化のため、原則として相談の録音・録画をお願いしております。データは原則担当者間で使用し、外部への公開は一切いたしません。</div>
+                </div>
             </div>
         </div>
     </section>
@@ -2830,47 +3041,47 @@
                         <label class="form-label">ご相談テーマ</label>
                         <div class="topic-options" id="topicOptions">
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="経営全般">
+                                <input type="checkbox" name="topic" value="経営全般">
                                 <i class="fas fa-briefcase"></i> 経営全般
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="事業計画書の策定">
+                                <input type="checkbox" name="topic" value="事業計画書の策定">
                                 <i class="fas fa-file-alt"></i> 事業計画書の策定
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="経営戦略の立案">
+                                <input type="checkbox" name="topic" value="経営戦略の立案">
                                 <i class="fas fa-chart-line"></i> 経営戦略の立案
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="新規事業開発">
+                                <input type="checkbox" name="topic" value="新規事業開発">
                                 <i class="fas fa-rocket"></i> 新規事業開発
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="販路開拓・マーケティング">
+                                <input type="checkbox" name="topic" value="販路開拓・マーケティング">
                                 <i class="fas fa-bullhorn"></i> 販路開拓・マーケティング
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="財務・資金繰り">
+                                <input type="checkbox" name="topic" value="財務・資金繰り">
                                 <i class="fas fa-coins"></i> 財務・資金繰り
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="人材・組織の課題">
+                                <input type="checkbox" name="topic" value="人材・組織の課題">
                                 <i class="fas fa-users-cog"></i> 人材・組織の課題
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="IT導入・DX推進">
+                                <input type="checkbox" name="topic" value="IT導入・DX推進">
                                 <i class="fas fa-laptop-code"></i> IT導入・DX推進
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="事業承継・M&A">
+                                <input type="checkbox" name="topic" value="事業承継・M&A">
                                 <i class="fas fa-handshake"></i> 事業承継・M&amp;A
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="その他">
+                                <input type="checkbox" name="topic" value="その他">
                                 <i class="fas fa-ellipsis-h"></i> その他
                             </label>
                             <label class="topic-option">
-                                <input type="radio" name="topic" value="面談時に相談">
+                                <input type="checkbox" name="topic" value="面談時に相談">
                                 <i class="fas fa-comments"></i> 面談時に相談
                             </label>
                         </div>
@@ -2975,11 +3186,13 @@
             });
         });
 
-        // ── CONSULTATION TOPIC SELECTION ──
+        // ── CONSULTATION TOPIC SELECTION (multi-select) ──
         document.querySelectorAll('.topic-option').forEach(option => {
-            option.addEventListener('click', () => {
-                document.querySelectorAll('.topic-option').forEach(o => o.classList.remove('selected'));
-                option.classList.add('selected');
+            option.addEventListener('click', (e) => {
+                e.preventDefault();
+                option.classList.toggle('selected');
+                const cb = option.querySelector('input[type="checkbox"]');
+                cb.checked = option.classList.contains('selected');
             });
         });
 
@@ -3640,7 +3853,7 @@
                 method: document.querySelector('input[name="method"]:checked').value === 'zoom' ? 'オンライン（Zoom）' : '対面（梅田キャンパス）',
                 date: selectedDate ? `${selectedDate.year}年${selectedDate.month + 1}月${selectedDate.day}日` : '未選択',
                 time: document.querySelector('input[name="timeslot"]:checked')?.value || '未選択',
-                topic: document.querySelector('input[name="topic"]:checked')?.value || '未選択',
+                topic: Array.from(document.querySelectorAll('input[name="topic"]:checked')).map(c => c.value).join('、') || '未選択',
                 content: consultationContent,
                 remarks: remarks,
                 walkInFlag: isWalkIn ? 'TRUE' : 'FALSE',
