@@ -221,22 +221,7 @@ ${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサー�
 
   // キャンセルに変更された場合
   if (newStatus === STATUS.CANCELLED) {
-    // 日程設定シートの予約状況を「空き」に戻す
-    if (data.confirmedDate) {
-      var cancelParsed = parseConfirmedDateTime(data.confirmedDate);
-      if (cancelParsed.date) {
-        var freed = markAsAvailable(cancelParsed.date, cancelParsed.time);
-        console.log(`日程設定シート同期（キャンセル）: ${cancelParsed.date} ${cancelParsed.time || ''} → ${freed ? '空き' : '該当なし'}`);
-      }
-    }
-
-    // Zoomミーティングを削除
-    if (data.zoomUrl) {
-      var deleted = deleteZoomMeeting(data.zoomUrl);
-      console.log(`Zoomミーティング削除: ${deleted ? '成功' : '失敗またはスキップ'}`);
-    }
-
-    sendLineStatusNotification(data, newStatus);
+    processCancellation(rowIndex, data, '手動変更');
   }
 }
 
@@ -403,5 +388,238 @@ function setupAllTriggers() {
   setupReminderPollingTrigger();
   setupFinalizeScheduleTrigger();
   setupReportDeadlineTrigger();
+  setupCancellationEmailTrigger();
   console.log('すべてのトリガーを設定しました');
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// キャンセルメール自動検知 & 通知
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * キャンセル処理の一元化
+ * 日程解放、Zoom削除、担当者・オブザーバーへの通知を行う
+ * @param {number} rowIndex - 行番号（1-based）
+ * @param {Object} rowData - getRowData()の戻り値
+ * @param {string} source - キャンセル元（'メール検知' or '手動変更'）
+ */
+function processCancellation(rowIndex, rowData, source) {
+  // 日程設定シートの予約状況を「空き」に戻す
+  if (rowData.confirmedDate) {
+    var cancelParsed = parseConfirmedDateTime(rowData.confirmedDate);
+    if (cancelParsed.date) {
+      var freed = markAsAvailable(cancelParsed.date, cancelParsed.time);
+      console.log('日程設定シート同期（キャンセル）: ' + cancelParsed.date + ' ' + (cancelParsed.time || '') + ' → ' + (freed ? '空き' : '該当なし'));
+    }
+  }
+
+  // Zoomミーティングを削除
+  if (rowData.zoomUrl) {
+    var deleted = deleteZoomMeeting(rowData.zoomUrl);
+    console.log('Zoomミーティング削除: ' + (deleted ? '成功' : '失敗またはスキップ'));
+  }
+
+  // LINE通知（グループ）
+  sendLineStatusNotification(rowData, STATUS.CANCELLED);
+
+  // 担当者・オブザーバーへの通知
+  notifyCancellationToMembers(rowData);
+
+  // 管理者への通知
+  var adminSubject = '【キャンセル】' + (rowData.name || '') + '様（' + (rowData.company || '') + '） - ' + source;
+  var adminBody = getCancellationNotificationEmail(rowData, '管理者');
+  CONFIG.ADMIN_EMAILS.forEach(function(email) {
+    GmailApp.sendEmail(email, adminSubject, adminBody, { name: CONFIG.SENDER_NAME });
+  });
+
+  console.log('キャンセル処理完了: ' + rowData.id + ' (' + source + ')');
+}
+
+/**
+ * 担当者・オブザーバーへキャンセル通知を送信
+ * 日程設定シートの参加メンバー全員に通知
+ * @param {Object} rowData - 予約データ
+ */
+function notifyCancellationToMembers(rowData) {
+  // 日程設定シートから参加メンバーを取得
+  var memberList = getScheduleMembersForDate_(rowData.confirmedDate);
+  var notifiedEmails = {};
+
+  // リーダーがいればメンバーリストに含まれていなくても通知
+  if (rowData.leader) {
+    var leaderMember = getMemberByName(rowData.leader);
+    if (leaderMember && leaderMember.email) {
+      var leaderBody = getCancellationNotificationEmail(rowData, rowData.leader);
+      GmailApp.sendEmail(leaderMember.email,
+        '【キャンセル】' + (rowData.company || '') + '様 - 経営相談キャンセルのお知らせ',
+        leaderBody,
+        { name: CONFIG.SENDER_NAME }
+      );
+      notifiedEmails[leaderMember.email] = true;
+      console.log('キャンセル通知（リーダー）: ' + rowData.leader + ' (' + leaderMember.email + ')');
+    }
+  }
+
+  // 日程設定シートの参加メンバー全員に通知
+  if (memberList && memberList.length > 0) {
+    memberList.forEach(function(m) {
+      var member = getMemberByName(m.name);
+      if (member && member.email && !notifiedEmails[member.email]) {
+        var body = getCancellationNotificationEmail(rowData, m.name);
+        GmailApp.sendEmail(member.email,
+          '【キャンセル】' + (rowData.company || '') + '様 - 経営相談キャンセルのお知らせ',
+          body,
+          { name: CONFIG.SENDER_NAME }
+        );
+        notifiedEmails[member.email] = true;
+        console.log('キャンセル通知（メンバー）: ' + m.name + ' (' + member.email + ')');
+      }
+    });
+  }
+
+  // 担当者（P列）にも通知（リーダーやメンバーと重複しない場合のみ）
+  if (rowData.staff) {
+    var staffNames = rowData.staff.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+    staffNames.forEach(function(name) {
+      var member = getMemberByName(name);
+      if (member && member.email && !notifiedEmails[member.email]) {
+        var body = getCancellationNotificationEmail(rowData, name);
+        GmailApp.sendEmail(member.email,
+          '【キャンセル】' + (rowData.company || '') + '様 - 経営相談キャンセルのお知らせ',
+          body,
+          { name: CONFIG.SENDER_NAME }
+        );
+        notifiedEmails[member.email] = true;
+        console.log('キャンセル通知（担当者）: ' + name + ' (' + member.email + ')');
+      }
+    });
+  }
+
+  // LINE通知も各メンバーへ
+  var lineMsg = '❌ 【キャンセル】\n\n' +
+    '相談者: ' + (rowData.name || '') + '様\n' +
+    '企業名: ' + (rowData.company || '') + '\n' +
+    '日時: ' + (rowData.confirmedDate || '') + '\n' +
+    'テーマ: ' + (rowData.theme || '') + '\n\n' +
+    '当該日程の準備は不要です。';
+
+  if (rowData.staff) {
+    sendStaffNotifications(rowData.staff, lineMsg,
+      '【キャンセル】' + (rowData.company || '') + '様',
+      getCancellationNotificationEmail(rowData, rowData.staff)
+    );
+  }
+}
+
+/**
+ * Gmailの受信メールからキャンセルを自動検知
+ * 10分おきにトリガーで実行
+ */
+function checkCancellationEmails() {
+  var labelName = 'キャンセル処理済';
+  var label = GmailApp.getUserLabelByName(labelName);
+  if (!label) {
+    label = GmailApp.createLabel(labelName);
+  }
+
+  // 過去24時間以内のキャンセル関連メール（未処理のみ）
+  var query = 'is:unread newer_than:1d (キャンセル OR 取消 OR 取り消し OR 中止) -label:' + labelName;
+  var threads = GmailApp.search(query, 0, 20);
+
+  if (threads.length === 0) return;
+
+  // 予約管理シートからアクティブな予約を取得
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  var data = sheet.getDataRange().getValues();
+
+  // メールアドレスをキーにした予約マップ（アクティブなもののみ）
+  var activeBookings = {};
+  var activeStatuses = [STATUS.PENDING, STATUS.NDA_AGREED, STATUS.RECEIVED, STATUS.CONFIRMED];
+  for (var i = 1; i < data.length; i++) {
+    var email = (data[i][COLUMNS.EMAIL] || '').toString().toLowerCase().trim();
+    var status = data[i][COLUMNS.STATUS];
+    if (email && activeStatuses.indexOf(status) >= 0) {
+      if (!activeBookings[email]) activeBookings[email] = [];
+      activeBookings[email].push({
+        rowIndex: i + 1,
+        id: data[i][COLUMNS.ID],
+        name: data[i][COLUMNS.NAME],
+        company: data[i][COLUMNS.COMPANY],
+        status: status,
+        confirmedDate: data[i][COLUMNS.CONFIRMED_DATE]
+      });
+    }
+  }
+
+  // 各スレッドを処理
+  for (var t = 0; t < threads.length; t++) {
+    var thread = threads[t];
+    var messages = thread.getMessages();
+
+    for (var m = 0; m < messages.length; m++) {
+      var message = messages[m];
+      if (message.isStarred()) continue; // スター付きはスキップ（管理者が手動対応中）
+
+      var senderEmail = extractEmailAddress(message.getFrom()).toLowerCase().trim();
+      var bookings = activeBookings[senderEmail];
+
+      if (!bookings || bookings.length === 0) continue;
+
+      // 最新の予約を対象にキャンセル処理
+      var booking = bookings[bookings.length - 1];
+      var rowData = getRowData(booking.rowIndex);
+
+      // ステータスをキャンセルに更新
+      sheet.getRange(booking.rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.CANCELLED);
+
+      // キャンセル処理実行
+      processCancellation(booking.rowIndex, rowData, 'メール検知');
+
+      // 相談者にキャンセル確認メール送信
+      var confirmBody = getCancellationConfirmEmail(rowData);
+      GmailApp.sendEmail(senderEmail,
+        '【キャンセル受付完了】無料経営相談のキャンセルを承りました',
+        confirmBody,
+        { name: CONFIG.SENDER_NAME, replyTo: CONFIG.REPLY_TO }
+      );
+
+      console.log('キャンセル自動検知: ' + booking.id + ' (' + senderEmail + ')');
+    }
+
+    // ラベルを付けて処理済みにする
+    thread.addLabel(label);
+    thread.markRead();
+  }
+}
+
+/**
+ * メールアドレスを抽出（"名前 <email>" → "email"）
+ * @param {string} from - Fromヘッダー
+ * @returns {string} メールアドレス
+ */
+function extractEmailAddress(from) {
+  if (!from) return '';
+  var match = from.match(/<([^>]+)>/);
+  if (match) return match[1];
+  return from.trim();
+}
+
+/**
+ * キャンセルメール検知トリガーのセットアップ（10分おき）
+ */
+function setupCancellationEmailTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'checkCancellationEmails') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  ScriptApp.newTrigger('checkCancellationEmails')
+    .timeBased()
+    .everyMinutes(10)
+    .create();
+
+  console.log('キャンセルメール検知トリガーをセットアップしました（10分おき）');
 }

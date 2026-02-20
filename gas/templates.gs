@@ -1368,6 +1368,63 @@ URL: ${CONFIG.ORG.URL}
 /**
  * リーダーへのリマインドメール
  */
+/**
+ * キャンセル通知メール（担当者・オブザーバー向け）
+ */
+function getCancellationNotificationEmail(data, memberName) {
+  return `${memberName} 様
+
+お疲れ様です。
+下記の経営相談について、相談者様よりキャンセルの連絡がありましたのでお知らせいたします。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ キャンセルとなった相談
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.id || ''}
+相談者：${data.name || ''} 様
+企業名：${data.company || ''}
+相談日時：${data.confirmedDate || ''}
+相談方法：${data.method || ''}
+テーマ：${data.theme || ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+本相談はキャンセルとなりましたので、
+当該日程の準備は不要です。
+
+ご不明な点がございましたら、お気軽にお問い合わせください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${CONFIG.ORG.NAME}
+Email: ${CONFIG.ORG.EMAIL}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+}
+
+/**
+ * キャンセル確認メール（相談者向け自動返信）
+ */
+function getCancellationConfirmEmail(data) {
+  return `${data.name} 様
+
+キャンセルのご連絡を承りました。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ キャンセル対象のご予約
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.id || ''}
+相談日時：${data.confirmedDate || ''}
+相談方法：${data.method || ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+お手続きは以上で完了です。
+また改めてご相談をご希望の際は、お気軽にお申し込みください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${CONFIG.ORG.NAME}
+Email: ${CONFIG.ORG.EMAIL}
+URL: ${CONFIG.ORG.URL}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+}
+
 function getReportReminderEmailBody(data) {
   return `${data.leaderName} 様
 
