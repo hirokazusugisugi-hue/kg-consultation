@@ -15,12 +15,12 @@
  */
 function getZoomAccessToken() {
   const props = PropertiesService.getScriptProperties();
-  const accountId = props.getProperty('ZOOM_ACCOUNT_ID');
-  const clientId = props.getProperty('ZOOM_CLIENT_ID');
-  const clientSecret = props.getProperty('ZOOM_CLIENT_SECRET');
+  const accountId = props.getProperty('ZOOM_ACCOUNT_ID') || (CONFIG.ZOOM && CONFIG.ZOOM.ACCOUNT_ID) || '';
+  const clientId = props.getProperty('ZOOM_CLIENT_ID') || (CONFIG.ZOOM && CONFIG.ZOOM.CLIENT_ID) || '';
+  const clientSecret = props.getProperty('ZOOM_CLIENT_SECRET') || (CONFIG.ZOOM && CONFIG.ZOOM.CLIENT_SECRET) || '';
 
   if (!accountId || !clientId || !clientSecret) {
-    throw new Error('Zoom API認証情報が未設定です。スクリプトプロパティにZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRETを設定してください。');
+    throw new Error('Zoom API認証情報が未設定です。CONFIG.ZOOMまたはスクリプトプロパティにZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRETを設定してください。');
   }
 
   const credentials = Utilities.base64Encode(clientId + ':' + clientSecret);

@@ -257,6 +257,71 @@ function doGet(e) {
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // Zoom API 診断・リトライ
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // Zoom API接続診断
+    if (action === 'zoom-status') {
+      var zoomResult = testZoomConnection();
+      var hasConfig = !!(CONFIG.ZOOM && CONFIG.ZOOM.ACCOUNT_ID);
+      var props = PropertiesService.getScriptProperties();
+      var hasProp = !!props.getProperty('ZOOM_ACCOUNT_ID');
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: zoomResult.success,
+          configSet: hasConfig,
+          scriptPropertySet: hasProp,
+          zoomEmail: zoomResult.email || null,
+          error: zoomResult.error || null
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Zoom URL再作成＋確定メール再送（管理用）
+    if (action === 'retry-zoom') {
+      var retryRow = parseInt(e.parameter.row);
+      if (!retryRow || retryRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です（2以上の行番号）' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var retryData = getRowData(retryRow);
+      if (!retryData.id) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '行 ' + retryRow + ' にデータがありません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var retryMethod = retryData.method || '';
+      var retryIsOnline = retryMethod.indexOf('オンライン') >= 0 || retryMethod.indexOf('Zoom') >= 0 || retryMethod.indexOf('zoom') >= 0;
+      if (!retryIsOnline) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'オンライン相談ではありません（method: ' + retryMethod + '）' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      // Zoom作成
+      var retryZoomUrl = retryData.zoomUrl;
+      if (!retryZoomUrl) {
+        retryZoomUrl = createAndSaveZoomMeeting(retryData, retryRow);
+      }
+      if (!retryZoomUrl) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'Zoomミーティング作成に失敗しました。Zoom API設定を確認してください。' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      // 確定メール再送
+      sendConfirmedEmail(retryData);
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          message: 'Zoom URL作成＋確定メール再送完了',
+          zoomUrl: retryZoomUrl,
+          email: retryData.email,
+          applicationId: retryData.id
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // リーダー選定 & レポート配信
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
