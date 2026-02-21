@@ -75,7 +75,7 @@ function getRowData(rowIndex) {
     location: row[COLUMNS.LOCATION],
     status: row[COLUMNS.STATUS],
     staff: row[COLUMNS.STAFF],
-    confirmedDate: row[COLUMNS.CONFIRMED_DATE] instanceof Date
+    confirmedDate: (row[COLUMNS.CONFIRMED_DATE] instanceof Date || (typeof row[COLUMNS.CONFIRMED_DATE] === 'object' && row[COLUMNS.CONFIRMED_DATE] && typeof row[COLUMNS.CONFIRMED_DATE].getTime === 'function'))
       ? Utilities.formatDate(row[COLUMNS.CONFIRMED_DATE], 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')
       : row[COLUMNS.CONFIRMED_DATE],
     zoomUrl: row[COLUMNS.ZOOM_URL],

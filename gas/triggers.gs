@@ -395,9 +395,26 @@ function sendStaffReminderWithMembers_(rowData, daysBeforeLabel) {
 function getScheduleMembersForDate_(confirmedDate) {
   if (!confirmedDate) return [];
 
-  const dateStr = (confirmedDate instanceof Date || (typeof confirmedDate === 'object' && typeof confirmedDate.getTime === 'function'))
-    ? Utilities.formatDate(confirmedDate, 'Asia/Tokyo', 'yyyy/MM/dd')
-    : confirmedDate.toString().substring(0, 10).replace(/-/g, '/');
+  var dateStr;
+  if (confirmedDate instanceof Date || (typeof confirmedDate === 'object' && typeof confirmedDate.getTime === 'function')) {
+    dateStr = Utilities.formatDate(confirmedDate, 'Asia/Tokyo', 'yyyy/MM/dd');
+  } else {
+    var s = confirmedDate.toString();
+    // "2026/02/27 HH:mm" or "2026-02-27" format
+    var m1 = s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if (m1) {
+      dateStr = m1[1] + '/' + ('0' + m1[2]).slice(-2) + '/' + ('0' + m1[3]).slice(-2);
+    } else {
+      // Date.toString() format: "Fri Feb 27 2026 ..."
+      var monthMap = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+      var m2 = s.match(/\w+\s+(\w+)\s+(\d{1,2})\s+(\d{4})/);
+      if (m2 && monthMap[m2[1]]) {
+        dateStr = m2[3] + '/' + monthMap[m2[1]] + '/' + ('0' + m2[2]).slice(-2);
+      } else {
+        dateStr = s.substring(0, 10).replace(/-/g, '/');
+      }
+    }
+  }
   const schedSheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
     .getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
 
@@ -740,35 +757,15 @@ function sendScheduledStaffNotification() {
     return;
   }
 
-  var method = data.method || '';
-  var isOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0;
-  var zoomLine = isOnline && data.zoomUrl ? '\nZoom URL：' + data.zoomUrl : '';
-
-  var lineMsg = '✅ 予約確定\n\n' +
-    '申込ID: ' + data.id + '\n' +
-    'お名前: ' + data.name + '様\n' +
-    '貴社名: ' + data.company + '\n' +
-    '日時: ' + data.confirmedDate + '\n' +
-    '方法: ' + data.method + '\n' +
-    'テーマ: ' + data.theme +
-    (data.companyUrl ? '\n企業URL: ' + data.companyUrl + '\n※事前リサーチをお願いします' : '');
-
-  var emailSubject = '【予約確定】' + data.name + '様（' + data.company + '） - ' + data.confirmedDate;
-  var emailBody = '予約が確定しました。\n\n' +
-    '申込ID：' + data.id + '\n' +
-    'お名前：' + data.name + '様\n' +
-    '貴社名：' + data.company + '\n' +
-    '日時：' + data.confirmedDate + '\n' +
-    '相談方法：' + data.method + '\n' +
-    'テーマ：' + data.theme + zoomLine +
-    (data.companyUrl ? '\n\n企業URL：' + data.companyUrl + '\n※事前リサーチにAIツールの活用を推奨します' : '') +
-    '\n\n事前準備をお願いいたします。';
+  var emailResult = buildStaffNotificationEmail_(data);
+  var lineMsg = buildStaffNotificationLine_(data);
+  var senderName = emailResult.senderName || CONFIG.SENDER_NAME;
 
   var sentEmails = {};
 
   // P列の担当者
   if (data.staff) {
-    sendStaffNotifications(data.staff, lineMsg, emailSubject, emailBody);
+    sendStaffNotifications(data.staff, lineMsg, emailResult.subject, emailResult.body);
     var staffNames = data.staff.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
     staffNames.forEach(function(name) {
       var m = getMemberByName(name);
@@ -782,7 +779,7 @@ function sendScheduledStaffNotification() {
     memberList.forEach(function(cm) {
       var m = getMemberByName(cm.name);
       if (m && m.email && !sentEmails[m.email]) {
-        GmailApp.sendEmail(m.email, emailSubject, emailBody, { name: CONFIG.SENDER_NAME });
+        GmailApp.sendEmail(m.email, emailResult.subject, emailResult.body, { name: senderName });
         if (m.lineId) sendLineMessage(m.lineId, lineMsg);
         sentEmails[m.email] = true;
         console.log('確定通知送信: ' + cm.name + ' (' + m.email + ')');
@@ -791,4 +788,77 @@ function sendScheduledStaffNotification() {
   }
 
   console.log('スケジュール確定通知完了: 行' + rowIndex + ', 送信数: ' + Object.keys(sentEmails).length);
+}
+
+/**
+ * 相談担当者向け通知メールの件名・本文を構築
+ * @param {Object} data - getRowData形式のデータ
+ * @returns {Object} { subject, body }
+ */
+function buildStaffNotificationEmail_(data) {
+  var method = data.method || '';
+  var isOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0;
+
+  var subject = '関学無料経営相談依頼案件（' + data.confirmedDate + '）';
+
+  var body = '下記の経営相談が確定しましたのでお知らせいたします。\n' +
+    '事前準備をお願いいたします。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 相談概要\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '申込ID　：' + data.id + '\n' +
+    '相談日時：' + data.confirmedDate + '\n' +
+    '相談方法：' + method + '\n' +
+    (data.location ? '場所　　：' + data.location + '\n' : '') +
+    (isOnline && data.zoomUrl ? 'Zoom URL：' + data.zoomUrl + '\n' : '') +
+    '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 相談者情報\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    'お名前　：' + data.name + ' 様\n' +
+    '貴社名　：' + data.company + '\n' +
+    '業種　　：' + (data.industry || '未入力') + '\n' +
+    '役職　　：' + (data.position || '未入力') + '\n' +
+    'メール　：' + data.email + '\n' +
+    '電話番号：' + (data.phone || '未入力') + '\n' +
+    (data.companyUrl ? '企業URL ：' + data.companyUrl + '\n' : '') +
+    '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 相談内容\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    'テーマ　：' + (data.theme || '未入力') + '\n' +
+    '内容　　：\n' + (data.content || '未入力') + '\n' +
+    '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 担当\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    'リーダー：' + (data.leader || '未定') + '\n' +
+    '参加メンバー：' + (getParticipatingMembers(data.confirmedDate) || '未定') + '\n' +
+    '\n' +
+    (data.companyUrl ? '※事前に企業URLを確認し、リサーチをお願いします。\n\n' : '') +
+    'よろしくお願いいたします。\n' +
+    '中小企業経営診断研究会 無料経営相談分科会';
+
+  return { subject: subject, body: body, senderName: '中小企業経営診断研究会 無料経営相談分科会' };
+}
+
+/**
+ * 相談担当者向けLINE通知メッセージを構築
+ * @param {Object} data - getRowData形式のデータ
+ * @returns {string} LINE通知テキスト
+ */
+function buildStaffNotificationLine_(data) {
+  var method = data.method || '';
+  var isOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0;
+
+  return '📋 経営相談依頼案件\n\n' +
+    '日時: ' + data.confirmedDate + '\n' +
+    '方法: ' + method + '\n' +
+    (isOnline && data.zoomUrl ? 'Zoom: ' + data.zoomUrl + '\n' : '') +
+    '\n' +
+    data.name + ' 様（' + data.company + '）\n' +
+    '業種: ' + (data.industry || '-') + '\n' +
+    'テーマ: ' + (data.theme || '-') + '\n' +
+    (data.companyUrl ? '企業URL: ' + data.companyUrl + '\n' : '') +
+    'リーダー: ' + (data.leader || '未定');
 }

@@ -454,6 +454,69 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 即時確定通知送信（管理用）
+    // ?action=send-notify-now&row=2  (全員に送信)
+    // ?action=send-notify-now&row=2&testTo=杉山 宏和  (テスト: 指定者のみ)
+    if (action === 'send-notify-now') {
+      var notifyRow2 = parseInt(e.parameter.row);
+      if (!notifyRow2 || notifyRow2 < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var testTo = e.parameter.testTo || '';
+      var debug = [];
+      try {
+        var data2 = getRowData(notifyRow2);
+        debug.push('id=' + data2.id + ', confirmedDate=' + data2.confirmedDate);
+
+        var memberList2 = getScheduleMembersForDate_(data2.confirmedDate);
+        debug.push('memberCount=' + (memberList2 ? memberList2.length : 0));
+
+        // メール件名・本文を構築
+        var emailResult = buildStaffNotificationEmail_(data2);
+        var senderName2 = emailResult.senderName || CONFIG.SENDER_NAME;
+
+        var sentCount = 0;
+        if (testTo) {
+          // テストモード: 指定者のみ
+          var tm = getMemberByName(testTo);
+          if (tm && tm.email) {
+            debug.push('TEST sending to ' + testTo + ' <' + tm.email + '>');
+            GmailApp.sendEmail(tm.email, emailResult.subject, emailResult.body, { name: senderName2 });
+            sentCount++;
+          } else {
+            debug.push('TEST target not found: ' + testTo);
+          }
+        } else if (memberList2 && memberList2.length > 0) {
+          memberList2.forEach(function(cm) {
+            var m2 = getMemberByName(cm.name);
+            if (m2 && m2.email) {
+              debug.push('sending to ' + cm.name + ' <' + m2.email + '>');
+              GmailApp.sendEmail(m2.email, emailResult.subject, emailResult.body, { name: senderName2 });
+              sentCount++;
+            }
+          });
+        } else {
+          debug.push('fallback to admin');
+          CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+            GmailApp.sendEmail(adminEmail, emailResult.subject, emailResult.body, { name: senderName2 });
+            sentCount++;
+          });
+        }
+        debug.push('sentCount=' + sentCount);
+
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: true, sentCount: sentCount, debug: debug }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        debug.push('ERROR: ' + err.message);
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message, debug: debug }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // リーダー選定 & レポート配信
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
