@@ -582,6 +582,56 @@ function doGet(e) {
       }
     }
 
+    // リーダー履歴の業種・テーマ一括補完（管理用）
+    if (action === 'backfill-leader-history') {
+      try {
+        var bfResult = backfillLeaderHistoryFields();
+        return ContentService
+          .createTextOutput(JSON.stringify(bfResult))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // 相談者同意処理のデバッグ（管理用）
+    if (action === 'consent-debug') {
+      try {
+        var appId = e.parameter.appId;
+        if (!appId) throw new Error('appIdパラメータが必要です');
+        var rowIndex = findRowByApplicationId(appId);
+        if (!rowIndex) throw new Error('申込ID ' + appId + ' が見つかりません');
+        var debugData = getRowData(rowIndex);
+        var isOnline = debugData.method && (debugData.method.indexOf('オンライン') >= 0 || debugData.method.indexOf('Zoom') >= 0);
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: true,
+            rowIndex: rowIndex,
+            id: debugData.id,
+            name: debugData.name,
+            email: debugData.email,
+            status: debugData.status,
+            ndaStatus: debugData.ndaStatus,
+            method: debugData.method,
+            isOnline: isOnline,
+            confirmedDate: debugData.confirmedDate,
+            zoomUrl: debugData.zoomUrl,
+            leader: debugData.leader,
+            staff: debugData.staff,
+            industry: debugData.industry,
+            theme: debugData.theme,
+            fileId: debugData.fileId
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     // 手動でrunFirstPollingを実行（管理用）
     if (action === 'run-first-polling') {
       try {

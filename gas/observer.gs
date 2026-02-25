@@ -1,6 +1,8 @@
 /**
  * オブザーバー専用ページ（拡張版）
- * 相談予定一覧（企業名・相談予定可能者・オブザーバー表示）、NDA署名アップロード
+ * 相談予定一覧（企業名・相談予定可能者・オブザーバー表示）、NDA（秘密保持誓約書）署名アップロード
+ * ※オブザーバーが署名するのはNDA（秘密保持誓約書）
+ * ※相談者が署名するのは「相談同意書」（nda.gs で処理）
  * PDF生成はサーバーサイド（Google Docs→PDF変換）で実行
  */
 
@@ -115,7 +117,7 @@ function getUpcomingConsultations() {
     var appId = bookingData[i][COLUMNS.ID];
     var name = bookingData[i][COLUMNS.NAME];
 
-    if ((status === STATUS.CONFIRMED || status === STATUS.NDA_AGREED) && confirmedDate) {
+    if ((status === STATUS.CONFIRMED || status === STATUS.CONSENT_AGREED || status === STATUS.NDA_AGREED) && confirmedDate) {
       var cDate = new Date(confirmedDate);
       if (isNaN(cDate.getTime())) continue;
 
@@ -244,7 +246,11 @@ function saveSignedNda(data) {
       sheet = ss.getSheetByName(CONFIG.OBSERVER_NDA_SHEET_NAME);
     }
 
-    var docName = 'NDA_' + data.company + '_' + data.observerName + '_' + data.consultDate.replace(/\//g, '');
+    // 申込IDを特定（相談日+企業名で予約管理シートから照合）
+    var appId = resolveAppIdForObserverNda_(data.consultDate, data.company);
+
+    // ファイル名: 申込ID付きで相談番号と紐づけ
+    var docName = (appId ? appId + '_' : '') + 'NDA_' + data.company + '_' + data.observerName + '_' + data.consultDate.replace(/\//g, '');
 
     // NDA内容をHTMLで生成（署名画像をdata URI埋め込み）
     var htmlContent = buildNdaHtml(data);
@@ -272,7 +278,7 @@ function saveSignedNda(data) {
       fileUrl = '（メール添付のみ）';
     }
 
-    // スプレッドシートに記録
+    // スプレッドシートに記録（申込ID列追加）
     sheet.appendRow([
       new Date(),
       data.observerName,
@@ -280,17 +286,19 @@ function saveSignedNda(data) {
       data.company,
       data.staff,
       fileId,
-      fileUrl
+      fileUrl,
+      appId || ''
     ]);
 
     // 管理者にメール通知（常にHTML添付付き）
     var subject = '【NDA提出】' + data.observerName + ' - ' + data.company;
-    var emailBody = 'オブザーバーから署名済みNDAが提出されました。\n\n' +
+    var emailBody = 'オブザーバーから署名済みNDA（秘密保持誓約書）が提出されました。\n\n' +
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
       'オブザーバー：' + data.observerName + '\n' +
       '相談日：' + data.consultDate + '\n' +
       '相談企業：' + data.company + '\n' +
       '相談予定可能者：' + data.staff + '\n' +
+      (appId ? '申込ID：' + appId + '\n' : '') +
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
       (fileUrl && fileUrl.indexOf('http') === 0 ? 'ファイル：' + fileUrl + '\n' : '') +
       '署名済みNDA（HTMLファイル）を添付しています。\n' +
@@ -303,10 +311,91 @@ function saveSignedNda(data) {
       });
     });
 
+    // オブザーバー本人にNDA受領確認メールを送信
+    sendNdaConfirmationToObserver_(data);
+
+    console.log('オブザーバーNDA保存完了: ' + data.observerName + ' appId=' + (appId || '未特定'));
     return { success: true, message: 'NDAを提出しました', fileUrl: fileUrl };
   } catch (error) {
-    console.error('NDA保存エラー:', error);
+    console.error('オブザーバーNDA保存エラー:', error);
     return { success: false, message: error.toString() };
+  }
+}
+
+/**
+ * オブザーバーNDA署名後の受領確認メールを送信
+ * メンバーマスタからメールアドレスを取得
+ */
+function sendNdaConfirmationToObserver_(data) {
+  try {
+    var member = getMemberByName(data.observerName);
+    if (!member || !member.email) {
+      console.log('オブザーバーNDA確認メール: メールアドレス未設定 ' + data.observerName);
+      return;
+    }
+
+    var subject = '【NDA受領確認】秘密保持誓約書を受領しました';
+    var body = data.observerName + ' 様\n\n' +
+      '秘密保持誓約書（NDA）への署名を受領いたしました。\n' +
+      'ご対応ありがとうございます。\n\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      '■ NDA署名内容\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      'オブザーバー氏名：' + data.observerName + '\n' +
+      '相談日：' + data.consultDate + '\n' +
+      '相談企業：' + data.company + '\n' +
+      '相談予定可能者：' + data.staff + '\n' +
+      '署名日時：' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm') + '\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      '当日はオブザーバーとしてご参加ください。\n' +
+      'ご不明な点がございましたら、お気軽にお問い合わせください。\n\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      CONFIG.ORG.NAME + '\n' +
+      'Email: ' + CONFIG.ORG.EMAIL + '\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+
+    GmailApp.sendEmail(member.email, subject, body, {
+      name: CONFIG.SENDER_NAME,
+      replyTo: CONFIG.REPLY_TO
+    });
+    console.log('オブザーバーNDA確認メール送信完了: ' + data.observerName + ' → ' + member.email);
+  } catch (e) {
+    console.error('オブザーバーNDA確認メール送信エラー:', e);
+  }
+}
+
+/**
+ * 相談日+企業名から申込IDを特定
+ */
+function resolveAppIdForObserverNda_(consultDate, company) {
+  try {
+    var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    var bookingSheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+    if (!bookingSheet) return '';
+
+    var data = bookingSheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      var bCompany = String(data[i][COLUMNS.COMPANY] || '').trim();
+      if (bCompany !== String(company || '').trim()) continue;
+
+      var bConfirmedDate = data[i][COLUMNS.CONFIRMED_DATE];
+      if (bConfirmedDate) {
+        var bDateStr;
+        if (bConfirmedDate instanceof Date) {
+          bDateStr = Utilities.formatDate(bConfirmedDate, 'Asia/Tokyo', 'yyyy/MM/dd');
+        } else {
+          var m = String(bConfirmedDate).match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+          bDateStr = m ? m[1] + '/' + ('0' + m[2]).slice(-2) + '/' + ('0' + m[3]).slice(-2) : '';
+        }
+        if (bDateStr === consultDate) {
+          return data[i][COLUMNS.ID] || '';
+        }
+      }
+    }
+    return '';
+  } catch (e) {
+    console.log('申込ID照合失敗: ' + e.toString());
+    return '';
   }
 }
 
@@ -363,7 +452,7 @@ function setupObserverNdaSheet() {
     sheet = ss.insertSheet(CONFIG.OBSERVER_NDA_SHEET_NAME);
   }
 
-  var headers = ['提出日時', 'オブザーバー氏名', '相談日', '相談企業名', '相談予定可能者', 'ファイルID', 'ダウンロードURL'];
+  var headers = ['提出日時', 'オブザーバー氏名', '相談日', '相談企業名', '相談予定可能者', 'ファイルID', 'ダウンロードURL', '申込ID'];
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   sheet.getRange(1, 1, 1, headers.length)
     .setBackground('#0F2350')

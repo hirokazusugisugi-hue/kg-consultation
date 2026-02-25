@@ -170,14 +170,35 @@ function recordLeaderAssignment(data, leaderName, memberNames, score, reason, st
     sheet = ss.getSheetByName(CONFIG.LEADER_HISTORY_SHEET_NAME);
   }
 
+  // 業種・テーマが空の場合、予約管理シートから直接再取得
+  var industry = data.industry || '';
+  var theme = data.theme || '';
+  if ((!industry || !theme) && data.id) {
+    try {
+      var bookingSheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+      if (bookingSheet) {
+        var bookingData = bookingSheet.getDataRange().getValues();
+        for (var i = 1; i < bookingData.length; i++) {
+          if (bookingData[i][COLUMNS.ID] === data.id) {
+            if (!industry) industry = bookingData[i][COLUMNS.INDUSTRY] || '';
+            if (!theme) theme = bookingData[i][COLUMNS.THEME] || '';
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.log('業種・テーマ再取得失敗: ' + e.toString());
+    }
+  }
+
   var row = [
     status || '予定',        // A: ステータス
     data.confirmedDate || '',// B: 相談日時
     data.id,                // C: 申込ID
     data.company,           // D: 相談企業
     leaderName,             // E: リーダー
-    data.industry,          // F: 業種
-    data.theme,             // G: テーマ
+    industry,               // F: 業種
+    theme,                  // G: テーマ
     memberNames,            // H: 参加メンバー
     score,                  // I: マッチスコア
     reason,                 // J: 選定理由
@@ -185,7 +206,50 @@ function recordLeaderAssignment(data, leaderName, memberNames, score, reason, st
   ];
 
   sheet.appendRow(row);
-  console.log('リーダー履歴に記録: ' + leaderName + ' (' + (status || '予定') + ')');
+  console.log('リーダー履歴に記録: ' + leaderName + ' (' + (status || '予定') + ') 業種=' + industry + ' テーマ=' + theme);
+}
+
+/**
+ * リーダー履歴シートの既存行で業種・テーマが空の行を一括補完
+ */
+function backfillLeaderHistoryFields() {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var historySheet = ss.getSheetByName(CONFIG.LEADER_HISTORY_SHEET_NAME);
+  var bookingSheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+
+  if (!historySheet || !bookingSheet) return { success: false, message: 'シートが見つかりません' };
+
+  var historyData = historySheet.getDataRange().getValues();
+  var bookingData = bookingSheet.getDataRange().getValues();
+
+  // 予約管理シートを申込IDでインデックス化
+  var bookingIndex = {};
+  for (var b = 1; b < bookingData.length; b++) {
+    var bId = bookingData[b][COLUMNS.ID];
+    if (bId) bookingIndex[bId] = bookingData[b];
+  }
+
+  var updatedCount = 0;
+  for (var i = 1; i < historyData.length; i++) {
+    var appId = historyData[i][LEADER_HISTORY_COLUMNS.APP_ID];
+    var currentIndustry = historyData[i][LEADER_HISTORY_COLUMNS.INDUSTRY];
+    var currentTheme = historyData[i][LEADER_HISTORY_COLUMNS.THEME];
+
+    if (appId && bookingIndex[appId] && (!currentIndustry || !currentTheme)) {
+      var booking = bookingIndex[appId];
+      if (!currentIndustry && booking[COLUMNS.INDUSTRY]) {
+        historySheet.getRange(i + 1, LEADER_HISTORY_COLUMNS.INDUSTRY + 1).setValue(booking[COLUMNS.INDUSTRY]);
+        updatedCount++;
+      }
+      if (!currentTheme && booking[COLUMNS.THEME]) {
+        historySheet.getRange(i + 1, LEADER_HISTORY_COLUMNS.THEME + 1).setValue(booking[COLUMNS.THEME]);
+        updatedCount++;
+      }
+    }
+  }
+
+  console.log('リーダー履歴一括補完: ' + updatedCount + '件更新');
+  return { success: true, updatedCount: updatedCount };
 }
 
 /**

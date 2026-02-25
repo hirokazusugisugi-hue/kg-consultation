@@ -1,5 +1,7 @@
 /**
- * 同意書確認・同意処理
+ * 相談者同意書：確認・同意処理
+ * ※相談者が署名する「相談同意書」の処理
+ * ※オブザーバーのNDA（秘密保持誓約書）は observer.gs で処理
  * GAS doGet()で動的生成する同意書ページ、同意処理、トークン管理
  */
 
@@ -102,32 +104,42 @@ function processNdaConsent(e) {
     const signature = params.signature;
     const agreed = params.agreed;
 
+    console.log('相談者同意処理開始: token=' + (token ? token.substring(0, 8) + '...' : 'null'));
+
     if (!token || !signature || agreed !== 'true') {
+      console.log('相談者同意: 必須項目不足 token=' + !!token + ' signature=' + !!signature + ' agreed=' + agreed);
       return { success: false, message: '必須項目が入力されていません' };
     }
 
     // トークン検証
     const tokenData = validateNdaToken(token);
     if (!tokenData) {
+      console.log('相談者同意: トークン無効');
       return { success: false, message: '無効なトークンです' };
     }
+
+    console.log('相談者同意: 申込ID=' + tokenData.applicationId);
 
     // スプレッドシートの行を特定
     const rowIndex = findRowByApplicationId(tokenData.applicationId);
     if (!rowIndex) {
+      console.log('相談者同意: 申込データ未発見 ID=' + tokenData.applicationId);
       return { success: false, message: '申込データが見つかりません' };
     }
 
-    // 同意ステータスを更新（T列/U列に記録のみ）
+    // 同意ステータスを更新（U列/V列 + O列を「同意済」に）
     updateNdaStatus(rowIndex, signature);
+    console.log('相談者同意: ステータス更新完了 行=' + rowIndex);
 
     // トークンを無効化
     const props = PropertiesService.getScriptProperties();
     props.deleteProperty('nda_token_' + token);
 
     // データ取得
-    const data = getRowData(rowIndex);
+    var data = getRowData(rowIndex);
     const isOnline = data.method && (data.method.indexOf('オンライン') >= 0 || data.method.indexOf('Zoom') >= 0 || data.method.indexOf('zoom') >= 0);
+
+    console.log('相談者同意: method=' + data.method + ' isOnline=' + isOnline + ' confirmedDate=' + data.confirmedDate);
 
     if (isOnline && data.confirmedDate) {
       // ===== Zoom相談：自動確定フロー =====
@@ -136,11 +148,20 @@ function processNdaConsent(e) {
 
       // ステータスを「確定」に変更
       sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.CONFIRMED);
+      console.log('相談者同意[Zoom]: ステータス→確定');
 
       // Zoomミーティングを自動作成してR列に保存
       if (!data.zoomUrl) {
-        createAndSaveZoomMeeting(data, rowIndex);
+        try {
+          createAndSaveZoomMeeting(data, rowIndex);
+          console.log('相談者同意[Zoom]: Zoomミーティング作成完了');
+        } catch (zoomErr) {
+          console.error('相談者同意[Zoom]: Zoom作成失敗:', zoomErr);
+        }
       }
+
+      // Zoom作成後にデータ再取得（zoomUrl反映のため）
+      data = getRowData(rowIndex);
 
       // 日程設定シートの予約状況を「予約済み」に更新
       var parsed = parseConfirmedDateTime(data.confirmedDate);
@@ -148,39 +169,84 @@ function processNdaConsent(e) {
         markAsBooked(parsed.date, parsed.time);
       }
 
-      // 相談者に同意完了＋確定メール送信（data.zoomUrlは自動作成済み）
-      sendConsentAndConfirmedEmail(data);
+      // 相談者に同意完了＋確定メール送信
+      try {
+        sendConsentAndConfirmedEmail(data);
+        console.log('相談者同意[Zoom]: 確定メール送信完了 → ' + data.email);
+      } catch (mailErr) {
+        console.error('相談者同意[Zoom]: 確定メール送信失敗:', mailErr);
+        // フォールバック: 管理者に通知
+        notifyConsentEmailFailure_(data, mailErr);
+      }
 
       // 管理者に通知（Zoom自動確定）
       notifyConsentAgreedAutoConfirmed(data, signature);
 
-      // 担当者への通知（Zoom URL付き）
-      if (data.staff) {
-        const zoomUrlInfo = data.zoomUrl ? '\nZoom URL: ' + data.zoomUrl : '';
-        const staffLineMsg = `✅ Zoom予約自動確定\n\n申込ID: ${data.id}\nお名前: ${data.name}様\n貴社名: ${data.company}\n日時: ${data.confirmedDate}\n方法: ${data.method}\nテーマ: ${data.theme}${zoomUrlInfo}\n${data.companyUrl ? '企業URL: ' + data.companyUrl + '\n※事前リサーチをお願いします' : ''}`;
-        const staffEmailSubject = `【予約確定・Zoom自動】${data.name}様 - ${data.confirmedDate}`;
-        const zoomUrlEmailInfo = data.zoomUrl ? '\nZoom URL：' + data.zoomUrl : '';
-        const staffEmailBody = `Zoom相談のため、NDA同意完了時に自動確定しました。\n\n申込ID：${data.id}\nお名前：${data.name}様\n貴社名：${data.company}\n日時：${data.confirmedDate}\n相談方法：${data.method}\nテーマ：${data.theme}${zoomUrlEmailInfo}\n${data.companyUrl ? '\n企業URL：' + data.companyUrl + '\n※事前リサーチにAIツールの活用を推奨します' : ''}\n\n事前準備をお願いいたします。`;
-        sendStaffNotifications(data.staff, staffLineMsg, staffEmailSubject, staffEmailBody);
+      // 担当者への確定通知（リーダー情報付き）
+      var staffTarget = data.leader || data.staff;
+      if (staffTarget) {
+        var emailResult = buildStaffNotificationEmail_(data);
+        sendStaffNotifications(
+          staffTarget,
+          '✅ Zoom予約自動確定\n\n申込ID: ' + data.id + '\nお名前: ' + data.name + '様\n貴社名: ' + data.company + '\n日時: ' + data.confirmedDate,
+          emailResult.subject,
+          emailResult.body
+        );
       }
 
-      console.log(`Zoom自動確定完了: ${data.email}`);
+      console.log('相談者同意[Zoom]: 自動確定完了 ' + data.email);
       return { success: true, message: '同意が完了し、予約が確定しました' };
 
     } else {
       // ===== 対面相談：会場確保待ちフロー =====
+      console.log('相談者同意[対面]: 会場確保待ちフロー開始');
+
       // 管理者に通知（会場確保依頼）
       notifyConsentAgreed(data, signature);
 
       // 相談者に同意完了確認メール送信（会場確保待ち案内）
-      sendConsentConfirmationToApplicant(data);
+      try {
+        sendConsentConfirmationToApplicant(data);
+        console.log('相談者同意[対面]: 確認メール送信完了 → ' + data.email);
+      } catch (mailErr) {
+        console.error('相談者同意[対面]: 確認メール送信失敗:', mailErr);
+        notifyConsentEmailFailure_(data, mailErr);
+      }
 
       return { success: true, message: '同意が完了しました' };
     }
 
   } catch (error) {
-    console.error('同意処理エラー:', error);
+    console.error('相談者同意処理エラー:', error);
+    // エラー時も管理者にフォールバック通知
+    try {
+      CONFIG.ADMIN_EMAILS.forEach(function(email) {
+        GmailApp.sendEmail(email, '【エラー】相談者同意処理失敗', '相談者同意処理でエラーが発生しました。\n\n' + error.toString() + '\n\nスタックトレース:\n' + error.stack, {
+          name: CONFIG.SENDER_NAME
+        });
+      });
+    } catch (notifyErr) {
+      console.error('エラー通知も失敗:', notifyErr);
+    }
     return { success: false, message: 'エラーが発生しました: ' + error.toString() };
+  }
+}
+
+/**
+ * 相談者へのメール送信失敗時の管理者フォールバック通知
+ */
+function notifyConsentEmailFailure_(data, error) {
+  try {
+    CONFIG.ADMIN_EMAILS.forEach(function(email) {
+      GmailApp.sendEmail(email,
+        '【要対応】相談者同意メール送信失敗 - ' + (data.id || '不明'),
+        '相談者への同意完了メールの送信に失敗しました。手動で連絡してください。\n\n' +
+        '申込ID：' + data.id + '\nお名前：' + data.name + '\nメール：' + data.email + '\n\nエラー：' + error.toString(),
+        { name: CONFIG.SENDER_NAME }
+      );
+    });
+  } catch (e) {
+    console.error('フォールバック通知も失敗:', e);
   }
 }
 
@@ -236,7 +302,7 @@ function notifyConsentAgreed(data, signature) {
  */
 function notifyConsentAgreedAutoConfirmed(data, signature) {
   const subject = `【自動確定・Zoom】${data.name}様 - ${data.id}`;
-  const body = `Zoom相談のため、NDA同意完了時に自動確定しました。
+  const body = `Zoom相談のため、相談者同意書の同意完了時に自動確定しました。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ■ 確定情報
@@ -298,19 +364,20 @@ function updateNdaStatus(rowIndex, signature) {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
     .getSheetByName(CONFIG.SHEET_NAME);
 
-  // T列: 同意書同意 = 「済」
+  // U列: 同意書同意 = 「済」
   sheet.getRange(rowIndex, COLUMNS.NDA_STATUS + 1).setValue('済');
 
-  // U列: 同意日時
+  // V列: 同意日時
   sheet.getRange(rowIndex, COLUMNS.NDA_DATE + 1).setValue(new Date());
 
-  // N列: ステータスを「NDA同意済」に更新
+  // O列: ステータスを「同意済」に更新（相談者同意書）
   const currentStatus = sheet.getRange(rowIndex, COLUMNS.STATUS + 1).getValue();
-  if (currentStatus === STATUS.PENDING || currentStatus === '' || !currentStatus) {
-    sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.NDA_AGREED);
+  if (currentStatus === STATUS.PENDING || currentStatus === '' || !currentStatus ||
+      currentStatus === STATUS.NDA_AGREED) {
+    sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.CONSENT_AGREED);
   }
 
-  // P列: 確定日時をK列（希望日時1）+ 日程設定シートの時間帯から自動設定
+  // Q列: 確定日時をK列（希望日時1）+ 日程設定シートの時間帯から自動設定
   const confirmedDate = sheet.getRange(rowIndex, COLUMNS.CONFIRMED_DATE + 1).getValue();
   if (!confirmedDate || confirmedDate === '') {
     const fullDateTime = resolveConfirmedDateTime(rowIndex, sheet);
@@ -318,6 +385,8 @@ function updateNdaStatus(rowIndex, signature) {
       sheet.getRange(rowIndex, COLUMNS.CONFIRMED_DATE + 1).setValue(fullDateTime);
     }
   }
+
+  console.log('相談者同意ステータス更新: 行=' + rowIndex + ' 旧ステータス=' + currentStatus + ' → 同意済');
 }
 
 /**

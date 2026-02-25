@@ -299,7 +299,7 @@ function sendDailyReminders() {
     const status = data[i][COLUMNS.STATUS];
     const confirmedDate = data[i][COLUMNS.CONFIRMED_DATE];
 
-    if ((status !== STATUS.CONFIRMED && status !== STATUS.NDA_AGREED) || !confirmedDate) {
+    if ((status !== STATUS.CONFIRMED && status !== STATUS.CONSENT_AGREED && status !== STATUS.NDA_AGREED) || !confirmedDate) {
       continue;
     }
 
@@ -647,7 +647,7 @@ function checkCancellationEmails() {
 
   // メールアドレスをキーにした予約マップ（アクティブなもののみ）
   var activeBookings = {};
-  var activeStatuses = [STATUS.PENDING, STATUS.NDA_AGREED, STATUS.RECEIVED, STATUS.CONFIRMED];
+  var activeStatuses = [STATUS.PENDING, STATUS.CONSENT_AGREED, STATUS.NDA_AGREED, STATUS.RECEIVED, STATUS.CONFIRMED];
   for (var i = 1; i < data.length; i++) {
     var email = (data[i][COLUMNS.EMAIL] || '').toString().toLowerCase().trim();
     var status = data[i][COLUMNS.STATUS];

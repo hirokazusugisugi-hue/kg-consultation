@@ -41,7 +41,8 @@ function saveToSpreadsheet(data, isWalkIn) {
     data.companyUrl || '',    // W: 企業URL
     isWalkIn ? 'TRUE' : 'FALSE',  // X: 当日受付フラグ
     '',                       // Y: リーダー
-    ''                        // Z: レポート状態
+    '',                       // Z: レポート状態
+    ''                        // AA: ファイルID
   ];
 
   sheet.appendRow(newRow);
@@ -56,7 +57,7 @@ function getRowData(rowIndex) {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
     .getSheetByName(CONFIG.SHEET_NAME);
 
-  const row = sheet.getRange(rowIndex, 1, 1, 26).getValues()[0];
+  const row = sheet.getRange(rowIndex, 1, 1, 27).getValues()[0];
 
   return {
     timestamp: row[COLUMNS.TIMESTAMP],
@@ -86,7 +87,8 @@ function getRowData(rowIndex) {
     companyUrl: row[COLUMNS.COMPANY_URL],
     walkInFlag: row[COLUMNS.WALK_IN_FLAG],
     leader: row[COLUMNS.LEADER],
-    reportStatus: row[COLUMNS.REPORT_STATUS]
+    reportStatus: row[COLUMNS.REPORT_STATUS],
+    fileId: row[COLUMNS.FILE_ID]
   };
 }
 
@@ -133,7 +135,8 @@ function setupSpreadsheetHeaders() {
     '企業URL',          // W
     '当日受付フラグ',    // X
     'リーダー',         // Y
-    'レポート状態'       // Z
+    'レポート状態',      // Z
+    'ファイルID'         // AA
   ];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -171,6 +174,7 @@ function setupSpreadsheetHeaders() {
   sheet.setColumnWidth(24, 100); // X: 当日受付フラグ
   sheet.setColumnWidth(25, 100); // Y: リーダー
   sheet.setColumnWidth(26, 100); // Z: レポート状態
+  sheet.setColumnWidth(27, 250); // AA: ファイルID
 
   // 1行目を固定
   sheet.setFrozenRows(1);
@@ -187,7 +191,7 @@ function setupSpreadsheetHeaders() {
   const statusRule = SpreadsheetApp.newDataValidation()
     .requireValueInList([
       STATUS.PENDING,
-      STATUS.NDA_AGREED,
+      STATUS.CONSENT_AGREED,
       STATUS.RECEIVED,
       STATUS.CONFIRMED,
       STATUS.COMPLETED,
@@ -227,7 +231,14 @@ function setupConditionalFormatting() {
     .setRanges([range])
     .build());
 
-  // NDA同意済: オレンジ
+  // 同意済: オレンジ
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo(STATUS.CONSENT_AGREED)
+    .setBackground('#ffe0b2')
+    .setRanges([range])
+    .build());
+
+  // NDA同意済（後方互換）: オレンジ
   rules.push(SpreadsheetApp.newConditionalFormatRule()
     .whenTextEqualTo(STATUS.NDA_AGREED)
     .setBackground('#ffe0b2')
@@ -310,7 +321,7 @@ function migrateAddLocationColumn() {
   var statusRange = sheet.getRange(2, COLUMNS.STATUS + 1, 1000, 1);
   var statusRule = SpreadsheetApp.newDataValidation()
     .requireValueInList([
-      STATUS.PENDING, STATUS.NDA_AGREED, STATUS.RECEIVED,
+      STATUS.PENDING, STATUS.CONSENT_AGREED, STATUS.RECEIVED,
       STATUS.CONFIRMED, STATUS.COMPLETED, STATUS.CANCELLED
     ])
     .build();

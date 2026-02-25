@@ -172,7 +172,8 @@ const COLUMNS = {
   COMPANY_URL: 22,   // W: 企業URL
   WALK_IN_FLAG: 23,  // X: 当日受付フラグ
   LEADER: 24,        // Y: リーダー
-  REPORT_STATUS: 25  // Z: レポート状態
+  REPORT_STATUS: 25, // Z: レポート状態
+  FILE_ID: 26        // AA: ファイルID（Drive）
 };
 
 /**
@@ -190,7 +191,8 @@ const LOCATION_OPTIONS = [
  */
 const STATUS = {
   PENDING: '仮予約',
-  NDA_AGREED: 'NDA同意済',
+  CONSENT_AGREED: '同意済',
+  NDA_AGREED: 'NDA同意済',       // 後方互換（旧データ対応）
   RECEIVED: '書類受領',
   CONFIRMED: '確定',
   COMPLETED: '完了',
@@ -275,7 +277,8 @@ const OBSERVER_NDA_COLUMNS = {
   COMPANY: 3,        // D: 相談企業名
   STAFF: 4,          // E: 相談担当者
   FILE_ID: 5,        // F: Drive上のファイルID
-  FILE_URL: 6        // G: ダウンロードURL
+  FILE_URL: 6,       // G: ダウンロードURL
+  APP_ID: 7          // H: 申込ID
 };
 
 /**
