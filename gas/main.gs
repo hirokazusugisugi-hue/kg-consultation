@@ -532,6 +532,56 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // スケジュールシートの重複行を削除（管理用）
+    if (action === 'dedup-schedule') {
+      try {
+        var targetMonth = e.parameter.month ? parseInt(e.parameter.month) : null;
+        var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+        var sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+        if (!sheet) throw new Error('日程設定シートが見つかりません');
+
+        var data = sheet.getDataRange().getValues();
+        var seen = {};
+        var deleteRows = [];
+
+        for (var i = 1; i < data.length; i++) {
+          var dateVal = data[i][SCHEDULE_COLUMNS.DATE];
+          if (!dateVal) continue;
+          var date = dateVal instanceof Date ? dateVal : new Date(dateVal);
+          if (targetMonth && (date.getMonth() + 1) !== targetMonth) continue;
+
+          var timeVal = data[i][SCHEDULE_COLUMNS.TIME];
+          var timeStr;
+          if (timeVal instanceof Date) {
+            timeStr = Utilities.formatDate(timeVal, 'Asia/Tokyo', 'HH:mm');
+          } else {
+            timeStr = String(timeVal);
+          }
+
+          var key = Utilities.formatDate(date, 'Asia/Tokyo', 'yyyy/MM/dd') + '_' + timeStr;
+          if (seen[key]) {
+            deleteRows.push(i + 1);
+          } else {
+            seen[key] = true;
+          }
+        }
+
+        // 下から削除（行番号がずれないように）
+        deleteRows.reverse();
+        deleteRows.forEach(function(row) {
+          sheet.deleteRow(row);
+        });
+
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: true, deletedRows: deleteRows.length, rows: deleteRows.reverse() }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     // 手動でrunFirstPollingを実行（管理用）
     if (action === 'run-first-polling') {
       try {
