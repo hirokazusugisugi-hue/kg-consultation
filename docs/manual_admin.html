@@ -748,8 +748,8 @@
     <span class="col-id">R列</span><span>ZoomURL（Zoom API自動生成）</span>
     <span class="col-id">S列</span><span>ヒアリングシート</span>
     <span class="col-id">T列</span><span>備考</span>
-    <span class="col-id">U列</span><span>NDA同意</span>
-    <span class="col-id">V列</span><span>NDA同意日時</span>
+    <span class="col-id">U列</span><span>同意書同意（済/未）</span>
+    <span class="col-id">V列</span><span>同意日時</span>
     <span class="col-id">W列</span><span>企業URL</span>
     <span class="col-id">X列</span><span>当日受付フラグ</span>
     <span class="col-id">Y列</span><span>リーダー（自動選定）</span>
@@ -761,7 +761,7 @@
   <div class="status-flow">
     <span class="status-badge provisional">仮予約</span>
     <i class="fas fa-arrow-right status-arrow"></i>
-    <span class="status-badge nda">NDA同意済</span>
+    <span class="status-badge nda">同意済</span>
     <i class="fas fa-arrow-right status-arrow"></i>
     <span class="status-badge docs">書類受領</span>
     <i class="fas fa-arrow-right status-arrow"></i>
@@ -877,6 +877,7 @@
     <span class="col-id">E列</span><span>相談担当者</span>
     <span class="col-id">F列</span><span>ファイルID</span>
     <span class="col-id">G列</span><span>ダウンロードURL</span>
+    <span class="col-id">H列</span><span>申込ID</span>
   </div>
 
   <!-- 4.7 リーダー履歴シート -->
@@ -928,7 +929,7 @@
     <li>管理者メールに <strong>通知</strong> が届きます</li>
     <li>スプレッドシートの予約管理シートに <strong>自動記録</strong> されます</li>
     <li>ステータスは <span class="status-badge provisional">仮予約</span> として登録されます</li>
-    <li>相談者にはNDA同意リンク付きの <strong>確認メール</strong> が自動送信されます</li>
+    <li>相談者には相談同意書確認リンク付きの <strong>確認メール</strong> が自動送信されます</li>
   </ul>
 
   <!-- 6.2 予約確定 -->
@@ -936,15 +937,16 @@
 
   <h4><i class="fas fa-video"></i> オンライン相談（Zoom）の場合</h4>
   <ol class="step-list">
-    <li>相談者がNDA同意を完了 &rarr; <strong>自動で</strong>ステータスが <span class="status-badge confirmed">確定</span> に更新されます</li>
-    <li>確定メールが相談者に自動送信されます</li>
+    <li>相談者が相談同意書への同意を完了 &rarr; <strong>自動で</strong>ステータスが <span class="status-badge confirmed">確定</span> に更新されます</li>
+    <li>同意完了＋予約確定メールが相談者に自動送信されます</li>
     <li>Zoomミーティングが <strong>自動作成</strong> され、R列にURLが保存されます</li>
     <li>日程設定シートH列の<strong>参加メンバー全員</strong>に確定通知メール・LINE通知が送信されます</li>
   </ol>
 
   <h4><i class="fas fa-building"></i> 対面相談の場合</h4>
   <ol class="step-list">
-    <li>相談者がNDA同意を完了 &rarr; ステータスが <span class="status-badge nda">NDA同意済</span> に自動更新されます</li>
+    <li>相談者が相談同意書への同意を完了 &rarr; ステータスが <span class="status-badge nda">同意済</span> に自動更新されます</li>
+    <li>相談者に同意完了確認メール（会場確保待ち案内）が自動送信されます</li>
     <li>管理者に「会場確保依頼」の通知が届きます</li>
     <li>会場を確保し、<strong>N列（場所）</strong>を設定します</li>
     <li>ステータスを <span class="status-badge confirmed">確定</span> に変更 &rarr; 確定メールが相談者に自動送信されます</li>
@@ -953,7 +955,7 @@
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div><strong>Zoomの場合</strong>はNDA同意完了時に自動確定され、Zoomミーティングも自動作成されます。管理者による手動操作は不要です。自動作成に失敗した場合のみR列にURLを手動入力してください。</div>
+    <div><strong>Zoomの場合</strong>は相談同意書への同意完了時に自動確定され、Zoomミーティングも自動作成されます。管理者による手動操作は不要です。自動作成に失敗した場合のみR列にURLを手動入力してください。<br><strong>対面の場合</strong>は同意完了時に相談者へ会場確保待ち案内メールが自動送信されます。管理者は会場確保後、ステータスを「確定」に変更してください。</div>
   </div>
 
   <div class="info-box success">
@@ -1081,14 +1083,21 @@
   <!-- ===== 9. オブザーバー専用ページ ===== -->
   <h2 id="sec9"><i class="fas fa-user-graduate"></i> 9. オブザーバー専用ページ</h2>
 
-  <p>養成課程在学生（オブザーバー）がNDA署名と相談予定確認を行うためのポータルページです。</p>
+  <p>養成課程在学生（オブザーバー）が秘密保持誓約書（NDA）への署名と相談予定確認を行うためのポータルページです。</p>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div><strong>「相談同意書」と「秘密保持誓約書（NDA）」の違い:</strong><br>
+    ・<strong>相談同意書</strong>: 相談者（企業経営者）が予約時に同意する書類（nda.gs で処理）<br>
+    ・<strong>秘密保持誓約書（NDA）</strong>: オブザーバー（在学生）が各相談日ごとに署名する書類（observer.gs で処理）</div>
+  </div>
 
   <h3><i class="fas fa-link"></i> 9.1 アクセス方法</h3>
   <p>ウェブアプリURL + <code>?action=observer</code> でアクセスできます。</p>
 
   <h3><i class="fas fa-list"></i> 9.2 機能一覧</h3>
   <ul>
-    <li><strong>相談予定一覧</strong>: 確定済み・NDA同意済の案件と、予約済みスロットを過去7日～未来分表示</li>
+    <li><strong>相談予定一覧</strong>: 確定済み・同意済の案件と、予約済みスロットを過去7日～未来分表示</li>
     <li><strong>NDA署名</strong>: 各相談予定に対し、タッチ対応の署名パッドでNDAに署名・PDF提出</li>
     <li><strong>自動入力</strong>: 日付・担当者・企業名はスプレッドシートから自動取得</li>
   </ul>
@@ -1098,6 +1107,7 @@
     <li>オブザーバーが専用ページにアクセスし、対象相談の「署名して提出」をクリック</li>
     <li>氏名を入力し、署名欄にタッチ（またはマウス）で署名</li>
     <li>「署名して提出」ボタンで署名済みPDFがGoogle Driveに保存</li>
+    <li>オブザーバー本人に受領確認メールが自動送信される</li>
     <li>管理者にメール通知が届く</li>
     <li>オブザーバーNDAシートに記録が追加される</li>
   </ol>
@@ -1140,7 +1150,7 @@
     </div>
     <div class="trigger-item">
       <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> sendDailyReminders</span>
-      <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 毎日 9:00（3日前・前日リマインド）</span>
+      <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 毎日 9:00（担当者: 1週間前・3日前 / 相談者: 3日前・前日リマインド）</span>
     </div>
     <div class="trigger-item">
       <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> onSheetEdit</span>
@@ -1441,7 +1451,7 @@
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 4.2</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新（リーダー履歴・確定通知改善・リマインド強化）
+      <span class="version">Version 4.3</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新（同意書/NDA用語統一・リマインド詳細化）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

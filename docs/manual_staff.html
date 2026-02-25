@@ -590,7 +590,7 @@
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div>予約の受付やNDA同意の処理はシステムが自動で行います。担当者は主に相談の実施とステータス管理に集中してください。</div>
+    <div>予約の受付や同意書の同意処理はシステムが自動で行います。担当者は主に相談の実施とステータス管理に集中してください。</div>
   </div>
 
   <!-- ===== 2. 相談対応の全体フロー ===== -->
@@ -608,7 +608,7 @@
       </div>
       <ul>
         <li>相談者がLPから予約 &rarr; 自動でスプレッドシートに記録</li>
-        <li>確認メール・NDA同意リンクが自動送信</li>
+        <li>確認メール・相談同意書確認リンクが自動送信</li>
         <li>ステータス: <span class="status-badge provisional">仮予約</span></li>
       </ul>
     </div>
@@ -616,13 +616,13 @@
     <!-- Step 2 -->
     <div class="flowchart-step auto">
       <div class="step-date">
-        <i class="fas fa-file-signature"></i> Step 2: NDA同意確認
+        <i class="fas fa-file-signature"></i> Step 2: 同意書確認
         <span class="badge">自動</span>
       </div>
       <ul>
-        <li>相談者がNDA同意 &rarr; 相談方法により処理が分岐</li>
-        <li><strong>Zoom：</strong>自動で <span class="status-badge confirmed">確定</span> に更新 &rarr; 確定メールが相談者に自動送信</li>
-        <li><strong>対面：</strong><span class="status-badge nda">NDA同意済</span> に更新 &rarr; 管理者に会場確保依頼の通知</li>
+        <li>相談者が相談同意書への同意を完了 &rarr; 相談方法により処理が分岐</li>
+        <li><strong>Zoom：</strong>自動で <span class="status-badge confirmed">確定</span> に更新 &rarr; 同意完了＋確定メールが相談者に自動送信</li>
+        <li><strong>対面：</strong><span class="status-badge nda">同意済</span> に更新 &rarr; 相談者に会場確保待ち案内メール + 管理者に会場確保依頼の通知</li>
       </ul>
     </div>
 
@@ -737,8 +737,8 @@
     <span class="col-id">R列</span><span>ZoomURL（自動生成）</span>
     <span class="col-id">S列</span><span>ヒアリングシート</span>
     <span class="col-id">T列</span><span>備考</span>
-    <span class="col-id">U列</span><span>NDA同意</span>
-    <span class="col-id">V列</span><span>NDA同意日時</span>
+    <span class="col-id">U列</span><span>同意書同意（済/未）</span>
+    <span class="col-id">V列</span><span>同意日時</span>
     <span class="col-id">W列</span><span>企業URL</span>
     <span class="col-id">X列</span><span>当日受付フラグ</span>
     <span class="col-id">Y列</span><span>リーダー（自動選定）</span>
@@ -750,7 +750,7 @@
   <div class="status-flow">
     <span class="status-badge provisional">仮予約</span>
     <i class="fas fa-arrow-right status-arrow"></i>
-    <span class="status-badge nda">NDA同意済</span>
+    <span class="status-badge nda">同意済</span>
     <i class="fas fa-arrow-right status-arrow"></i>
     <span class="status-badge docs">書類受領</span>
     <i class="fas fa-arrow-right status-arrow"></i>
@@ -822,7 +822,7 @@
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div>Zoom URLはNDA同意による自動確定時にZoom APIで自動作成され、スプレッドシートのR列に保存されます。担当者向けリマインドメール（1週間前・3日前）にもURLが自動記載されます。</div>
+    <div>Zoom URLは同意書への同意による自動確定時にZoom APIで自動作成され、スプレッドシートのR列に保存されます。担当者向けリマインドメール（1週間前・3日前）にもURLが自動記載されます。</div>
   </div>
 
   <h3><i class="fas fa-building"></i> 対面の場合</h3>
@@ -997,7 +997,7 @@
       </thead>
       <tbody>
         <tr>
-          <td>相談者からNDA同意のメールが届かないと言われた</td>
+          <td>相談者から同意書確認のメールが届かないと言われた</td>
           <td>迷惑メールフォルダの確認を依頼してください。それでも届かない場合は管理者に連絡してください。</td>
         </tr>
         <tr>
@@ -1023,7 +1023,7 @@
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 3.3</span>&emsp;|&emsp;2026年2月 作成 / 更新（キャンセル自動通知追加）
+      <span class="version">Version 3.4</span>&emsp;|&emsp;2026年2月 作成 / 更新（同意書/NDA用語統一）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

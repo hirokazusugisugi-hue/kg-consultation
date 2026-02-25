@@ -1383,11 +1383,11 @@
       <ul class="component-list">
         <li>
           <i class="fa-solid fa-globe comp-icon" style="color: var(--blue);"></i>
-          <div><strong>LP（ランディングページ）</strong> &mdash; 相談者向けの予約受付画面。HTML/CSS/JSで構成し、GAS Web App APIと非同期通信（fetch）を行う。カレンダーUI、フォーム入力、NDA同意リンクを含む。</div>
+          <div><strong>LP（ランディングページ）</strong> &mdash; 相談者向けの予約受付画面。HTML/CSS/JSで構成し、GAS Web App APIと非同期通信（fetch）を行う。カレンダーUI、フォーム入力、同意書確認リンクを含む。</div>
         </li>
         <li>
           <i class="fa-solid fa-code comp-icon" style="color: var(--navy);"></i>
-          <div><strong>GAS Web App</strong> &mdash; Google Apps Scriptで構築したバックエンド。予約処理、日程管理、メール送信、フォーム自動生成、NDA認証を実行。<code>doGet</code>/<code>doPost</code>をエンドポイントとして公開。</div>
+          <div><strong>GAS Web App</strong> &mdash; Google Apps Scriptで構築したバックエンド。予約処理、日程管理、メール送信、フォーム自動生成、同意書認証を実行。<code>doGet</code>/<code>doPost</code>をエンドポイントとして公開。</div>
         </li>
         <li>
           <i class="fa-solid fa-table comp-icon" style="color: var(--green);"></i>
@@ -1399,7 +1399,7 @@
         </li>
         <li>
           <i class="fa-solid fa-envelope comp-icon" style="color: var(--red);"></i>
-          <div><strong>Gmail</strong> &mdash; 確認メール・NDA同意リンク・リマインダー・管理者通知・アンケート配信を自動送信。GASの<code>GmailApp</code>/<code>MailApp</code>を利用。</div>
+          <div><strong>Gmail</strong> &mdash; 確認メール・同意書確認リンク・リマインダー・管理者通知・アンケート配信を自動送信。GASの<code>GmailApp</code>/<code>MailApp</code>を利用。</div>
         </li>
         <li>
           <i class="fa-solid fa-clipboard-check comp-icon" style="color: var(--orange);"></i>
@@ -1442,7 +1442,7 @@
 
       <div class="file-tree"><span class="dir">claude-code-demo/</span>
 ├── <span class="highlight">index14.html</span>          <span class="comment"># LP（ランディングページ）</span>
-├── <span class="file">nda_preview.html</span>      <span class="comment"># NDA同意書プレビュー</span>
+├── <span class="file">nda_preview.html</span>      <span class="comment"># 相談同意書プレビュー</span>
 ├── <span class="file">consent_form.pdf</span>      <span class="comment"># 相談同意書PDF</span>
 ├── <span class="file">open_news_admin.html</span>  <span class="comment"># お知らせ管理リンクページ</span>
 ├── <span class="dir">images/</span>               <span class="comment"># 画像・音声ファイル</span>
@@ -1459,7 +1459,7 @@
     ├── <span class="file">schedule.gs</span>       <span class="comment"># 日程生成・取得API</span>
     ├── <span class="file">form_polling.gs</span>   <span class="comment"># メンバー向けGoogleフォーム自動化</span>
     ├── <span class="file">members.gs</span>        <span class="comment"># メンバーマスタ管理・スコア計算</span>
-    ├── <span class="file">nda.gs</span>            <span class="comment"># NDA同意ページ生成・処理</span>
+    ├── <span class="file">nda.gs</span>            <span class="comment"># 相談者同意書ページ生成・同意処理</span>
     ├── <span class="file">news.gs</span>           <span class="comment"># お知らせ管理（CRUD+管理画面）</span>
     ├── <span class="file">spreadsheet.gs</span>    <span class="comment"># スプレッドシート操作</span>
     ├── <span class="file">notification.gs</span>   <span class="comment"># LINE・メール通知</span>
@@ -1566,11 +1566,11 @@
           </div>
           <div class="flow-branch-item">
             <i class="fa-solid fa-circle"></i>
-            <span>NDAトークン生成（SHA-256ハッシュ）</span>
+            <span>同意書トークン生成（SHA-256ハッシュ）</span>
           </div>
           <div class="flow-branch-item">
             <i class="fa-solid fa-circle"></i>
-            <span>相談者に確認メール送信（NDA同意リンク付き）</span>
+            <span>相談者に確認メール送信（同意書確認リンク付き）</span>
           </div>
           <div class="flow-branch-item">
             <i class="fa-solid fa-circle"></i>
@@ -1590,7 +1590,7 @@
         <!-- Step 7 -->
         <div class="flow-step">
           <i class="fa-solid fa-file-signature flow-step-icon"></i>
-          <div class="flow-step-text"><strong>相談者がNDA同意ページで同意</strong><br>メール内のリンクからアクセス</div>
+          <div class="flow-step-text"><strong>相談者が同意書確認ページで同意</strong><br>メール内のリンクからアクセス</div>
         </div>
 
         <div class="flow-connector">
@@ -1611,7 +1611,7 @@
         <div class="status-flow">
           <span class="status-badge s-pending"><i class="fa-solid fa-clock" style="font-size:0.7rem;"></i> 仮予約</span>
           <span class="status-arrow"><i class="fa-solid fa-arrow-right"></i></span>
-          <span class="status-badge s-nda"><i class="fa-solid fa-file-signature" style="font-size:0.7rem;"></i> NDA同意済</span>
+          <span class="status-badge s-nda"><i class="fa-solid fa-file-signature" style="font-size:0.7rem;"></i> 同意済</span>
           <span class="status-arrow"><i class="fa-solid fa-arrow-right"></i></span>
           <span class="status-badge s-doc"><i class="fa-solid fa-file-lines" style="font-size:0.7rem;"></i> 書類受領</span>
           <span class="status-arrow"><i class="fa-solid fa-arrow-right"></i></span>
@@ -1839,12 +1839,12 @@
             <tr>
               <td><span class="api-endpoint">?action=nda&amp;token=xxx</span></td>
               <td><span class="method-badge method-get">GET</span></td>
-              <td>NDA同意ページを表示（トークン認証）</td>
+              <td>同意書確認ページを表示（トークン認証）</td>
             </tr>
             <tr>
               <td><span class="api-endpoint">?action=nda-submit</span></td>
               <td><span class="method-badge method-get">GET</span></td>
-              <td>NDA同意処理を実行</td>
+              <td>同意書同意処理を実行</td>
             </tr>
             <tr>
               <td><span class="api-endpoint">?action=survey&amp;token=xxx</span></td>
@@ -2049,8 +2049,8 @@
         <li>
           <i class="fa-solid fa-key"></i>
           <div>
-            <strong>NDA同意認証</strong><br>
-            トークンベース認証を採用。申込ID + メールアドレスから <span class="security-tag">SHA-256</span> ハッシュを生成し、URLパラメータとして付与。第三者がURLを推測して同意ページにアクセスすることを防止します。
+            <strong>同意書認証</strong><br>
+            トークンベース認証を採用。申込ID + メールアドレスから <span class="security-tag">SHA-256</span> ハッシュを生成し、URLパラメータとして付与。第三者がURLを推測して同意書確認ページにアクセスすることを防止します。
           </div>
         </li>
         <li>
@@ -2226,7 +2226,7 @@
     <div class="footer-divider"></div>
     <p>無料経営相談予約システム &mdash; システム全体構成図</p>
     <p>関西学院大学 中小企業経営診断研究会</p>
-    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 4.1 &mdash; 2026-02-20 更新（キャンセル自動検知・Drive自動保存追加）</p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 4.2 &mdash; 2026-02-26 更新（同意書/NDA用語統一）</p>
   </footer>
 
 </body>
