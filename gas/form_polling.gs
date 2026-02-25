@@ -62,7 +62,9 @@ function getScheduleCandidates(year, month) {
         times: []
       };
     }
-    scheduleByDate[dateKey].times.push(timeStr);
+    if (scheduleByDate[dateKey].times.indexOf(timeStr) === -1) {
+      scheduleByDate[dateKey].times.push(timeStr);
+    }
   }
 
   const dateKeys = Object.keys(scheduleByDate).sort();

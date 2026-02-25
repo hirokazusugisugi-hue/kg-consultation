@@ -462,6 +462,18 @@ function generateNextMonthSchedule() {
   const year = targetDate.getFullYear();
   const month = targetDate.getMonth() + 1;
 
+  // 既に同月の日程が存在するか確認
+  const existingData = sheet.getDataRange().getValues();
+  for (let i = 1; i < existingData.length; i++) {
+    var existDate = existingData[i][SCHEDULE_COLUMNS.DATE];
+    if (!existDate) continue;
+    var d = existDate instanceof Date ? existDate : new Date(existDate);
+    if (d.getFullYear() === year && (d.getMonth() + 1) === month) {
+      console.log(`${year}年${month}月の日程は既に存在します。スキップします。`);
+      return;
+    }
+  }
+
   const data = generateScheduleData(year, month);
 
   const lastRow = sheet.getLastRow();

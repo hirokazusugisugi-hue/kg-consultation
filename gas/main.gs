@@ -517,6 +517,35 @@ function doGet(e) {
       }
     }
 
+    // トリガー一覧取得（管理用）
+    if (action === 'list-triggers') {
+      var triggers = ScriptApp.getProjectTriggers();
+      var result = triggers.map(function(t) {
+        return {
+          handler: t.getHandlerFunction(),
+          type: t.getEventType().toString(),
+          source: t.getTriggerSource().toString()
+        };
+      });
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, count: result.length, triggers: result }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 手動でrunFirstPollingを実行（管理用）
+    if (action === 'run-first-polling') {
+      try {
+        runFirstPolling();
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: true, message: 'runFirstPolling を実行しました' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // リーダー選定 & レポート配信
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
