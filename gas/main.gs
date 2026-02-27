@@ -604,6 +604,60 @@ function doGet(e) {
       }
     }
 
+    // オブザーバーNDAリマインドメール送信（管理用）
+    // ?action=send-observer-nda-reminder&name=高山 佳樹
+    if (action === 'send-observer-nda-reminder') {
+      try {
+        var obsName = e.parameter.name;
+        if (!obsName) {
+          return ContentService
+            .createTextOutput(JSON.stringify({ success: false, message: 'name パラメータが必要です' }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+        var member = getMemberByName(obsName);
+        if (!member || !member.email) {
+          return ContentService
+            .createTextOutput(JSON.stringify({ success: false, message: 'メンバーが見つからないかメール未設定: ' + obsName }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+        var observerPageUrl = CONFIG.CONSENT.WEB_APP_URL + '?action=observer';
+        var subject = '【リマインド】秘密保持誓約書（NDA）のご提出について';
+        var body = obsName + ' 様\n\n' +
+          'お疲れ様です。\n' +
+          '関西学院大学 中小企業経営診断研究会です。\n\n' +
+          '経営相談にオブザーバーとしてご参加いただくにあたり、\n' +
+          '秘密保持誓約書（NDA）のご提出をお願いしております。\n\n' +
+          'まだご提出がお済みでない場合は、以下のオブザーバー専用ページから\n' +
+          'NDAへの署名・提出をお願いいたします。\n\n' +
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+          '■ オブザーバー専用ページ\n' +
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+          observerPageUrl + '\n\n' +
+          '上記ページでは以下の操作が可能です：\n' +
+          '・相談予定の確認\n' +
+          '・秘密保持誓約書（NDA）への署名・提出\n' +
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+          'ご不明な点がございましたら、お気軽にお問い合わせください。\n\n' +
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+          CONFIG.ORG.NAME + '\n' +
+          'Email: ' + CONFIG.ORG.EMAIL + '\n' +
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+
+        GmailApp.sendEmail(member.email, subject, body, {
+          name: CONFIG.SENDER_NAME,
+          replyTo: CONFIG.REPLY_TO
+        });
+
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: true, message: 'NDAリマインドメール送信完了', to: member.email, name: obsName }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     // リーダー履歴の業種・テーマ一括補完（管理用）
     if (action === 'backfill-leader-history') {
       try {
