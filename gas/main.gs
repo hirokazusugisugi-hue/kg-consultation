@@ -147,14 +147,15 @@ function doGet(e) {
       var lpMembers = allMembers
         .filter(function(m) { return m.type !== '顧問' && m.active !== false; })
         .map(function(m) {
+          var isObserver = m.term === '3期' || m.term === '4期';
           return {
             name: m.name,
             term: m.term,
-            cert: m.cert,
+            cert: isObserver ? '' : m.cert,
             type: m.type,
-            titles: m.titles,
-            specialties: m.specialties,
-            themes: m.themes
+            titles: isObserver ? '' : m.titles,
+            specialties: isObserver ? '' : m.specialties,
+            themes: isObserver ? '' : m.themes
           };
         });
       return ContentService
