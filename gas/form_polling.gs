@@ -196,8 +196,10 @@ function registerAllMembersForMonth(year, month) {
   if (!sheet) return;
 
   const members = getScheduleMembers();
-  const memberNames = members.map(function(m) { return m.name; }).filter(function(n) { return n; });
-  const allMembersStr = memberNames.join(', ');
+  const allMembers = members.filter(function(m) { return m.name; });
+  const zoomOnlyNames = allMembers
+    .filter(function(m) { return m.notes && m.notes.indexOf('Zoom参加のみ') !== -1; })
+    .map(function(m) { return m.name; });
 
   const data = sheet.getDataRange().getValues();
 
@@ -208,14 +210,24 @@ function registerAllMembersForMonth(year, month) {
     var date = dateVal instanceof Date ? dateVal : new Date(dateVal);
     if (date.getFullYear() !== year || (date.getMonth() + 1) !== month) continue;
 
-    // 全メンバーを登録
-    sheet.getRange(i + 1, SCHEDULE_COLUMNS.MEMBERS + 1).setValue(allMembersStr);
+    var method = data[i][SCHEDULE_COLUMNS.METHOD] || '';
+
+    // 対面のみの枠はZoom参加のみメンバーを除外
+    var slotMembers;
+    if (method === '対面') {
+      slotMembers = allMembers.filter(function(m) { return zoomOnlyNames.indexOf(m.name) === -1; });
+    } else {
+      slotMembers = allMembers;
+    }
+
+    var membersStr = slotMembers.map(function(m) { return m.name; }).join(', ');
+    sheet.getRange(i + 1, SCHEDULE_COLUMNS.MEMBERS + 1).setValue(membersStr);
 
     // スコア再計算
     recalculateScheduleScoreForRow(i + 1, sheet);
   }
 
-  console.log(year + '年' + month + '月: 全メンバー(' + memberNames.length + '名)をデフォルト登録');
+  console.log(year + '年' + month + '月: 全メンバー(' + allMembers.length + '名)をデフォルト登録（Zoom限定: ' + zoomOnlyNames.length + '名）');
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
