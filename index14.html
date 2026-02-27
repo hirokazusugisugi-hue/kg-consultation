@@ -2647,125 +2647,7 @@
                 <h2 class="section-title">分科会メンバー</h2>
             </div>
 
-            <!-- 1期生 -->
-            <div class="generation-block reveal">
-                <div class="gen-header">
-                    <span class="gen-badge">1st</span>
-                    <span class="gen-title">第1期生</span>
-                    <span class="gen-role">正会員</span>
-                </div>
-                <div class="members-grid">
-                    <div class="member-card">
-                        <div class="member-avatar"><i class="fas fa-user"></i></div>
-                        <div class="member-name">杉山 宏和</div>
-                        <div class="member-tags">
-                            <span class="member-tag cert">中小企業診断士</span>
-                            <span class="member-tag cert">MBA</span>
-                            <span class="member-tag cert">FP1級 / CFP</span>
-                            <span class="member-tag cert">販売士1級</span>
-                            <span class="member-tag cert">G検定 / E資格</span>
-                        </div>
-                    </div>
-                    <div class="member-card">
-                        <div class="member-avatar"><i class="fas fa-user"></i></div>
-                        <div class="member-name">川崎 真規</div>
-                        <div class="member-tags">
-                            <span class="member-tag cert">中小企業診断士</span>
-                            <span class="member-tag cert">MBA</span>
-                            <span class="member-tag role">関西学院大学 経営戦略科 TA</span>
-                            <span class="member-tag role">大阪商工会議所 アドバイザー</span>
-                        </div>
-                    </div>
-                    <div class="member-card">
-                        <div class="member-avatar"><i class="fas fa-user"></i></div>
-                        <div class="member-name">原 真人</div>
-                        <div class="member-tags">
-                            <span class="member-tag cert">中小企業診断士</span>
-                            <span class="member-tag cert">MBA</span>
-                        </div>
-                        <div class="member-skills">
-                            <span class="member-skills-label">得意分野</span>
-                            <div class="member-tags">
-                                <span class="member-tag skill">財務</span>
-                                <span class="member-tag skill">経理</span>
-                                <span class="member-tag skill">経営企画</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2期生 -->
-            <div class="generation-block reveal">
-                <div class="gen-header">
-                    <span class="gen-badge">2nd</span>
-                    <span class="gen-title">第2期生</span>
-                    <span class="gen-role">正会員</span>
-                </div>
-                <div class="members-grid">
-                    <div class="member-card">
-                        <div class="member-avatar"><i class="fas fa-user"></i></div>
-                        <div class="member-name">小椋 孝博</div>
-                        <div class="member-tags">
-                            <span class="member-tag cert">中小企業診断士</span>
-                            <span class="member-tag cert">MBA</span>
-                        </div>
-                        <div class="member-skills">
-                            <span class="member-skills-label">得意分野</span>
-                            <div class="member-tags">
-                                <span class="member-tag skill">製造業</span>
-                                <span class="member-tag skill">物流</span>
-                                <span class="member-tag skill">営業</span>
-                                <span class="member-tag skill">DX</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="member-card">
-                        <div class="member-avatar"><i class="fas fa-user"></i></div>
-                        <div class="member-name">秋月 仁志</div>
-                        <div class="member-tags">
-                            <span class="member-tag cert">中小企業診断士</span>
-                            <span class="member-tag cert">MBA</span>
-                            <span class="member-tag cert">ITストラテジスト</span>
-                        </div>
-                        <div class="member-skills">
-                            <span class="member-skills-label">得意分野</span>
-                            <div class="member-tags">
-                                <span class="member-tag skill">経営企画</span>
-                                <span class="member-tag skill">DX</span>
-                                <span class="member-tag skill">生成AI</span>
-                                <span class="member-tag skill">業務改革</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3期生 -->
-            <div class="generation-block reveal">
-                <div class="gen-header">
-                    <span class="gen-badge">3rd</span>
-                    <span class="gen-title">第3期生</span>
-                    <span class="gen-role">オブザーバー</span>
-                </div>
-                <div class="observer-grid">
-                    <div class="observer-card"><div class="observer-avatar"><i class="fas fa-user"></i></div><div class="observer-name">野田 慎士</div></div>
-                </div>
-            </div>
-
-            <!-- 4期生 -->
-            <div class="generation-block reveal">
-                <div class="gen-header">
-                    <span class="gen-badge">4th</span>
-                    <span class="gen-title">第4期生</span>
-                    <span class="gen-role">オブザーバー</span>
-                </div>
-                <div class="observer-grid">
-                    <div class="observer-card"><div class="observer-avatar"><i class="fas fa-user"></i></div><div class="observer-name">高乘 麻美</div></div>
-                    <div class="observer-card"><div class="observer-avatar"><i class="fas fa-user"></i></div><div class="observer-name">村本 将之</div></div>
-                    <div class="observer-card"><div class="observer-avatar"><i class="fas fa-user"></i></div><div class="observer-name">織田 美智子</div></div>
-                </div>
-            </div>
+            <div id="members-container"></div>
         </div>
     </section>
 
@@ -3523,6 +3405,123 @@
             }
         }
         fetchNews();
+
+        // メンバー情報をスプレッドシートから動的取得
+        async function fetchMembers() {
+            try {
+                const response = await fetch(SCHEDULE_API_URL + '?action=members');
+                if (!response.ok) {
+                    console.log('メンバーAPI応答エラー:', response.status);
+                    return;
+                }
+                const data = await response.json();
+                if (data.success && data.members) {
+                    renderMembers(data.members);
+                    console.log('メンバー取得成功:', data.members.length + '名');
+                }
+            } catch (e) {
+                console.error('メンバー取得失敗:', e);
+            }
+        }
+
+        function renderMembers(members) {
+            const container = document.getElementById('members-container');
+            if (!container) return;
+
+            // 期でグループ化
+            const termOrder = ['1期', '2期', '3期', '4期'];
+            const termBadge = { '1期': '1st', '2期': '2nd', '3期': '3rd', '4期': '4th' };
+            const termTitle = { '1期': '第1期生', '2期': '第2期生', '3期': '第3期生', '4期': '第4期生' };
+            const groups = {};
+            members.forEach(function(m) {
+                var t = m.term || '';
+                if (!groups[t]) groups[t] = [];
+                groups[t].push(m);
+            });
+
+            var html = '';
+            termOrder.forEach(function(term) {
+                var group = groups[term];
+                if (!group || group.length === 0) return;
+
+                var isObserver = (term === '3期' || term === '4期');
+                var role = group[0].type || (isObserver ? 'オブザーバー' : '正会員');
+
+                html += '<div class="generation-block reveal">';
+                html += '<div class="gen-header">';
+                html += '<span class="gen-badge">' + (termBadge[term] || '') + '</span>';
+                html += '<span class="gen-title">' + (termTitle[term] || term) + '</span>';
+                html += '<span class="gen-role">' + role + '</span>';
+                html += '</div>';
+
+                if (isObserver) {
+                    html += '<div class="observer-grid">';
+                    group.forEach(function(m) {
+                        html += '<div class="observer-card">';
+                        html += '<div class="observer-avatar"><i class="fas fa-user"></i></div>';
+                        html += '<div class="observer-name">' + escapeHtml(m.name) + '</div>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<div class="members-grid">';
+                    group.forEach(function(m) {
+                        html += '<div class="member-card">';
+                        html += '<div class="member-avatar"><i class="fas fa-user"></i></div>';
+                        html += '<div class="member-name">' + escapeHtml(m.name) + '</div>';
+
+                        // 資格タグ + 肩書きタグ
+                        var certs = m.cert ? m.cert.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+                        var titles = m.titles ? m.titles.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+                        if (certs.length > 0 || titles.length > 0) {
+                            html += '<div class="member-tags">';
+                            certs.forEach(function(c) {
+                                html += '<span class="member-tag cert">' + escapeHtml(c) + '</span>';
+                            });
+                            titles.forEach(function(t) {
+                                html += '<span class="member-tag role">' + escapeHtml(t) + '</span>';
+                            });
+                            html += '</div>';
+                        }
+
+                        // 得意分野タグ
+                        var skills = [];
+                        if (m.specialties) m.specialties.split(',').forEach(function(s) { if (s.trim()) skills.push(s.trim()); });
+                        if (m.themes) m.themes.split(',').forEach(function(s) { if (s.trim()) skills.push(s.trim()); });
+                        if (skills.length > 0) {
+                            html += '<div class="member-skills">';
+                            html += '<span class="member-skills-label">得意分野</span>';
+                            html += '<div class="member-tags">';
+                            skills.forEach(function(s) {
+                                html += '<span class="member-tag skill">' + escapeHtml(s) + '</span>';
+                            });
+                            html += '</div>';
+                            html += '</div>';
+                        }
+
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+
+            // 動的追加した .reveal 要素をIntersectionObserverに登録
+            container.querySelectorAll('.reveal').forEach(function(el) {
+                revealObserver.observe(el);
+            });
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        fetchMembers();
 
         // ── PARTICLE ANIMATION ──
         const canvas = document.getElementById('particleCanvas');

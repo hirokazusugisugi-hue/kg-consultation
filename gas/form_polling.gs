@@ -212,12 +212,14 @@ function registerAllMembersForMonth(year, month) {
 
     var method = data[i][SCHEDULE_COLUMNS.METHOD] || '';
 
-    // 対面のみの枠はZoom参加のみメンバーを除外
+    // 金曜Zoom枠は全員登録、土日の対面/両方枠はZoom固定メンバーを除外
     var slotMembers;
-    if (method === '対面') {
-      slotMembers = allMembers.filter(function(m) { return zoomOnlyNames.indexOf(m.name) === -1; });
-    } else {
+    if (method === 'オンライン') {
+      // 金曜Zoom枠: 全員登録
       slotMembers = allMembers;
+    } else {
+      // 土日の「両方」「対面」枠: Zoom固定メンバーを除外
+      slotMembers = allMembers.filter(function(m) { return zoomOnlyNames.indexOf(m.name) === -1; });
     }
 
     var membersStr = slotMembers.map(function(m) { return m.name; }).join(', ');
@@ -227,7 +229,7 @@ function registerAllMembersForMonth(year, month) {
     recalculateScheduleScoreForRow(i + 1, sheet);
   }
 
-  console.log(year + '年' + month + '月: 全メンバー(' + allMembers.length + '名)をデフォルト登録（Zoom限定: ' + zoomOnlyNames.length + '名）');
+  console.log(year + '年' + month + '月: 全メンバー(' + allMembers.length + '名)をデフォルト登録（Zoom固定(金曜のみ): ' + zoomOnlyNames.join(', ') + '）');
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -261,6 +263,12 @@ function processFormResponse(e) {
 
     var memberName = member.name;
     console.log('オプトアウトフォーム回答処理: ' + memberName + ' (' + email + ')');
+
+    // Zoom固定メンバー一覧を取得
+    var schedMembers = getScheduleMembers();
+    var zoomOnlyNames = schedMembers
+      .filter(function(m) { return m.notes && m.notes.indexOf('Zoom参加のみ') !== -1; })
+      .map(function(m) { return m.name; });
 
     var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
     var sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
@@ -324,6 +332,9 @@ function processFormResponse(e) {
     }
 
     // Phase 2: 対象月の全行にメンバーを追加（デフォルト = 全参加）
+    // Zoom固定メンバーはオンライン枠のみ再登録
+    var isZoomOnly = zoomOnlyNames.indexOf(memberName) !== -1;
+
     for (var i = 1; i < data.length; i++) {
       var dateVal = data[i][SCHEDULE_COLUMNS.DATE];
       if (!dateVal) continue;
@@ -339,6 +350,10 @@ function processFormResponse(e) {
       }
 
       if (!formDateLabels[dateLabel]) continue;
+
+      // Zoom固定メンバーはオンライン枠のみ再登録
+      var method = data[i][SCHEDULE_COLUMNS.METHOD] || '';
+      if (isZoomOnly && method !== 'オンライン') continue;
 
       var currentMembers = data[i][SCHEDULE_COLUMNS.MEMBERS]
         ? data[i][SCHEDULE_COLUMNS.MEMBERS].toString()
@@ -1112,6 +1127,56 @@ function manualReminderPolling() {
   console.log('手動2回目送信完了: ' + year + '年' + month + '月');
 }
 
+/**
+ * 手動実行: オブザーバー向けNDA案内+参加リマインドメール（単発送信用）
+ */
+function sendObserverNdaReminder() {
+  var memberName = '高山 佳樹';
+  var targetDate = '2026/02/27';
+
+  var member = getMemberByName(memberName);
+  if (!member || !member.email) {
+    console.log('メールアドレス未設定: ' + memberName);
+    return;
+  }
+
+  var observerPageUrl = CONFIG.CONSENT.WEB_APP_URL + '?action=observer';
+  var ndaPdfUrl = CONFIG.OBSERVER_NDA.PDF_URL;
+
+  var subject = '【NDA・参加のご案内】' + targetDate + ' オブザーバー参加について';
+
+  var body = member.name + ' 様\n\n' +
+    CONFIG.ORG.NAME + 'です。\n\n' +
+    targetDate + ' の相談対応にオブザーバーとしてご参加いただくにあたり、\n' +
+    '秘密保持誓約書（NDA）への署名をお願いいたします。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ NDA署名のお願い\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '以下のページからNDAの内容をご確認の上、署名をお願いします。\n\n' +
+    '▼ オブザーバー専用ページ（NDA署名）\n' +
+    observerPageUrl + '\n\n' +
+    '▼ NDA原本（PDF）\n' +
+    ndaPdfUrl + '\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 参加について\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '日時：' + targetDate + '\n' +
+    '参加方法：Zoom（オンライン）\n\n' +
+    'Zoom URLは当日までに別途ご連絡いたします。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    'ご不明な点がございましたら、お気軽にお問い合わせください。\n\n' +
+    CONFIG.ORG.NAME + '\n' +
+    'Email: ' + CONFIG.ORG.EMAIL + '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+
+  GmailApp.sendEmail(member.email, subject, body, {
+    name: CONFIG.SENDER_NAME,
+    replyTo: CONFIG.REPLY_TO
+  });
+
+  console.log('オブザーバーNDA+リマインドメール送信完了: ' + member.name + ' → ' + member.email);
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 回答集計シート生成
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1515,7 +1580,8 @@ function getPollingStatus() {
       term: m.term,
       type: m.type,
       email: m.email || '未設定',
-      isScheduleTarget: m.type !== '顧問'
+      active: m.active,
+      isScheduleTarget: m.type !== '顧問' && m.active !== false
     });
   });
 

@@ -141,6 +141,27 @@ function doGet(e) {
       );
     }
 
+    // メンバー情報取得（LP用）
+    if (action === 'members') {
+      var allMembers = getAllMembers();
+      var lpMembers = allMembers
+        .filter(function(m) { return m.type !== '顧問' && m.active !== false; })
+        .map(function(m) {
+          return {
+            name: m.name,
+            term: m.term,
+            cert: m.cert,
+            type: m.type,
+            titles: m.titles,
+            specialties: m.specialties,
+            themes: m.themes
+          };
+        });
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, members: lpMembers }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 日程取得
     if (action === 'schedule') {
       const method = e.parameter.method || 'both';
@@ -722,6 +743,7 @@ function doGet(e) {
           'GET ?action=schedule&method=visit': '対面可能な日程を取得',
           'GET ?action=schedule&method=zoom': 'オンライン可能な日程を取得',
           'GET ?action=nda&token=xxx': '同意書確認ページを表示',
+          'GET ?action=members': 'メンバー情報取得（LP用）',
           'GET ?action=news': 'お知らせ取得（LP用）',
           'GET ?action=news-admin': 'お知らせ管理ページ',
           'GET ?action=survey&token=xxx': 'アンケートページ',

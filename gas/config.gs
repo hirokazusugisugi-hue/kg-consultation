@@ -212,7 +212,9 @@ const MEMBER_COLUMNS = {
   LINE_ID: 6,   // G: LINE ID
   NOTES: 7,         // H: 備考
   SPECIALTIES: 8,   // I: 得意業種
-  THEMES: 9         // J: 得意テーマ
+  THEMES: 9,        // J: 得意テーマ
+  ACTIVE: 10,       // K: システム参加（TRUE/FALSE）
+  TITLES: 11        // L: 肩書き（カンマ区切り）
 };
 
 /**

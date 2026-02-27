@@ -33,7 +33,9 @@ function getAllMembers() {
       lineId: row[MEMBER_COLUMNS.LINE_ID],
       notes: row[MEMBER_COLUMNS.NOTES],
       specialties: row[MEMBER_COLUMNS.SPECIALTIES] ? row[MEMBER_COLUMNS.SPECIALTIES].toString() : '',
-      themes: row[MEMBER_COLUMNS.THEMES] ? row[MEMBER_COLUMNS.THEMES].toString() : ''
+      themes: row[MEMBER_COLUMNS.THEMES] ? row[MEMBER_COLUMNS.THEMES].toString() : '',
+      active: row[MEMBER_COLUMNS.ACTIVE] !== false,
+      titles: row[MEMBER_COLUMNS.TITLES] ? row[MEMBER_COLUMNS.TITLES].toString() : ''
     });
   }
 
@@ -41,12 +43,12 @@ function getAllMembers() {
 }
 
 /**
- * 日程関連に参加するメンバーのみ取得（顧問を除外）
+ * 日程関連に参加するメンバーのみ取得（顧問を除外、システム参加=FALSEを除外）
  * @returns {Array<Object>} スケジュール対象メンバーの配列
  */
 function getScheduleMembers() {
   const members = getAllMembers();
-  return members.filter(m => m.type !== '顧問');
+  return members.filter(m => m.type !== '顧問' && m.active !== false);
 }
 
 /**
@@ -82,7 +84,7 @@ function getMembersByNames(memberNames) {
   const allMembers = getAllMembers();
 
   return names.map(name => {
-    return allMembers.find(m => m.name === name) || { name: name, term: '', cert: '', type: '', email: '', phone: '', lineId: '', notes: '', specialties: '', themes: '' };
+    return allMembers.find(m => m.name === name) || { name: name, term: '', cert: '', type: '', email: '', phone: '', lineId: '', notes: '', specialties: '', themes: '', active: true, titles: '' };
   });
 }
 
@@ -188,7 +190,7 @@ function setupMemberSheet() {
   }
 
   // ヘッダー設定
-  const headers = ['氏名', '期', '資格', '区分', 'メール', '電話番号', 'LINE ID', '備考', '得意業種', '得意テーマ'];
+  const headers = ['氏名', '期', '資格', '区分', 'メール', '電話番号', 'LINE ID', '備考', '得意業種', '得意テーマ', 'システム参加', '肩書き'];
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 
   // ヘッダー行の書式
@@ -208,23 +210,25 @@ function setupMemberSheet() {
   sheet.setColumnWidth(8, 200);  // 備考
   sheet.setColumnWidth(9, 200);  // 得意業種
   sheet.setColumnWidth(10, 200); // 得意テーマ
+  sheet.setColumnWidth(11, 100); // システム参加
+  sheet.setColumnWidth(12, 200); // 肩書き
 
   // 1行目を固定
   sheet.setFrozenRows(1);
 
   // サンプルデータを投入
   const sampleData = [
-    ['杉山 宏和', '1期', '診断士', '正会員', 'hirokazusugisugi@gmail.com', '', '', '', '製造業,小売業', '経営戦略,マーケティング'],
-    ['川崎 真規', '1期', '診断士', '正会員', 'stevenm.kawasaki@gmail.com', '', '', 'TA', 'IT,サービス業', '財務,IT活用'],
-    ['原 真人', '1期', '診断士', '正会員', 'm.hara.2006@gmail.com', '', '', '', '製造業,建設業', '生産管理,品質管理'],
-    ['小椋 孝博', '2期', '診断士', '正会員', 'takahiro09.03.21@gmail.com', '', '', '', '小売業,飲食業', '人事,組織'],
-    ['秋月 仁志', '2期', '診断士', '正会員', 'akizukihitoshi@gmail.com', '', '', '', 'サービス業,IT', 'マーケティング,新規事業'],
-    ['谷村 真里', '0期', '', '顧問', 'mari_tanimura@k-mba.com', '', '', '', '', ''],
-    ['野田 慎士', '3期', '', 'オブザーバー', 'jimi320320320@gmail.com', '', '', '', '', ''],
-    ['高山 義樹', '3期', '', 'オブザーバー', '', '', '', 'Zoom参加のみ', '', ''],
-    ['高乘 麻美', '4期', '', 'オブザーバー', 'asami.koujou@gmail.com', '', '', '', '', ''],
-    ['村本 将之', '4期', '', 'オブザーバー', 'kastu.mura3.teru@gmail.com', '', '', '', '', ''],
-    ['織田 美智子', '4期', '', 'オブザーバー', 'amdt.ked@gmail.com', '', '', '', '', '']
+    ['杉山 宏和', '1期', '中小企業診断士,MBA,FP1級/CFP,販売士1級,G検定/E資格', '正会員', 'hirokazusugisugi@gmail.com', '', '', '', '製造業,小売業', '経営戦略,マーケティング', true, ''],
+    ['川崎 真規', '1期', '中小企業診断士,MBA', '正会員', 'stevenm.kawasaki@gmail.com', '', '', 'TA', 'IT,サービス業', '財務,IT活用', true, '関西学院大学 経営戦略科 TA,大阪商工会議所 アドバイザー'],
+    ['原 真人', '1期', '中小企業診断士,MBA', '正会員', 'm.hara.2006@gmail.com', '', '', '', '', '財務,経理,経営企画', true, ''],
+    ['小椋 孝博', '2期', '中小企業診断士,MBA', '正会員', 'takahiro09.03.21@gmail.com', '', '', '', '製造業', '物流,営業,DX', true, ''],
+    ['秋月 仁志', '2期', '中小企業診断士,MBA,ITストラテジスト', '正会員', 'akizukihitoshi@gmail.com', '', '', '', '', '経営企画,DX,生成AI,業務改革', true, ''],
+    ['谷村 真里', '0期', '', '顧問', 'mari_tanimura@k-mba.com', '', '', '', '', '', true, ''],
+    ['野田 慎士', '3期', '', 'オブザーバー', 'jimi320320320@gmail.com', '', '', '', '', '', true, ''],
+    ['高山 佳樹', '3期', '', 'オブザーバー', 'gaoshanjiashu@gmail.com', '', '', 'Zoom参加のみ', '', '', true, ''],
+    ['高乘 麻美', '4期', '', 'オブザーバー', 'asami.koujou@gmail.com', '', '', '', '', '', true, ''],
+    ['村本 将之', '4期', '', 'オブザーバー', 'kastu.mura3.teru@gmail.com', '', '', '', '', '', true, ''],
+    ['織田 美智子', '4期', '', 'オブザーバー', 'amdt.ked@gmail.com', '', '', '', '', '', true, '']
   ];
 
   sheet.getRange(2, 1, sampleData.length, sampleData[0].length).setValues(sampleData);
