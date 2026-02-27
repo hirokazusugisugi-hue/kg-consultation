@@ -52,7 +52,7 @@
     flex: 1;
     display: flex;
     align-items: center;
-    padding: 50px 60px 30px 70px;
+    padding: 40px 60px 20px 70px;
     position: relative;
     z-index: 1;
   }
@@ -62,8 +62,36 @@
     padding-right: 40px;
   }
 
+  /* KG Crest + Org name row */
+  .org-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .org-crest {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+
+  .org-crest img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+  }
+
+  .org-name-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 3px;
+  }
+
   .title-area {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
   .title-free {
@@ -101,7 +129,7 @@
   .subtitle {
     font-size: 20px;
     color: rgba(255, 255, 255, 0.85);
-    margin-bottom: 32px;
+    margin-bottom: 28px;
     font-weight: 400;
     letter-spacing: 1px;
     line-height: 1.6;
@@ -113,7 +141,7 @@
 
   .features li {
     font-size: 19px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     color: rgba(255, 255, 255, 0.95);
@@ -130,95 +158,69 @@
   }
 
   .right-section {
-    width: 340px;
+    width: 360px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
   }
 
-  /* Main circular badge */
-  .badge {
+  /* KG Crest as hero visual */
+  .crest-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .crest-hero-img {
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 40px rgba(255, 229, 0, 0.25)) drop-shadow(0 4px 20px rgba(0,0,0,0.3));
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Decorative rings around crest */
+  .crest-ring-1 {
+    position: absolute;
     width: 280px;
     height: 280px;
     border-radius: 50%;
+    border: 2px solid rgba(201, 168, 76, 0.2);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .crest-ring-2 {
+    position: absolute;
+    width: 330px;
+    height: 330px;
+    border-radius: 50%;
+    border: 1px solid rgba(201, 168, 76, 0.1);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Gold accent badge below crest */
+  .free-badge {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
     background: linear-gradient(145deg, #c9a84c, #a8873a, #c9a84c);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    box-shadow:
-      0 0 60px rgba(201, 168, 76, 0.3),
-      0 0 120px rgba(201, 168, 76, 0.1),
-      inset 0 2px 4px rgba(255, 255, 255, 0.3);
-  }
-
-  .badge::before {
-    content: '';
-    position: absolute;
-    top: 8px; left: 8px; right: 8px; bottom: 8px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-  }
-
-  .badge::after {
-    content: '';
-    position: absolute;
-    top: 14px; left: 14px; right: 14px; bottom: 14px;
-    border-radius: 50%;
-    border: 1px dashed rgba(255, 255, 255, 0.25);
-  }
-
-  .badge-text-top {
-    font-size: 28px;
-    font-weight: 700;
     color: #0F2350;
-    letter-spacing: 4px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .badge-text-main {
-    font-size: 56px;
+    padding: 8px 28px;
+    border-radius: 24px;
+    font-size: 20px;
     font-weight: 900;
-    color: #0F2350;
     letter-spacing: 6px;
-    line-height: 1.1;
-    position: relative;
-    z-index: 1;
-  }
-
-  .badge-icon {
-    font-size: 24px;
-    color: #0F2350;
-    margin-top: 6px;
-    position: relative;
-    z-index: 1;
-    opacity: 0.7;
-  }
-
-  /* Decorative rings around badge */
-  .badge-ring-outer {
-    position: absolute;
-    width: 320px;
-    height: 320px;
-    border-radius: 50%;
-    border: 1px solid rgba(201, 168, 76, 0.2);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  .badge-ring-outermost {
-    position: absolute;
-    width: 350px;
-    height: 350px;
-    border-radius: 50%;
-    border: 1px solid rgba(201, 168, 76, 0.08);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 20px rgba(201, 168, 76, 0.4);
+    z-index: 3;
+    white-space: nowrap;
   }
 
   /* Small decorative dots */
@@ -229,13 +231,13 @@
     background: rgba(201, 168, 76, 0.3);
     border-radius: 50%;
   }
-  .dot-1 { top: 15%; right: 5%; }
-  .dot-2 { top: 60%; right: -2%; }
-  .dot-3 { bottom: 25%; right: 15%; }
+  .dot-1 { top: 10%; right: 2%; }
+  .dot-2 { top: 55%; right: -4%; }
+  .dot-3 { bottom: 20%; right: 10%; }
 
   /* Bottom bar */
   .bottom-bar {
-    height: 60px;
+    height: 64px;
     background: linear-gradient(90deg, rgba(201, 168, 76, 0.15), rgba(201, 168, 76, 0.05));
     border-top: 3px solid #c9a84c;
     display: flex;
@@ -245,10 +247,17 @@
     z-index: 1;
   }
 
-  .bottom-bar .org-icon {
-    color: #c9a84c;
-    font-size: 20px;
+  .bottom-bar .bar-crest {
+    width: 36px;
+    height: 36px;
     margin-right: 14px;
+    flex-shrink: 0;
+  }
+
+  .bottom-bar .bar-crest img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   .bottom-bar .org-name {
@@ -270,6 +279,12 @@
   <div class="container">
     <div class="main-content">
       <div class="left-section">
+        <div class="org-row">
+          <div class="org-crest">
+            <img src="../images/kg_crescent.svg" alt="KG">
+          </div>
+          <div class="org-name-text">関西学院大学</div>
+        </div>
         <div class="title-area">
           <div class="title-free">無料</div>
           <div class="title-consultation">経営相談</div>
@@ -282,12 +297,11 @@
         </ul>
       </div>
       <div class="right-section">
-        <div class="badge-ring-outermost"></div>
-        <div class="badge-ring-outer"></div>
-        <div class="badge">
-          <div class="badge-text-top">相談</div>
-          <div class="badge-text-main">無料</div>
-          <div class="badge-icon"><i class="fa-solid fa-handshake"></i></div>
+        <div class="crest-hero">
+          <div class="crest-ring-2"></div>
+          <div class="crest-ring-1"></div>
+          <img class="crest-hero-img" src="../images/kg_crescent.svg" alt="関西学院大学 校章">
+          <div class="free-badge">相談無料</div>
         </div>
         <div class="dot dot-1"></div>
         <div class="dot dot-2"></div>
@@ -295,8 +309,10 @@
       </div>
     </div>
     <div class="bottom-bar">
-      <span class="org-icon"><i class="fa-solid fa-university"></i></span>
-      <span class="org-name">関西学院大学 中小企業経営診断研究会</span>
+      <div class="bar-crest">
+        <img src="../images/kg_crescent.svg" alt="KG">
+      </div>
+      <span class="org-name">中小企業経営診断研究会</span>
       <span class="org-sub">Kwansei Gakuin University</span>
     </div>
   </div>

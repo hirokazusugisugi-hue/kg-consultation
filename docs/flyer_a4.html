@@ -75,13 +75,14 @@
     --gold-light: #e8d5a0;
     --gold-pale: #f5ecd4;
     --light-bg: #f7f8fb;
+    --kg-yellow: #FFE500;
   }
 
   /* ===== Header ===== */
   .header {
     background: var(--navy);
     color: #fff;
-    padding: 10mm 8mm 9mm;
+    padding: 8mm 8mm 8mm;
     position: relative;
     overflow: hidden;
   }
@@ -107,13 +108,36 @@
     background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
   }
 
-  .header-org {
-    font-size: 8pt;
-    color: var(--gold-light);
-    letter-spacing: 0.15em;
-    margin-bottom: 3mm;
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 7mm;
     position: relative;
     z-index: 1;
+  }
+
+  .header-crest {
+    flex-shrink: 0;
+    width: 24mm;
+    height: 24mm;
+  }
+
+  .header-crest img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+  }
+
+  .header-text {
+    flex: 1;
+  }
+
+  .header-org {
+    font-size: 7.5pt;
+    color: var(--gold-light);
+    letter-spacing: 0.15em;
+    margin-bottom: 2mm;
   }
 
   .header-title {
@@ -121,9 +145,7 @@
     font-weight: 900;
     letter-spacing: 0.12em;
     line-height: 1.2;
-    position: relative;
-    z-index: 1;
-    margin-bottom: 2.5mm;
+    margin-bottom: 2mm;
   }
 
   .header-title .accent {
@@ -131,17 +153,15 @@
   }
 
   .header-subtitle {
-    font-size: 12pt;
+    font-size: 11pt;
     font-weight: 400;
     color: var(--gold-light);
     letter-spacing: 0.08em;
-    position: relative;
-    z-index: 1;
   }
 
   /* ===== Key Points ===== */
   .key-points {
-    padding: 6mm 8mm 5mm;
+    padding: 5mm 8mm 4mm;
     display: flex;
     gap: 4mm;
   }
@@ -150,7 +170,7 @@
     flex: 1;
     background: var(--light-bg);
     border-radius: 4mm;
-    padding: 5mm 4mm 4mm;
+    padding: 4mm 4mm 3.5mm;
     text-align: center;
     border: 1px solid #e8eaf0;
     position: relative;
@@ -169,16 +189,16 @@
   }
 
   .key-point-icon {
-    width: 14mm;
-    height: 14mm;
-    margin: 0 auto 3mm;
+    width: 13mm;
+    height: 13mm;
+    margin: 0 auto 2.5mm;
     background: var(--navy);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--gold);
-    font-size: 16pt;
+    font-size: 15pt;
     box-shadow: 0 2px 8px rgba(15,35,80,0.2);
   }
 
@@ -186,7 +206,7 @@
     font-size: 10pt;
     font-weight: 800;
     color: var(--navy);
-    margin-bottom: 2mm;
+    margin-bottom: 1.5mm;
     letter-spacing: 0.05em;
   }
 
@@ -198,14 +218,14 @@
 
   /* ===== Consultation Topics ===== */
   .topics-section {
-    padding: 4mm 8mm 5mm;
+    padding: 3.5mm 8mm 4mm;
   }
 
   .section-label {
     display: flex;
     align-items: center;
     gap: 2mm;
-    margin-bottom: 3.5mm;
+    margin-bottom: 3mm;
   }
 
   .section-label-icon {
@@ -251,7 +271,7 @@
   /* ===== Schedule ===== */
   .schedule-section {
     padding: 4mm 8mm 4mm;
-    margin: 0 8mm;
+    margin: 2mm 8mm 0;
     background: var(--gold-pale);
     border-radius: 4mm;
     border: 1px solid var(--gold-light);
@@ -451,7 +471,26 @@
     right: 0;
     background: var(--navy);
     color: #fff;
-    padding: 3.5mm 8mm;
+    padding: 3mm 8mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3mm;
+  }
+
+  .footer-crest {
+    width: 8mm;
+    height: 8mm;
+    flex-shrink: 0;
+  }
+
+  .footer-crest img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .footer-text {
     text-align: center;
   }
 
@@ -460,7 +499,7 @@
     font-weight: 600;
     letter-spacing: 0.08em;
     color: var(--gold-light);
-    margin-bottom: 1mm;
+    margin-bottom: 0.5mm;
   }
 
   .footer-note {
@@ -482,9 +521,16 @@
 
   <!-- ===== HEADER ===== -->
   <div class="header">
-    <div class="header-org">関西学院大学 中小企業経営診断研究会（無料経営診断分科会）</div>
-    <div class="header-title"><span class="accent">無料</span>経営相談</div>
-    <div class="header-subtitle">中小企業の経営課題、一緒に考えます。</div>
+    <div class="header-inner">
+      <div class="header-crest">
+        <img src="../images/kg_crescent.svg" alt="関西学院大学 校章">
+      </div>
+      <div class="header-text">
+        <div class="header-org">関西学院大学 中小企業経営診断研究会（無料経営診断分科会）</div>
+        <div class="header-title"><span class="accent">無料</span>経営相談</div>
+        <div class="header-subtitle">中小企業の経営課題、一緒に考えます。</div>
+      </div>
+    </div>
   </div>
 
   <!-- ===== 3 KEY POINTS ===== -->
@@ -596,8 +642,13 @@
 
   <!-- ===== FOOTER ===== -->
   <div class="footer">
-    <div class="footer-main">関西学院大学 大学院経営戦略研究科 中小企業診断士養成課程</div>
-    <div class="footer-note">※相談内容は研究・教育目的に限り、匿名化して利用する場合があります。</div>
+    <div class="footer-crest">
+      <img src="../images/kg_crescent.svg" alt="KG">
+    </div>
+    <div class="footer-text">
+      <div class="footer-main">関西学院大学 大学院経営戦略研究科 中小企業診断士養成課程</div>
+      <div class="footer-note">※相談内容は研究・教育目的に限り、匿名化して利用する場合があります。</div>
+    </div>
   </div>
 
 </div>
