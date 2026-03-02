@@ -1451,3 +1451,179 @@ ${CONFIG.ORG.NAME}
 Email: ${CONFIG.ORG.EMAIL}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 }
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 相談完了確認ページHTML
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * 完了確認ページHTML
+ * @param {Object} tokenData - トークンデータ（applicationId, leaderName, rowIndex）
+ * @param {Object} rowData - 行データ（getRowData形式）
+ * @param {string} token - トークン文字列
+ * @returns {string} HTML文字列
+ */
+function getCompletionConfirmPageHtml(tokenData, rowData, token) {
+  return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>相談完了確認</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans JP', sans-serif; background: #f5f5f7; color: #1a1a1a; line-height: 1.8; }
+    .header { background: #0F2350; color: #fff; padding: 1.5rem; text-align: center; }
+    .header h1 { font-size: 1.2rem; font-weight: 500; }
+    .header p { font-size: 0.8rem; opacity: 0.8; margin-top: 0.3rem; }
+    .container { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .card { background: #fff; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.2rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .card h2 { font-size: 1rem; color: #0F2350; margin-bottom: 1rem; border-left: 4px solid #0F2350; padding-left: 0.8rem; }
+    .info-grid { display: grid; grid-template-columns: 100px 1fr; gap: 0.4rem 0.8rem; font-size: 0.9rem; }
+    .info-grid dt { font-weight: 600; color: #555; }
+    .info-grid dd { color: #1a1a1a; }
+    .radio-group { margin: 0.8rem 0; }
+    .radio-group label {
+      display: block; padding: 0.8rem 1rem; margin: 0.4rem 0;
+      background: #f8f9fa; border: 2px solid transparent; border-radius: 10px;
+      cursor: pointer; font-size: 0.95rem; transition: all 0.2s;
+    }
+    .radio-group label:hover { background: #eef3ff; }
+    .radio-group input[type="radio"] { margin-right: 0.5rem; }
+    .comment-section { display: none; margin-top: 0.8rem; }
+    .comment-section.show { display: block; }
+    .comment-section textarea {
+      width: 100%; border: 1px solid #ddd; border-radius: 8px;
+      padding: 0.8rem; font-size: 0.9rem; font-family: inherit;
+      resize: vertical; min-height: 80px;
+    }
+    .comment-section textarea:focus { outline: none; border-color: #0F2350; box-shadow: 0 0 0 3px rgba(15,35,80,0.1); }
+    .btn {
+      display: block; width: 100%; padding: 1rem; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 1rem; font-family: inherit;
+    }
+    .btn-primary { background: #0F2350; color: #fff; }
+    .btn-primary:hover { background: #1a3570; }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+    .gold-accent { color: #B8860B; font-weight: 600; }
+    .note { font-size: 0.85rem; color: #666; margin-top: 0.5rem; }
+    .selected-completed { border-color: #28a745 !important; background: #d4edda !important; }
+    .selected-incomplete { border-color: #dc3545 !important; background: #f8d7da !important; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>相談完了確認</h1>
+    <p>関西学院大学 中小企業経営診断研究会</p>
+  </div>
+
+  <div class="container" id="formContainer">
+    <div class="card">
+      <h2>相談情報</h2>
+      <dl class="info-grid">
+        <dt>申込ID</dt><dd>${tokenData.applicationId || ''}</dd>
+        <dt>相談日時</dt><dd>${rowData.confirmedDate || ''}</dd>
+        <dt>相談者</dt><dd>${rowData.name || ''} 様</dd>
+        <dt>企業名</dt><dd>${rowData.company || ''}</dd>
+        <dt>相談方法</dt><dd>${rowData.method || ''}</dd>
+        <dt>テーマ</dt><dd>${rowData.theme || ''}</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2>完了確認</h2>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <span class="gold-accent">${tokenData.leaderName || ''}</span> 様、上記の相談は完了しましたか？
+      </p>
+      <div class="radio-group">
+        <label id="labelCompleted">
+          <input type="radio" name="result" value="completed" onchange="onResultChange()">
+          <span>完了（相談は正常に終了しました）</span>
+        </label>
+        <label id="labelIncomplete">
+          <input type="radio" name="result" value="incomplete" onchange="onResultChange()">
+          <span>未完了（相談が実施できなかった、または問題がありました）</span>
+        </label>
+      </div>
+
+      <div class="comment-section" id="commentSection">
+        <label style="font-size:0.9rem; font-weight:500; display:block; margin-bottom:0.3rem;">
+          未完了の理由・コメント
+        </label>
+        <textarea id="commentText" placeholder="状況を具体的にお聞かせください（例：相談者が来なかった、日程変更が必要 等）"></textarea>
+      </div>
+
+      <p class="note">
+        ※「完了」を選択すると、相談者にアンケートメールが自動送信されます。<br>
+        ※「未完了」を選択すると、管理者に通知され手動で対応します。
+      </p>
+
+      <button class="btn btn-primary" id="submitBtn" disabled onclick="submitForm()">回答を送信</button>
+    </div>
+  </div>
+
+  <div class="container" id="successContainer" style="display:none;">
+    <div class="card" style="text-align:center; padding:3rem 1.5rem;">
+      <div style="width:60px;height:60px;background:#d4edda;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem;color:#28a745;">&#10003;</div>
+      <h2 style="color:#0F2350;">回答を受け付けました</h2>
+      <p style="color:#666; margin-top:1rem;">ご回答ありがとうございました。<br>このページを閉じていただいて結構です。</p>
+    </div>
+  </div>
+
+  <script>
+    function onResultChange() {
+      var selected = document.querySelector('input[name="result"]:checked');
+      document.getElementById('submitBtn').disabled = !selected;
+
+      // スタイル切替
+      document.getElementById('labelCompleted').className = '';
+      document.getElementById('labelIncomplete').className = '';
+      if (selected) {
+        if (selected.value === 'completed') {
+          document.getElementById('labelCompleted').className = 'selected-completed';
+        } else {
+          document.getElementById('labelIncomplete').className = 'selected-incomplete';
+        }
+      }
+
+      document.getElementById('commentSection').classList.toggle('show', selected && selected.value === 'incomplete');
+    }
+
+    function submitForm() {
+      var selected = document.querySelector('input[name="result"]:checked');
+      if (!selected) return;
+
+      var btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = '送信中...';
+
+      var formData = {
+        token: '${token}',
+        result: selected.value,
+        comment: document.getElementById('commentText').value || ''
+      };
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            document.getElementById('formContainer').style.display = 'none';
+            document.getElementById('successContainer').style.display = 'block';
+          } else {
+            alert(result.message || 'エラーが発生しました');
+            btn.disabled = false;
+            btn.textContent = '回答を送信';
+          }
+        })
+        .withFailureHandler(function(err) {
+          alert('エラーが発生しました: ' + err.message);
+          btn.disabled = false;
+          btn.textContent = '回答を送信';
+        })
+        .submitCompletionConfirm(formData);
+    }
+  </script>
+</body>
+</html>`;
+}

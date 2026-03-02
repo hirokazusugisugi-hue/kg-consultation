@@ -104,6 +104,11 @@ const CONFIG = {
     DELAY_HOURS: 2  // 相談終了後N時間後に送信
   },
 
+  // 相談完了確認設定
+  COMPLETION: {
+    DELAY_HOURS: 4  // 確定日時からN時間後に完了確認メール送信
+  },
+
   // リーダー履歴シート名
   LEADER_HISTORY_SHEET_NAME: 'リーダー履歴',
 

@@ -773,6 +773,23 @@ function doGet(e) {
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 相談完了確認
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // 完了確認ページ表示
+    if (action === 'completion') {
+      return generateCompletionConfirmPage(e);
+    }
+
+    // 完了確認トリガーセットアップ（管理用）
+    if (action === 'setup-completion-trigger') {
+      var completionTriggerResult = setupCompletionTrigger();
+      return ContentService
+        .createTextOutput(JSON.stringify(completionTriggerResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // オブザーバー専用ページ
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -804,6 +821,8 @@ function doGet(e) {
           'GET ?action=survey&token=xxx': 'アンケートページ',
           'GET ?action=observer': 'オブザーバー専用ページ',
           'GET ?action=report-upload&token=xxx': 'レポートアップロードページ',
+          'GET ?action=completion&token=xxx': '相談完了確認ページ',
+          'GET ?action=setup-completion-trigger': '完了確認トリガーセットアップ',
           'GET ?action=setup-leader-history': 'リーダー履歴シートセットアップ',
           'GET ?action=setup-report': 'レポート管理シートセットアップ',
           'POST': '予約申込'
