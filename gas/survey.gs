@@ -98,6 +98,13 @@ function submitSurveyResponse(formData) {
     // 管理者に通知
     notifySurveyResponse(formData);
 
+    // リーダーにアンケート結果を通知
+    try {
+      notifySurveyToLeader(formData);
+    } catch (leaderErr) {
+      console.error('リーダーへのアンケート通知エラー:', leaderErr);
+    }
+
     // Q11でレポート希望の場合、レポート依頼を開始
     if (formData.q11 === '希望する' && formData.applicationId) {
       try {
@@ -137,6 +144,91 @@ function notifySurveyResponse(formData) {
   CONFIG.ADMIN_EMAILS.forEach(function(email) {
     GmailApp.sendEmail(email, subject, body, { name: CONFIG.SENDER_NAME });
   });
+}
+
+/**
+ * アンケート回答のリーダー通知（全項目）
+ */
+function notifySurveyToLeader(formData) {
+  if (!formData.applicationId) return;
+
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  var leaderName = '';
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][COLUMNS.ID] === formData.applicationId) {
+      leaderName = data[i][COLUMNS.LEADER];
+      break;
+    }
+  }
+
+  if (!leaderName) {
+    console.log('アンケートリーダー通知: リーダー未設定 (' + formData.applicationId + ')');
+    return;
+  }
+
+  var leader = getMemberByName(leaderName);
+  if (!leader || !leader.email) {
+    console.log('アンケートリーダー通知: リーダー「' + leaderName + '」のメール未設定');
+    return;
+  }
+
+  var subject = '【アンケート結果】' + (formData.company || '') + '様 - ' + (formData.applicationId || '');
+
+  var body = leaderName + ' 様\n\n' +
+    'お疲れ様です。\n' +
+    '下記の相談者からアンケートの回答がありました。\n' +
+    '診断報告書の作成にご活用ください。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 相談者情報\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '申込ID：' + (formData.applicationId || '') + '\n' +
+    'お名前：' + (formData.name || '') + '\n' +
+    '企業名：' + (formData.company || '') + '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ アンケート回答内容\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+    'Q1. 本プロジェクトを知ったきっかけ\n' +
+    '　→ ' + (formData.q1 || '（未回答）') + '\n' +
+    (formData.q1Sns ? '　　SNS種別: ' + formData.q1Sns + '\n' : '') + '\n' +
+    'Q2. 相談までの手続きはスムーズでしたか？（5段階）\n' +
+    '　→ ' + (formData.q2 || '（未回答）') + '\n' +
+    (formData.q2Comment ? '　　コメント: ' + formData.q2Comment + '\n' : '') + '\n' +
+    'Q3. 相談内容についての感想\n' +
+    '　→ ' + (formData.q3 || '（未回答）') + '\n\n' +
+    'Q4. 相談時間について\n' +
+    '　→ ' + (formData.q4 || '（未回答）') + '\n\n' +
+    'Q5. 相談員の説明はわかりやすかったですか？（5段階）\n' +
+    '　→ ' + (formData.q5 || '（未回答）') + '\n\n' +
+    'Q6. 相談内容は課題解決の参考になりましたか？（5段階）\n' +
+    '　→ ' + (formData.q6 || '（未回答）') + '\n\n' +
+    'Q7. 相談員の対応は誠実・丁寧でしたか？（5段階）\n' +
+    '　→ ' + (formData.q7 || '（未回答）') + '\n\n' +
+    'Q8. 具体的な行動につながるアドバイスがありましたか？（5段階）\n' +
+    '　→ ' + (formData.q8 || '（未回答）') + '\n\n' +
+    'Q9. また相談を受けてみたいですか？（5段階）\n' +
+    '　→ ' + (formData.q9 || '（未回答）') + '\n' +
+    (formData.q9Reason ? '　　理由: ' + formData.q9Reason + '\n' : '') + '\n' +
+    'Q10. 他の方にすすめたいですか？（5段階）\n' +
+    '　→ ' + (formData.q10 || '（未回答）') + '\n' +
+    (formData.q10Reason ? '　　理由: ' + formData.q10Reason + '\n' : '') + '\n' +
+    'Q11. 終了後レポートを希望しますか？\n' +
+    '　→ ' + (formData.q11 || '（未回答）') + '\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    CONFIG.ORG.NAME + '\n' +
+    'Email: ' + CONFIG.ORG.EMAIL + '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+
+  GmailApp.sendEmail(leader.email, subject, body, {
+    name: CONFIG.SENDER_NAME,
+    replyTo: CONFIG.REPLY_TO
+  });
+
+  console.log('アンケートリーダー通知送信: ' + formData.applicationId + ' → ' + leaderName + ' (' + leader.email + ')');
 }
 
 /**

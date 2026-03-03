@@ -789,6 +789,8 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+
+
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // オブザーバー専用ページ
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
