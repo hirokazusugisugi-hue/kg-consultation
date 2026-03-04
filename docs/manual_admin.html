@@ -756,6 +756,7 @@
     <span class="col-id">Z列</span><span>レポート状態</span>
     <span class="col-id">AA列</span><span>ファイルID</span>
     <span class="col-id">AB列</span><span>録画URL（Zoom共有リンク・自動取得）</span>
+    <span class="col-id">AC列</span><span>YouTube URL（非公開動画リンク・自動取得）</span>
   </div>
 
   <h4><i class="fas fa-arrow-right"></i> ステータスの流れ</h4>
@@ -944,6 +945,7 @@
     <li>Zoomミーティングが <strong>自動作成</strong> され、R列にURLが保存されます（パスコード付き、待機室なし）</li>
     <li>日程設定シートH列の<strong>参加メンバー全員</strong>に確定通知メール・LINE通知が送信されます</li>
     <li>ミーティング終了後、<strong>録画の共有リンクがAB列に自動保存</strong>され、リーダーにメール通知されます</li>
+    <li>【YouTube連携有効時】録画がYouTubeに<strong>非公開</strong>で自動アップロードされ、AC列にURLが保存されます。管理者に「YouTube Studioでリーダーに共有してください」というメールが届きます</li>
   </ol>
 
   <h4><i class="fas fa-building"></i> 対面相談の場合</h4>
@@ -1252,6 +1254,11 @@
           <td>Driveにファイルが保存されない</td>
           <td>Drive権限未承認</td>
           <td>GASエディタで任意の関数を手動実行し、Drive権限の承認ダイアログを完了してください</td>
+        </tr>
+        <tr>
+          <td>YouTube URLがAC列に保存されない</td>
+          <td>YouTube連携の未設定</td>
+          <td>1. <code>CONFIG.YOUTUBE.ENABLED</code> が <code>true</code> か確認<br>2. <code>?action=youtube-status</code> でCloud Function URL/Secretが設定済みか確認<br>3. Cloud Functionのデプロイ状態とYouTube OAuth設定を確認してください</td>
         </tr>
       </tbody>
     </table>

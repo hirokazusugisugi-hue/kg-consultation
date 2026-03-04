@@ -815,7 +815,47 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // YouTube設定確認（管理用）
+    if (action === 'youtube-status') {
+      var ytProps = PropertiesService.getScriptProperties();
+      var ytEnabled = !!(CONFIG.YOUTUBE && CONFIG.YOUTUBE.ENABLED);
+      var ytCfUrl = ytProps.getProperty('YOUTUBE_CF_URL') || (CONFIG.YOUTUBE && CONFIG.YOUTUBE.CLOUD_FUNCTION_URL) || '';
+      var ytCfSecret = ytProps.getProperty('YOUTUBE_CF_SECRET') ? true : !!(CONFIG.YOUTUBE && CONFIG.YOUTUBE.CLOUD_FUNCTION_SECRET);
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          enabled: ytEnabled,
+          cloudFunctionUrl: ytCfUrl ? '設定済み' : '未設定',
+          cloudFunctionSecret: ytCfSecret ? '設定済み' : '未設定'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
 
+    // YouTube設定セットアップ（管理用）
+    // ?action=setup-youtube&cfUrl=CLOUD_FUNCTION_URL&cfSecret=SHARED_SECRET
+    if (action === 'setup-youtube') {
+      try {
+        var ytSetupProps = PropertiesService.getScriptProperties();
+        if (e.parameter.cfUrl) {
+          ytSetupProps.setProperty('YOUTUBE_CF_URL', e.parameter.cfUrl);
+        }
+        if (e.parameter.cfSecret) {
+          ytSetupProps.setProperty('YOUTUBE_CF_SECRET', e.parameter.cfSecret);
+        }
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: true,
+            message: 'YouTube設定を保存しました。CONFIG.YOUTUBE.ENABLED = true に変更してデプロイしてください。',
+            cfUrl: e.parameter.cfUrl ? '設定済み' : 'スキップ',
+            cfSecret: e.parameter.cfSecret ? '設定済み' : 'スキップ'
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // オブザーバー専用ページ
@@ -853,6 +893,8 @@ function doGet(e) {
           'GET ?action=setup-completion-trigger': '完了確認トリガーセットアップ',
           'GET ?action=check-recordings': '録画リンク手動チェック',
           'GET ?action=setup-recording-trigger': '録画チェックトリガーセットアップ',
+          'GET ?action=youtube-status': 'YouTube設定確認',
+          'GET ?action=setup-youtube&cfUrl=URL&cfSecret=SECRET': 'YouTube設定セットアップ',
           'GET ?action=setup-leader-history': 'リーダー履歴シートセットアップ',
           'GET ?action=setup-report': 'レポート管理シートセットアップ',
           'POST': '予約申込'

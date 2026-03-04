@@ -338,6 +338,18 @@ function processZoomRecordings() {
       var rowData = getRowData(rowInfo.rowIndex);
       notifyRecordingToLeader(rowData, shareUrl, passcode);
 
+      // YouTube非公開アップロード（有効時）
+      if (CONFIG.YOUTUBE && CONFIG.YOUTUBE.ENABLED) {
+        try {
+          var mp4File = findMp4Recording(meeting.recording_files || []);
+          if (mp4File) {
+            uploadToYouTube(mp4File, rowData, rowInfo.rowIndex, token);
+          }
+        } catch (ytErr) {
+          console.error('YouTube upload error (row ' + rowInfo.rowIndex + '):', ytErr);
+        }
+      }
+
       processedCount++;
       console.log('録画URL登録: 行' + rowInfo.rowIndex + ', meetingId=' + meetingId);
     }
@@ -457,4 +469,147 @@ function setupRecordingCheckTrigger() {
 
   console.log('録画チェックトリガーをセットアップしました（1時間ごと）');
   return { success: true, message: '録画チェックトリガーを設定しました（1時間ごと）' };
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// YouTube非公開アップロード（Phase 2）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * ミーティング録画ファイル一覧からMP4を検索
+ * @param {Array} recordingFiles - Zoom APIのrecording_files配列
+ * @returns {Object|null} MP4のrecording_fileオブジェクト
+ */
+function findMp4Recording(recordingFiles) {
+  if (!recordingFiles || recordingFiles.length === 0) return null;
+  for (var i = 0; i < recordingFiles.length; i++) {
+    if (recordingFiles[i].file_type === 'MP4' && recordingFiles[i].download_url) {
+      return recordingFiles[i];
+    }
+  }
+  return null;
+}
+
+/**
+ * Cloud Function経由でZoom録画をYouTubeに非公開アップロード
+ * @param {Object} mp4File - Zoom APIのrecording_fileオブジェクト（MP4）
+ * @param {Object} rowData - getRowData形式の予約データ
+ * @param {number} rowIndex - スプレッドシート行番号（1-based）
+ * @param {string} zoomToken - Zoomアクセストークン
+ */
+function uploadToYouTube(mp4File, rowData, rowIndex, zoomToken) {
+  var props = PropertiesService.getScriptProperties();
+  var cfUrl = props.getProperty('YOUTUBE_CF_URL') || (CONFIG.YOUTUBE && CONFIG.YOUTUBE.CLOUD_FUNCTION_URL) || '';
+  var cfSecret = props.getProperty('YOUTUBE_CF_SECRET') || (CONFIG.YOUTUBE && CONFIG.YOUTUBE.CLOUD_FUNCTION_SECRET) || '';
+
+  if (!cfUrl) {
+    console.log('YouTube Cloud Function URLが未設定のためスキップ');
+    return;
+  }
+
+  var title = '【経営相談】' + (rowData.company || rowData.name || '') + '様 - ' +
+    (rowData.confirmedDate || '').toString().replace(/\//g, '-');
+  var description = '申込ID: ' + (rowData.id || '') + '\n' +
+    '相談日時: ' + (rowData.confirmedDate || '') + '\n' +
+    '相談者: ' + (rowData.name || '') + '（' + (rowData.company || '') + '）\n' +
+    'テーマ: ' + (rowData.theme || '') + '\n' +
+    'リーダー: ' + (rowData.leader || '');
+
+  var payload = {
+    secret: cfSecret,
+    zoom_token: zoomToken,
+    download_url: mp4File.download_url,
+    title: title,
+    description: description
+  };
+
+  console.log('YouTube upload request: ' + rowData.id + ' -> ' + cfUrl);
+
+  var response = UrlFetchApp.fetch(cfUrl, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true,
+    timeout: 600  // 10分（大容量動画対応）
+  });
+
+  var code = response.getResponseCode();
+  var body = response.getContentText();
+
+  if (code !== 200) {
+    console.error('YouTube upload failed (' + code + '): ' + body);
+    return;
+  }
+
+  var result = JSON.parse(body);
+  if (!result.success || !result.video_id) {
+    console.error('YouTube upload error: ' + body);
+    return;
+  }
+
+  // AC列にYouTube URLを保存
+  var sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(CONFIG.SHEET_NAME);
+  sheet.getRange(rowIndex, COLUMNS.YOUTUBE_URL + 1).setValue(result.youtube_url);
+  console.log('YouTube URL saved: row=' + rowIndex + ', videoId=' + result.video_id);
+
+  // 管理者にYouTube Studio共有リンク付きメール通知
+  notifyYouTubeUploadToAdmin(rowData, result.youtube_url, result.video_id, result.studio_url);
+}
+
+/**
+ * 管理者にYouTubeアップロード完了通知を送信
+ * YouTube Studioの共有ページ直リンク + リーダー情報を含む
+ * @param {Object} rowData - 予約データ
+ * @param {string} youtubeUrl - YouTube動画URL
+ * @param {string} videoId - YouTube動画ID
+ * @param {string} studioUrl - YouTube Studio共有ページURL
+ */
+function notifyYouTubeUploadToAdmin(rowData, youtubeUrl, videoId, studioUrl) {
+  var leaderEmail = '';
+  if (rowData.leader) {
+    var leaderMember = getMemberByName(rowData.leader);
+    if (leaderMember && leaderMember.email) {
+      leaderEmail = leaderMember.email;
+    }
+  }
+
+  var subject = '【YouTube録画】' + (rowData.company || rowData.name || '') + '様 - リーダーへの共有をお願いします';
+
+  var body = '管理者 様\n\n' +
+    '経営相談の録画がYouTubeに非公開アップロードされました。\n' +
+    'リーダーへの共有をお願いいたします。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 相談概要\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '申込ID　：' + (rowData.id || '') + '\n' +
+    '相談日時：' + (rowData.confirmedDate || '') + '\n' +
+    '相談者　：' + (rowData.name || '') + ' 様（' + (rowData.company || '') + '）\n' +
+    'テーマ　：' + (rowData.theme || '') + '\n' +
+    'リーダー：' + (rowData.leader || '未設定') + '\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ YouTube共有手順\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '1. 以下のYouTube Studioリンクをクリック:\n' +
+    '   ' + (studioUrl || 'https://studio.youtube.com/video/' + videoId + '/sharing') + '\n\n' +
+    '2. 「共有」→ メールアドレスを入力:\n' +
+    '   ' + (leaderEmail || '（リーダーのメールアドレスが見つかりません）') + '\n\n' +
+    '3. 「送信」で共有完了\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 動画リンク\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    'YouTube URL: ' + youtubeUrl + '\n' +
+    'Video ID: ' + videoId + '\n\n' +
+    '※ この動画は「非公開」設定です。共有されたユーザーのみ視聴可能です。\n' +
+    '※ YouTubeの自動字幕（文字起こし）が利用可能です。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    CONFIG.ORG.NAME + '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+
+  CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+    GmailApp.sendEmail(adminEmail, subject, body, {
+      name: CONFIG.SENDER_NAME
+    });
+  });
+
+  console.log('YouTube upload notification sent to admin: videoId=' + videoId);
 }

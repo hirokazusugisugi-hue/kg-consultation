@@ -43,7 +43,8 @@ function saveToSpreadsheet(data, isWalkIn) {
     '',                       // Y: リーダー
     '',                       // Z: レポート状態
     '',                       // AA: ファイルID
-    ''                        // AB: 録画URL
+    '',                       // AB: 録画URL
+    ''                        // AC: YouTube URL
   ];
 
   sheet.appendRow(newRow);
@@ -58,7 +59,7 @@ function getRowData(rowIndex) {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
     .getSheetByName(CONFIG.SHEET_NAME);
 
-  const row = sheet.getRange(rowIndex, 1, 1, 28).getValues()[0];
+  const row = sheet.getRange(rowIndex, 1, 1, 29).getValues()[0];
 
   return {
     timestamp: row[COLUMNS.TIMESTAMP],
@@ -90,7 +91,8 @@ function getRowData(rowIndex) {
     leader: row[COLUMNS.LEADER],
     reportStatus: row[COLUMNS.REPORT_STATUS],
     fileId: row[COLUMNS.FILE_ID],
-    recordingUrl: row[COLUMNS.RECORDING_URL]
+    recordingUrl: row[COLUMNS.RECORDING_URL],
+    youtubeUrl: row[COLUMNS.YOUTUBE_URL]
   };
 }
 
@@ -139,7 +141,8 @@ function setupSpreadsheetHeaders() {
     'リーダー',         // Y
     'レポート状態',      // Z
     'ファイルID',        // AA
-    '録画URL'            // AB
+    '録画URL',           // AB
+    'YouTube URL'        // AC
   ];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -179,6 +182,7 @@ function setupSpreadsheetHeaders() {
   sheet.setColumnWidth(26, 100); // Z: レポート状態
   sheet.setColumnWidth(27, 250); // AA: ファイルID
   sheet.setColumnWidth(28, 300); // AB: 録画URL
+  sheet.setColumnWidth(29, 300); // AC: YouTube URL
 
   // 1行目を固定
   sheet.setFrozenRows(1);

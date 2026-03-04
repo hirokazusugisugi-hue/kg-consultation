@@ -44,8 +44,16 @@ const CONFIG = {
     CLIENT_SECRET: '',
     RECORDING: {
       CHECK_HOURS: 48,                  // 過去N時間以内の録画をチェック
-      DELETE_CLOUD_AFTER_DOWNLOAD: false // Drive保存後にZoomクラウドから削除するか（Phase2用）
+      DELETE_CLOUD_AFTER_DOWNLOAD: false // Drive保存後にZoomクラウドから削除するか
     }
+  },
+
+  // YouTube非公開アップロード設定（Phase 2）
+  // Cloud Function経由でZoom録画をYouTubeに非公開アップロード
+  YOUTUBE: {
+    CLOUD_FUNCTION_URL: '',   // Cloud FunctionのHTTP URL
+    CLOUD_FUNCTION_SECRET: '', // 共有シークレット（ScriptPropertiesに YOUTUBE_CF_SECRET として設定推奨）
+    ENABLED: false             // YouTube自動アップロード有効/無効
   },
 
   // ヒアリングシートのGoogle DriveファイルID
@@ -183,7 +191,8 @@ const COLUMNS = {
   LEADER: 24,        // Y: リーダー
   REPORT_STATUS: 25, // Z: レポート状態
   FILE_ID: 26,       // AA: ファイルID（Drive）
-  RECORDING_URL: 27  // AB: 録画URL（Zoom共有リンク）
+  RECORDING_URL: 27, // AB: 録画URL（Zoom共有リンク）
+  YOUTUBE_URL: 28    // AC: YouTube URL（非公開動画リンク）
 };
 
 /**
