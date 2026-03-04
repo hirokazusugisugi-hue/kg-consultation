@@ -62,3 +62,4 @@ Data flows through a modular pipeline: **data → strategy → backtest → anal
 - `matplotlib` + `japanize_matplotlib` — Charting with Japanese font support
 - `streamlit` — Web interface (for app.py only, not in requirements.txt)
 - `@playwright/mcp` — Node.js dependency in package.json
+

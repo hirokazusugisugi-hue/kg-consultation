@@ -151,7 +151,7 @@
 
   .features li .check {
     color: #c9a84c;
-    font-size: 20px;
+    font-size: 18px;
     margin-right: 14px;
     font-weight: 700;
     min-width: 24px;
@@ -177,32 +177,9 @@
     width: 220px;
     height: 220px;
     object-fit: contain;
-    filter: drop-shadow(0 0 40px rgba(255, 229, 0, 0.25)) drop-shadow(0 4px 20px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 0 50px rgba(255, 229, 0, 0.3)) drop-shadow(0 0 80px rgba(201, 168, 76, 0.15)) drop-shadow(0 4px 20px rgba(0,0,0,0.3));
     position: relative;
     z-index: 2;
-  }
-
-  /* Decorative rings around crest */
-  .crest-ring-1 {
-    position: absolute;
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    border: 2px solid rgba(201, 168, 76, 0.2);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  .crest-ring-2 {
-    position: absolute;
-    width: 330px;
-    height: 330px;
-    border-radius: 50%;
-    border: 1px solid rgba(201, 168, 76, 0.1);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
   }
 
   /* Gold accent badge below crest */
@@ -213,27 +190,51 @@
     transform: translateX(-50%);
     background: linear-gradient(145deg, #c9a84c, #a8873a, #c9a84c);
     color: #0F2350;
-    padding: 8px 28px;
+    padding: 10px 32px;
     border-radius: 24px;
     font-size: 20px;
     font-weight: 900;
-    letter-spacing: 6px;
+    letter-spacing: 8px;
     box-shadow: 0 4px 20px rgba(201, 168, 76, 0.4);
     z-index: 3;
     white-space: nowrap;
   }
 
-  /* Small decorative dots */
-  .dot {
+  /* Corner decorations */
+  .corner-deco {
     position: absolute;
-    width: 6px;
-    height: 6px;
-    background: rgba(201, 168, 76, 0.3);
-    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    z-index: 1;
   }
-  .dot-1 { top: 10%; right: 2%; }
-  .dot-2 { top: 55%; right: -4%; }
-  .dot-3 { bottom: 20%; right: 10%; }
+
+  .corner-deco.top-left {
+    top: 20px;
+    left: 20px;
+    border-top: 2px solid rgba(201, 168, 76, 0.3);
+    border-left: 2px solid rgba(201, 168, 76, 0.3);
+  }
+
+  .corner-deco.top-right {
+    top: 20px;
+    right: 20px;
+    border-top: 2px solid rgba(201, 168, 76, 0.3);
+    border-right: 2px solid rgba(201, 168, 76, 0.3);
+  }
+
+  .corner-deco.bottom-left {
+    bottom: 84px;
+    left: 20px;
+    border-bottom: 2px solid rgba(201, 168, 76, 0.3);
+    border-left: 2px solid rgba(201, 168, 76, 0.3);
+  }
+
+  .corner-deco.bottom-right {
+    bottom: 84px;
+    right: 20px;
+    border-bottom: 2px solid rgba(201, 168, 76, 0.3);
+    border-right: 2px solid rgba(201, 168, 76, 0.3);
+  }
 
   /* Bottom bar */
   .bottom-bar {
@@ -270,13 +271,20 @@
   .bottom-bar .org-sub {
     margin-left: auto;
     font-size: 14px;
+    font-weight: 500;
     color: rgba(255, 255, 255, 0.5);
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
   }
 </style>
 </head>
 <body>
   <div class="container">
+    <!-- Corner decorations -->
+    <div class="corner-deco top-left"></div>
+    <div class="corner-deco top-right"></div>
+    <div class="corner-deco bottom-left"></div>
+    <div class="corner-deco bottom-right"></div>
+
     <div class="main-content">
       <div class="left-section">
         <div class="org-row">
@@ -298,14 +306,9 @@
       </div>
       <div class="right-section">
         <div class="crest-hero">
-          <div class="crest-ring-2"></div>
-          <div class="crest-ring-1"></div>
           <img class="crest-hero-img" src="../images/kg_crescent.svg" alt="関西学院大学 校章">
           <div class="free-badge">相談無料</div>
         </div>
-        <div class="dot dot-1"></div>
-        <div class="dot dot-2"></div>
-        <div class="dot dot-3"></div>
       </div>
     </div>
     <div class="bottom-bar">

@@ -53,7 +53,7 @@ const CONFIG = {
   YOUTUBE: {
     CLOUD_FUNCTION_URL: '',   // Cloud FunctionのHTTP URL
     CLOUD_FUNCTION_SECRET: '', // 共有シークレット（ScriptPropertiesに YOUTUBE_CF_SECRET として設定推奨）
-    ENABLED: false             // YouTube自動アップロード有効/無効
+    ENABLED: true              // YouTube自動アップロード有効/無効
   },
 
   // ヒアリングシートのGoogle DriveファイルID

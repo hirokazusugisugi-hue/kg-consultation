@@ -6,6 +6,8 @@
 <title>無料経営相談 | 関西学院大学 中小企業経営診断研究会</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+
   /* ===== Reset & Base ===== */
   *, *::before, *::after {
     margin: 0;
@@ -34,7 +36,7 @@
   }
 
   body {
-    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    font-family: 'Noto Sans JP', "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
     color: #1a1a1a;
     background: #f0f0f0;
     display: flex;
@@ -136,14 +138,15 @@
   .header-org {
     font-size: 7.5pt;
     color: var(--gold-light);
-    letter-spacing: 0.15em;
+    letter-spacing: 0.2em;
     margin-bottom: 2mm;
+    font-weight: 500;
   }
 
   .header-title {
     font-size: 32pt;
     font-weight: 900;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.15em;
     line-height: 1.2;
     margin-bottom: 2mm;
   }
@@ -168,11 +171,13 @@
 
   .key-point {
     flex: 1;
-    background: var(--light-bg);
+    background: rgba(247, 248, 251, 0.7);
+    backdrop-filter: blur(8px);
     border-radius: 4mm;
     padding: 4mm 4mm 3.5mm;
     text-align: center;
-    border: 1px solid #e8eaf0;
+    border: none;
+    box-shadow: 0 2px 12px rgba(15, 35, 80, 0.06);
     position: relative;
   }
 
@@ -180,12 +185,11 @@
     content: '';
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 2px;
+    left: 0;
+    right: 0;
+    height: 3px;
     background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    border-radius: 0 0 2px 2px;
+    border-radius: 4mm 4mm 0 0;
   }
 
   .key-point-icon {
@@ -204,10 +208,10 @@
 
   .key-point-title {
     font-size: 10pt;
-    font-weight: 800;
+    font-weight: 900;
     color: var(--navy);
     margin-bottom: 1.5mm;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
   }
 
   .key-point-desc {
@@ -256,11 +260,11 @@
   .topic-tag {
     background: var(--navy);
     color: #fff;
-    padding: 1.8mm 4mm;
-    border-radius: 3mm;
+    padding: 1.8mm 4.5mm;
+    border-radius: 4mm;
     font-size: 8pt;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     white-space: nowrap;
   }
 
@@ -272,9 +276,10 @@
   .schedule-section {
     padding: 4mm 8mm 4mm;
     margin: 2mm 8mm 0;
-    background: var(--gold-pale);
+    background: linear-gradient(135deg, var(--gold-pale), rgba(245, 236, 212, 0.6));
     border-radius: 4mm;
-    border: 1px solid var(--gold-light);
+    border: none;
+    box-shadow: 0 2px 10px rgba(201, 168, 76, 0.1);
   }
 
   .schedule-title {
@@ -347,7 +352,7 @@
     font-size: 16pt;
     font-weight: 900;
     color: var(--navy);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
     margin-bottom: 2mm;
     line-height: 1.4;
   }
@@ -396,10 +401,10 @@
 
   .qr-frame {
     background: #fff;
-    border: 3px solid var(--navy);
+    border: 2px solid rgba(15, 35, 80, 0.15);
     border-radius: 4mm;
     padding: 3mm;
-    box-shadow: 0 3px 12px rgba(15,35,80,0.15);
+    box-shadow: 0 4px 16px rgba(15,35,80,0.1);
     position: relative;
   }
 
@@ -413,9 +418,9 @@
     color: var(--navy);
     font-size: 6pt;
     font-weight: 800;
-    padding: 0.5mm 3mm;
-    border-radius: 2mm;
-    letter-spacing: 0.1em;
+    padding: 0.8mm 3.5mm;
+    border-radius: 3mm;
+    letter-spacing: 0.12em;
   }
 
   .qr-frame img {
@@ -442,7 +447,8 @@
     align-items: center;
     justify-content: center;
     gap: 2mm;
-    border: 1px solid #e0e3ea;
+    border: none;
+    box-shadow: 0 1px 6px rgba(15, 35, 80, 0.06);
   }
 
   .contact-bar i {
@@ -496,8 +502,8 @@
 
   .footer-main {
     font-size: 7pt;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-weight: 500;
+    letter-spacing: 0.12em;
     color: var(--gold-light);
     margin-bottom: 0.5mm;
   }
@@ -506,6 +512,13 @@
     font-size: 5.5pt;
     color: rgba(255,255,255,0.5);
     letter-spacing: 0.03em;
+  }
+
+  @media print {
+    .key-point {
+      background: var(--light-bg);
+      backdrop-filter: none;
+    }
   }
 
   /* ===== Decorative Elements ===== */
