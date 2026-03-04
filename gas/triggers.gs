@@ -491,6 +491,7 @@ function setupAllTriggers() {
   setupReportDeadlineTrigger();
   setupCancellationEmailTrigger();
   setupCompletionTrigger();
+  setupRecordingCheckTrigger();
   console.log('すべてのトリガーを設定しました');
 }
 

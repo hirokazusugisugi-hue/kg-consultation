@@ -41,7 +41,11 @@ const CONFIG = {
   ZOOM: {
     ACCOUNT_ID: '',
     CLIENT_ID: '',
-    CLIENT_SECRET: ''
+    CLIENT_SECRET: '',
+    RECORDING: {
+      CHECK_HOURS: 48,                  // 過去N時間以内の録画をチェック
+      DELETE_CLOUD_AFTER_DOWNLOAD: false // Drive保存後にZoomクラウドから削除するか（Phase2用）
+    }
   },
 
   // ヒアリングシートのGoogle DriveファイルID
@@ -178,7 +182,8 @@ const COLUMNS = {
   WALK_IN_FLAG: 23,  // X: 当日受付フラグ
   LEADER: 24,        // Y: リーダー
   REPORT_STATUS: 25, // Z: レポート状態
-  FILE_ID: 26        // AA: ファイルID（Drive）
+  FILE_ID: 26,       // AA: ファイルID（Drive）
+  RECORDING_URL: 27  // AB: 録画URL（Zoom共有リンク）
 };
 
 /**

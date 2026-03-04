@@ -754,6 +754,8 @@
     <span class="col-id">X列</span><span>当日受付フラグ</span>
     <span class="col-id">Y列</span><span>リーダー（自動選定）</span>
     <span class="col-id">Z列</span><span>レポート状態</span>
+    <span class="col-id">AA列</span><span>ファイルID</span>
+    <span class="col-id">AB列</span><span>録画URL（Zoom共有リンク・自動取得）</span>
   </div>
 
   <h4><i class="fas fa-arrow-right"></i> ステータスの流れ</h4>
@@ -939,8 +941,9 @@
   <ol class="step-list">
     <li>相談者が相談同意書への同意を完了 &rarr; <strong>自動で</strong>ステータスが <span class="status-badge confirmed">確定</span> に更新されます</li>
     <li>同意完了＋予約確定メールが相談者に自動送信されます</li>
-    <li>Zoomミーティングが <strong>自動作成</strong> され、R列にURLが保存されます</li>
+    <li>Zoomミーティングが <strong>自動作成</strong> され、R列にURLが保存されます（パスコード付き、待機室なし）</li>
     <li>日程設定シートH列の<strong>参加メンバー全員</strong>に確定通知メール・LINE通知が送信されます</li>
+    <li>ミーティング終了後、<strong>録画の共有リンクがAB列に自動保存</strong>され、リーダーにメール通知されます</li>
   </ol>
 
   <h4><i class="fas fa-building"></i> 対面相談の場合</h4>
@@ -1234,6 +1237,11 @@
           <td>Zoomミーティングが自動作成されない</td>
           <td>Zoom API認証情報の未設定またはスコープ不足</td>
           <td>GASエディタの「プロジェクトの設定」→「スクリプトプロパティ」で <strong>ZOOM_ACCOUNT_ID / ZOOM_CLIENT_ID / ZOOM_CLIENT_SECRET</strong> が設定されているか確認してください。また、Zoom MarketplaceでアプリのScopeに <code>meeting:write:admin</code> が含まれているか確認してください。</td>
+        </tr>
+        <tr>
+          <td>録画リンクがAB列に保存されない</td>
+          <td>Zoom APIスコープ不足</td>
+          <td>Zoom MarketplaceでアプリのScopeに <code>cloud_recording:read:list_user_recordings</code> を追加してください。手動チェック: <code>?action=check-recordings</code> で確認可能です。</td>
         </tr>
         <tr>
           <td>キャンセルメールが検知されない</td>

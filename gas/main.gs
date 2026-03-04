@@ -789,6 +789,32 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // Zoom録画管理
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // 録画チェック手動実行（管理用）
+    if (action === 'check-recordings') {
+      try {
+        var recResult = processZoomRecordings();
+        return ContentService
+          .createTextOutput(JSON.stringify(recResult))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // 録画チェックトリガーセットアップ（管理用）
+    if (action === 'setup-recording-trigger') {
+      var recTriggerResult = setupRecordingCheckTrigger();
+      return ContentService
+        .createTextOutput(JSON.stringify(recTriggerResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
 
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -825,6 +851,8 @@ function doGet(e) {
           'GET ?action=report-upload&token=xxx': 'レポートアップロードページ',
           'GET ?action=completion&token=xxx': '相談完了確認ページ',
           'GET ?action=setup-completion-trigger': '完了確認トリガーセットアップ',
+          'GET ?action=check-recordings': '録画リンク手動チェック',
+          'GET ?action=setup-recording-trigger': '録画チェックトリガーセットアップ',
           'GET ?action=setup-leader-history': 'リーダー履歴シートセットアップ',
           'GET ?action=setup-report': 'レポート管理シートセットアップ',
           'POST': '予約申込'

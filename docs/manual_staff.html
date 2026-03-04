@@ -743,6 +743,7 @@
     <span class="col-id">X列</span><span>当日受付フラグ</span>
     <span class="col-id">Y列</span><span>リーダー（自動選定）</span>
     <span class="col-id">Z列</span><span>レポート状態</span>
+    <span class="col-id">AB列</span><span>録画URL（Zoom共有リンク）</span>
   </div>
 
   <h4><i class="fas fa-arrow-right"></i> ステータスの流れ</h4>
@@ -816,13 +817,18 @@
 
   <ul>
     <li>開始 <strong>10分前</strong> にZoomを起動</li>
-    <li>相談者を待機室から入室許可</li>
-    <li>録音が必要な場合は相談者に許可を取る</li>
+    <li>URLとパスコードで参加者が直接入室します（待機室はありません）</li>
+    <li>ミーティングは<strong>自動でクラウド録画</strong>されます（動画＋音声）</li>
   </ul>
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div>Zoom URLは同意書への同意による自動確定時にZoom APIで自動作成され、スプレッドシートのR列に保存されます。担当者向けリマインドメール（1週間前・3日前）にもURLが自動記載されます。</div>
+    <div>Zoom URLは同意書への同意による自動確定時にZoom APIで自動作成され、スプレッドシートのR列に保存されます。担当者向けリマインドメール（1週間前・3日前）にもURLが自動記載されます。パスコード付きURLのため、関係者以外がアクセスすることはありません。</div>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-film"></i>
+    <div><strong>録画について：</strong>ミーティング終了後、録画の共有リンクが自動でスプレッドシートのAB列に保存され、<strong>リーダーにメールで通知</strong>されます。リーダーはブラウザから視聴・ダウンロードが可能です（Zoomアカウント不要）。</div>
   </div>
 
   <h3><i class="fas fa-building"></i> 対面の場合</h3>

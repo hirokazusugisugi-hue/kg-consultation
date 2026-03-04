@@ -66,11 +66,12 @@ function createZoomMeeting(data) {
       duration: 90,  // 1時間半
       timezone: 'Asia/Tokyo',
       settings: {
-        waiting_room: true,
-        join_before_host: false,
+        waiting_room: false,
+        join_before_host: true,
         mute_upon_entry: true,
         audio: 'voip',
-        auto_recording: 'cloud'
+        auto_recording: 'cloud',
+        meeting_authentication: false
       }
     };
 
@@ -90,7 +91,7 @@ function createZoomMeeting(data) {
     }
 
     const meeting = JSON.parse(response.getContentText());
-    console.log('Zoomミーティング作成成功: ID=' + meeting.id + ', URL=' + meeting.join_url);
+    console.log('Zoomミーティング作成成功: ID=' + meeting.id + ', URL=' + meeting.join_url + ', passcode=' + (meeting.password || ''));
     return meeting.join_url;
 
   } catch (e) {
@@ -252,4 +253,208 @@ function testZoomConnection() {
     console.error('Zoom接続テストエラー:', e);
     return { success: false, error: e.toString() };
   }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 録画リンク自動取得・通知
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * Zoom録画一覧を取得し、スプレッドシートに未登録の録画を処理
+ * 定期トリガー（1時間ごと）で実行
+ */
+function processZoomRecordings() {
+  try {
+    var token = getZoomAccessToken();
+    var checkHours = (CONFIG.ZOOM && CONFIG.ZOOM.RECORDING && CONFIG.ZOOM.RECORDING.CHECK_HOURS) || 48;
+
+    // 検索期間: 過去N時間
+    var fromDate = new Date();
+    fromDate.setHours(fromDate.getHours() - checkHours);
+    var from = Utilities.formatDate(fromDate, 'Asia/Tokyo', 'yyyy-MM-dd');
+    var to = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
+
+    var response = UrlFetchApp.fetch(
+      'https://api.zoom.us/v2/users/me/recordings?from=' + from + '&to=' + to + '&page_size=30',
+      {
+        headers: { 'Authorization': 'Bearer ' + token },
+        muteHttpExceptions: true
+      }
+    );
+
+    if (response.getResponseCode() !== 200) {
+      console.error('Zoom録画一覧取得エラー:', response.getContentText());
+      return { success: false, error: response.getContentText() };
+    }
+
+    var result = JSON.parse(response.getContentText());
+    var meetings = result.meetings || [];
+    if (meetings.length === 0) {
+      console.log('処理対象の録画はありません');
+      return { success: true, processed: 0 };
+    }
+
+    // 予約管理シートからZoom URLとミーティングIDのマッピングを構築
+    var sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(CONFIG.SHEET_NAME);
+    var data = sheet.getDataRange().getValues();
+    var meetingMap = {};  // meetingId → { rowIndex, data }
+
+    for (var i = 1; i < data.length; i++) {
+      var zoomUrl = data[i][COLUMNS.ZOOM_URL];
+      var recordingUrl = data[i][COLUMNS.RECORDING_URL];
+      if (!zoomUrl || recordingUrl) continue;  // URL未設定 or 既に録画URL登録済み
+
+      var match = zoomUrl.toString().match(/\/j\/(\d+)/);
+      if (match) {
+        meetingMap[match[1]] = { rowIndex: i + 1, zoomUrl: zoomUrl };
+      }
+    }
+
+    var processedCount = 0;
+
+    for (var m = 0; m < meetings.length; m++) {
+      var meeting = meetings[m];
+      var meetingId = String(meeting.id);
+
+      // スプレッドシートに該当するミーティングがあるか
+      if (!meetingMap[meetingId]) continue;
+
+      var rowInfo = meetingMap[meetingId];
+      var shareUrl = meeting.share_url || '';
+      var passcode = meeting.recording_play_passcode || '';
+
+      if (!shareUrl) {
+        // share_urlがない場合、recordings settingsから取得を試みる
+        shareUrl = getRecordingShareUrl(meetingId, token);
+      }
+
+      if (!shareUrl) continue;
+
+      // 録画URLをスプレッドシートに保存
+      var urlWithPasscode = shareUrl + (passcode ? '\nパスワード: ' + passcode : '');
+      sheet.getRange(rowInfo.rowIndex, COLUMNS.RECORDING_URL + 1).setValue(urlWithPasscode);
+
+      // リーダーに通知
+      var rowData = getRowData(rowInfo.rowIndex);
+      notifyRecordingToLeader(rowData, shareUrl, passcode);
+
+      processedCount++;
+      console.log('録画URL登録: 行' + rowInfo.rowIndex + ', meetingId=' + meetingId);
+    }
+
+    console.log('録画処理完了: ' + processedCount + '件');
+    return { success: true, processed: processedCount, totalMeetings: meetings.length };
+
+  } catch (e) {
+    console.error('録画処理エラー:', e);
+    return { success: false, error: e.toString() };
+  }
+}
+
+/**
+ * ミーティングの録画共有URLを取得
+ * @param {string} meetingId - ミーティングID
+ * @param {string} token - アクセストークン
+ * @returns {string|null} 共有URL
+ */
+function getRecordingShareUrl(meetingId, token) {
+  try {
+    var response = UrlFetchApp.fetch(
+      'https://api.zoom.us/v2/meetings/' + meetingId + '/recordings',
+      {
+        headers: { 'Authorization': 'Bearer ' + token },
+        muteHttpExceptions: true
+      }
+    );
+
+    if (response.getResponseCode() !== 200) return null;
+
+    var data = JSON.parse(response.getContentText());
+    return data.share_url || null;
+  } catch (e) {
+    console.error('録画共有URL取得エラー:', e);
+    return null;
+  }
+}
+
+/**
+ * リーダーに録画リンクをメール通知
+ * @param {Object} rowData - getRowData形式のデータ
+ * @param {string} shareUrl - 録画共有URL
+ * @param {string} passcode - 録画閲覧パスワード
+ */
+function notifyRecordingToLeader(rowData, shareUrl, passcode) {
+  if (!rowData.leader) {
+    console.log('リーダー未設定のため録画通知をスキップ: ' + rowData.id);
+    return;
+  }
+
+  var leaderMember = getMemberByName(rowData.leader);
+  if (!leaderMember || !leaderMember.email) {
+    console.log('リーダーのメールアドレスが見つかりません: ' + rowData.leader);
+    return;
+  }
+
+  var subject = '【録画共有】' + (rowData.company || rowData.name) + '様 - 経営相談録画';
+
+  var body = rowData.leader + ' 様\n\n' +
+    'お疲れ様です。\n' +
+    '下記の経営相談の録画が利用可能になりましたのでお知らせいたします。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 相談概要\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '申込ID　：' + (rowData.id || '') + '\n' +
+    '相談日時：' + (rowData.confirmedDate || '') + '\n' +
+    '相談者　：' + (rowData.name || '') + ' 様（' + (rowData.company || '') + '）\n' +
+    'テーマ　：' + (rowData.theme || '') + '\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 録画リンク\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '視聴URL：' + shareUrl + '\n' +
+    (passcode ? 'パスワード：' + passcode + '\n' : '') +
+    '\n' +
+    '※ 上記リンクからブラウザで視聴・ダウンロードが可能です。\n' +
+    '※ Zoomアカウントは不要です。\n\n' +
+    '録画内容は診断報告書の作成にご活用ください。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    CONFIG.ORG.NAME + '\n' +
+    'Email: ' + CONFIG.ORG.EMAIL + '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+
+  GmailApp.sendEmail(leaderMember.email, subject, body, {
+    name: CONFIG.SENDER_NAME,
+    replyTo: CONFIG.REPLY_TO
+  });
+
+  // 管理者にも通知
+  CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+    if (adminEmail !== leaderMember.email) {
+      GmailApp.sendEmail(adminEmail, subject,
+        '※管理者控え※\n\n' + body,
+        { name: CONFIG.SENDER_NAME }
+      );
+    }
+  });
+
+  console.log('録画通知送信完了: リーダー=' + rowData.leader + ', 申込ID=' + rowData.id);
+}
+
+/**
+ * 録画チェックトリガーのセットアップ（1時間ごと）
+ */
+function setupRecordingCheckTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'processZoomRecordings') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  ScriptApp.newTrigger('processZoomRecordings')
+    .timeBased()
+    .everyHours(1)
+    .create();
+
+  console.log('録画チェックトリガーをセットアップしました（1時間ごと）');
+  return { success: true, message: '録画チェックトリガーを設定しました（1時間ごと）' };
 }

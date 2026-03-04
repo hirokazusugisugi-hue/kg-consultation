@@ -1411,7 +1411,7 @@
         </li>
         <li>
           <i class="fa-solid fa-video comp-icon" style="color: #2563eb;"></i>
-          <div><strong>Zoom API連携</strong> &mdash; Server-to-Server OAuthを使用してZoomミーティングを自動作成。予約確定時にミーティングを作成しJoin URLをスプレッドシートに保存。キャンセル時は自動削除。<code>zoom.gs</code>で実装。</div>
+          <div><strong>Zoom API連携</strong> &mdash; Server-to-Server OAuthを使用してZoomミーティングを自動作成。予約確定時にミーティングを作成しJoin URLをスプレッドシートに保存。キャンセル時は自動削除。パスコード認証方式（待機室なし）で管理者不在でも入室可能。<strong>クラウド録画の共有リンクを1時間ごとに自動取得し、リーダーにメール通知。</strong><code>zoom.gs</code>で実装。</div>
         </li>
         <li>
           <i class="fa-solid fa-crown comp-icon" style="color: #d97706;"></i>
@@ -1467,7 +1467,7 @@
     ├── <span class="highlight">observer.gs</span>       <span class="comment"># オブザーバー専用ページ（NDA署名）</span>
     ├── <span class="file">templates.gs</span>      <span class="comment"># メール・HTMLテンプレート</span>
     ├── <span class="file">triggers.gs</span>       <span class="comment"># 時限トリガー設定</span>
-    ├── <span class="highlight">zoom.gs</span>           <span class="comment"># Zoom API連携（ミーティング自動作成・削除）</span>
+    ├── <span class="highlight">zoom.gs</span>           <span class="comment"># Zoom API連携（ミーティング自動作成・削除・録画リンク取得）</span>
     ├── <span class="highlight">leader.gs</span>         <span class="comment"># リーダー自動選定（専門性スコア・履歴管理）</span>
     └── <span class="highlight">report.gs</span>         <span class="comment"># レポート配信（依頼・アップロード・自動配信）</span></div>
     </section>

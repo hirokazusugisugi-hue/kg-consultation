@@ -42,7 +42,8 @@ function saveToSpreadsheet(data, isWalkIn) {
     isWalkIn ? 'TRUE' : 'FALSE',  // X: 当日受付フラグ
     '',                       // Y: リーダー
     '',                       // Z: レポート状態
-    ''                        // AA: ファイルID
+    '',                       // AA: ファイルID
+    ''                        // AB: 録画URL
   ];
 
   sheet.appendRow(newRow);
@@ -57,7 +58,7 @@ function getRowData(rowIndex) {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
     .getSheetByName(CONFIG.SHEET_NAME);
 
-  const row = sheet.getRange(rowIndex, 1, 1, 27).getValues()[0];
+  const row = sheet.getRange(rowIndex, 1, 1, 28).getValues()[0];
 
   return {
     timestamp: row[COLUMNS.TIMESTAMP],
@@ -88,7 +89,8 @@ function getRowData(rowIndex) {
     walkInFlag: row[COLUMNS.WALK_IN_FLAG],
     leader: row[COLUMNS.LEADER],
     reportStatus: row[COLUMNS.REPORT_STATUS],
-    fileId: row[COLUMNS.FILE_ID]
+    fileId: row[COLUMNS.FILE_ID],
+    recordingUrl: row[COLUMNS.RECORDING_URL]
   };
 }
 
@@ -136,7 +138,8 @@ function setupSpreadsheetHeaders() {
     '当日受付フラグ',    // X
     'リーダー',         // Y
     'レポート状態',      // Z
-    'ファイルID'         // AA
+    'ファイルID',        // AA
+    '録画URL'            // AB
   ];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -175,6 +178,7 @@ function setupSpreadsheetHeaders() {
   sheet.setColumnWidth(25, 100); // Y: リーダー
   sheet.setColumnWidth(26, 100); // Z: レポート状態
   sheet.setColumnWidth(27, 250); // AA: ファイルID
+  sheet.setColumnWidth(28, 300); // AB: 録画URL
 
   // 1行目を固定
   sheet.setFrozenRows(1);
