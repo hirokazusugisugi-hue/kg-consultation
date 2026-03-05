@@ -1289,9 +1289,8 @@
         <li><a href="#sec11"><span class="toc-num">11</span> キャンセル自動検知・Drive自動保存</a></li>
         <li><a href="#sec12"><span class="toc-num">12</span> 会場管理システム</a></li>
         <li><a href="#sec13"><span class="toc-num">13</span> 文字起こし・報告書自動作成パイプライン</a></li>
-        <li><a href="#sec14"><span class="toc-num">14</span> AI経営診断</a></li>
-        <li><a href="#sec15"><span class="toc-num">15</span> スタッフポータル</a></li>
-        <li><a href="#sec16"><span class="toc-num">16</span> PRサイト</a></li>
+        <li><a href="#sec14"><span class="toc-num">14</span> スタッフポータル</a></li>
+        <li><a href="#sec15"><span class="toc-num">15</span> PRサイト</a></li>
       </ol>
     </nav>
 
@@ -1964,22 +1963,6 @@
               <td><span class="method-badge method-get">GET</span></td>
               <td>文字起こしパイプライン状況</td>
             </tr>
-            <tr><td colspan="3" style="background:var(--navy-pale);font-weight:700;font-size:0.8rem;padding:6px 12px;">AI経営診断</td></tr>
-            <tr>
-              <td><span class="api-endpoint">?action=diagnosis-results</span></td>
-              <td><span class="method-badge method-get">GET</span></td>
-              <td>診断結果一覧を取得</td>
-            </tr>
-            <tr>
-              <td><span class="api-endpoint">?action=diagnosis-detail&amp;id=xxx</span></td>
-              <td><span class="method-badge method-get">GET</span></td>
-              <td>個別診断結果を取得</td>
-            </tr>
-            <tr>
-              <td><span class="api-endpoint">?action=diagnosis-stats</span></td>
-              <td><span class="method-badge method-get">GET</span></td>
-              <td>診断統計情報を取得</td>
-            </tr>
             <tr><td colspan="3" style="background:var(--navy-pale);font-weight:700;font-size:0.8rem;padding:6px 12px;">スタッフポータル</td></tr>
             <tr>
               <td><span class="api-endpoint">?action=portal-login&amp;email=xxx</span></td>
@@ -2408,40 +2391,10 @@
       </ul>
     </section>
 
-    <!-- ===== Section 14: AI経営診断 ===== -->
+    <!-- ===== Section 14: スタッフポータル ===== -->
     <section class="section" id="sec14">
       <div class="section-header">
         <span class="section-number">14</span>
-        <h2 class="section-title">AI経営診断</h2>
-        <i class="fa-solid fa-brain section-icon"></i>
-      </div>
-
-      <p class="section-desc">6つの評価軸（経営戦略・財務・組織/人材・マーケティング・業務プロセス・IT/DX）で企業の経営状態をAIがスコアリングします。</p>
-
-      <ul class="component-list">
-        <li>
-          <i class="fa-solid fa-cloud comp-icon" style="color: #2563eb;"></i>
-          <div><strong>Cloud Function: ai_diagnosis</strong> &mdash; Claude API (claude-sonnet-4-20250514) で6軸スコア(各1-5)＋総合スコア(0-100)＋課題＋提言を構造化JSON出力。temperature=0.3で一貫性確保。</div>
-        </li>
-        <li>
-          <i class="fa-solid fa-file-code comp-icon" style="color: var(--navy);"></i>
-          <div><strong>diagnosis.gs</strong> &mdash; 診断シート管理、結果保存、統計計算。runAiDiagnosis()、saveDiagnosisResult()、getDiagnosisResults()、getDiagnosisStats()。</div>
-        </li>
-        <li>
-          <i class="fa-solid fa-chart-radar comp-icon" style="color: #059669;"></i>
-          <div><strong>フロントエンド</strong> &mdash; diagnosis.html（ダッシュボード）・diagnosis-result.html（詳細）。Chart.jsでレーダーチャート・スコア推移グラフ。</div>
-        </li>
-        <li>
-          <i class="fa-solid fa-database comp-icon" style="color: #d97706;"></i>
-          <div><strong>AI診断結果シート</strong> &mdash; 17列（診断ID〜文字起こしID）。条件付き書式: 80点以上=緑、60-79=黄、60未満=赤。</div>
-        </li>
-      </ul>
-    </section>
-
-    <!-- ===== Section 15: スタッフポータル ===== -->
-    <section class="section" id="sec15">
-      <div class="section-header">
-        <span class="section-number">15</span>
         <h2 class="section-title">スタッフポータル</h2>
         <i class="fa-solid fa-user-shield section-icon"></i>
       </div>
@@ -2484,7 +2437,7 @@
     <!-- ===== Section 16: PRサイト ===== -->
     <section class="section" id="sec16">
       <div class="section-header">
-        <span class="section-number">16</span>
+        <span class="section-number">15</span>
         <h2 class="section-title">PRサイト</h2>
         <i class="fa-solid fa-globe section-icon"></i>
       </div>
@@ -2518,7 +2471,7 @@
     <div class="footer-divider"></div>
     <p>無料経営相談予約システム &mdash; システム全体構成図</p>
     <p>関西学院大学 中小企業経営診断研究会</p>
-    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 5.0 &mdash; 2026-03-05 更新（会場管理・文字起こし・AI診断・ポータル・PRサイト追加）</p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 5.0 &mdash; 2026-03-05 更新（会場管理・文字起こし・ポータル・PRサイト追加）</p>
   </footer>
 
 </body>
