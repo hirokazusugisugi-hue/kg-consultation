@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>診断結果詳細 | 関西学院大学 中小企業経営診断研究会</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <a href="./" class="header-logo">
+            <img src="../images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="header-logo-img">
+            <span class="logo-sub">中小企業経営診断研究会</span>
+        </a>
+        <button class="nav-toggle" aria-label="メニュー"><i class="fas fa-bars"></i></button>
+        <nav>
+            <ul class="nav-list">
+                <li><a href="./">ホーム</a></li>
+                <li><a href="about.html">研究会について</a></li>
+                <li><a href="members.html">メンバー</a></li>
+                <li><a href="articles.html">コラム</a></li>
+                <li><a href="news.html">お知らせ</a></li>
+                <li class="nav-cta"><a href="contact.html">無料相談</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- CONTENT -->
+    <main id="mainContent">
+        <div class="loading" style="padding:8rem 0;text-align:center"><i class="fas fa-spinner fa-spin"></i> 診断結果を読み込み中...</div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <img src="../images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="footer-logo-img">
+                    <p>経営戦略研究科（IBA）研究フォーラム｜中小企業経営診断研究会</p>
+                </div>
+                <div class="footer-links">
+                    <a href="./">ホーム</a>
+                    <a href="about.html">研究会について</a>
+                    <a href="members.html">メンバー</a>
+                    <a href="articles.html">コラム</a>
+                    <a href="news.html">お知らせ</a>
+                    <a href="contact.html">無料相談</a>
+                </div>
+            </div>
+            <div class="footer-copy">&copy; Kwansei Gakuin University. All Rights Reserved.</div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        const AXIS_LABELS = {
+            strategy: '経営戦略',
+            finance: '財務',
+            organization: '組織・人材',
+            marketing: 'マーケティング',
+            operations: '業務プロセス',
+            digital: 'IT・DX'
+        };
+
+        function getScoreColor(score) {
+            if (score >= 80) return '#28a745';
+            if (score >= 60) return '#ffc107';
+            return '#dc3545';
+        }
+
+        function getScoreLabel(score) {
+            if (score >= 5) return '非常に優れている';
+            if (score >= 4) return '優れている';
+            if (score >= 3) return '普通';
+            if (score >= 2) return 'やや不足';
+            return '大幅な改善が必要';
+        }
+
+        async function loadDetail() {
+            const params = new URLSearchParams(window.location.search);
+            const diagId = params.get('id');
+            const container = document.getElementById('mainContent');
+
+            if (!diagId) {
+                container.innerHTML = '<div style="padding:6rem 0;text-align:center"><p>診断IDが指定されていません</p><a href="diagnosis.html" class="btn btn-outline" style="margin-top:1rem">診断一覧に戻る</a></div>';
+                return;
+            }
+
+            const data = await fetchAPI('diagnosis-detail', { id: diagId });
+
+            if (!data.success || !data.diagnosis) {
+                container.innerHTML = '<div style="padding:6rem 0;text-align:center"><p>診断結果が見つかりませんでした</p><a href="diagnosis.html" class="btn btn-outline" style="margin-top:1rem">診断一覧に戻る</a></div>';
+                return;
+            }
+
+            const d = data.diagnosis;
+            const scores = d.scores || {};
+            const color = getScoreColor(d.totalScore);
+
+            // 課題リスト
+            let challengesHtml = '';
+            if (d.challenges && d.challenges.length > 0) {
+                challengesHtml = '<div class="dr-section"><h3><i class="fas fa-exclamation-triangle"></i> 主要課題</h3><div class="dr-challenges">' +
+                    d.challenges.map(c => {
+                        const prClass = c.priority === '高' ? 'high' : c.priority === '中' ? 'mid' : 'low';
+                        return '<div class="dr-challenge"><span class="dr-priority ' + prClass + '">' + escapeHTML(c.priority || '') + '</span><div><strong>' + escapeHTML(c.area || '') + '</strong><p>' + escapeHTML(c.description || '') + '</p></div></div>';
+                    }).join('') + '</div></div>';
+            }
+
+            // 提言
+            let recsHtml = '';
+            if (d.recommendations) {
+                recsHtml = '<div class="dr-section"><h3><i class="fas fa-lightbulb"></i> 提言・アドバイス</h3><div class="dr-recs">' + escapeHTML(d.recommendations).replace(/\n/g, '<br>') + '</div></div>';
+            }
+
+            // 軸別コメント
+            let axisDetailHtml = '<div class="dr-section"><h3><i class="fas fa-chart-bar"></i> 軸別評価</h3><div class="dr-axes">';
+            Object.keys(AXIS_LABELS).forEach(key => {
+                const val = scores[key] || 3;
+                const pct = (val / 5) * 100;
+                axisDetailHtml += '<div class="dr-axis-item"><div class="dr-axis-head"><span class="dr-axis-name">' + AXIS_LABELS[key] + '</span><span class="dr-axis-score">' + val + '/5 <small>(' + getScoreLabel(val) + ')</small></span></div><div class="diag-bar-track" style="height:6px"><div class="diag-bar-fill" style="width:' + pct + '%;background:' + getScoreColor(pct) + '"></div></div></div>';
+            });
+            axisDetailHtml += '</div></div>';
+
+            container.innerHTML =
+                '<div style="padding-top:calc(var(--header-height) + 2rem)">' +
+                '  <div class="container"><div class="breadcrumb"><a href="./">ホーム</a><span>/</span><a href="diagnosis.html">AI経営診断</a><span>/</span>' + escapeHTML(d.company || '') + '</div></div>' +
+                '</div>' +
+                '<section class="section" style="padding-top:1rem">' +
+                '  <div class="container">' +
+                '    <div class="dr-header">' +
+                '      <div class="dr-score-big" style="border-color:' + color + '"><span style="color:' + color + '">' + d.totalScore + '</span><small>/100</small></div>' +
+                '      <div class="dr-info">' +
+                '        <h1>' + escapeHTML(d.company || '企業名不明') + '</h1>' +
+                '        <div class="dr-meta"><span><i class="fas fa-industry"></i> ' + escapeHTML(d.industry || '') + '</span><span><i class="far fa-calendar"></i> ' + (d.date || '') + '</span><span><i class="fas fa-tag"></i> ' + escapeHTML(d.diagnosisId || '') + '</span></div>' +
+                '      </div>' +
+                '    </div>' +
+                '    <div class="dr-body">' +
+                '      <div class="dr-chart-area"><canvas id="radarChart" width="350" height="350"></canvas></div>' +
+                '      <div class="dr-detail-area">' + axisDetailHtml + challengesHtml + recsHtml + '</div>' +
+                '    </div>' +
+                '    <div style="margin-top:2rem;text-align:center"><a href="diagnosis.html" class="btn btn-outline"><i class="fas fa-arrow-left" style="margin-right:0.5rem"></i>診断一覧に戻る</a></div>' +
+                '  </div>' +
+                '</section>';
+
+            // レーダーチャート描画
+            const ctx = document.getElementById('radarChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: Object.values(AXIS_LABELS),
+                        datasets: [{
+                            data: [scores.strategy||3, scores.finance||3, scores.organization||3, scores.marketing||3, scores.operations||3, scores.digital||3],
+                            backgroundColor: 'rgba(15,35,80,0.15)',
+                            borderColor: '#0F2350',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#0F2350',
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            r: {
+                                min: 0, max: 5,
+                                ticks: { stepSize: 1, font: { size: 11 } },
+                                pointLabels: { font: { size: 12, family: 'Noto Sans JP', weight: '600' } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 企業別履歴チャート
+            if (d.company) {
+                const histData = await fetchAPI('diagnosis-history', { company: d.company });
+                if (histData.success && histData.history && histData.history.length > 1) {
+                    const histContainer = document.createElement('div');
+                    histContainer.className = 'dr-section';
+                    histContainer.innerHTML = '<h3><i class="fas fa-chart-line"></i> スコア推移</h3><canvas id="historyChart" width="600" height="250"></canvas>';
+                    document.querySelector('.dr-detail-area').appendChild(histContainer);
+
+                    const histCtx = document.getElementById('historyChart');
+                    new Chart(histCtx, {
+                        type: 'line',
+                        data: {
+                            labels: histData.history.map(h => h.date),
+                            datasets: [{
+                                label: '総合スコア',
+                                data: histData.history.map(h => h.totalScore),
+                                borderColor: '#0F2350',
+                                backgroundColor: 'rgba(15,35,80,0.1)',
+                                fill: true,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: { legend: { display: false } },
+                            scales: { y: { min: 0, max: 100 } }
+                        }
+                    });
+                }
+            }
+        }
+
+        loadDetail();
+    </script>
+
+    <style>
+        .dr-header { display: flex; gap: 2rem; align-items: center; margin-bottom: 2rem; }
+        .dr-score-big { width: 100px; height: 100px; border-radius: 50%; border: 4px solid; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+        .dr-score-big span { font-size: 2.5rem; font-weight: 900; line-height: 1; }
+        .dr-score-big small { font-size: 0.8rem; color: var(--text-muted); }
+        .dr-info h1 { font-size: 1.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+        .dr-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--text-muted); }
+        .dr-meta i { margin-right: 0.3rem; }
+
+        .dr-body { display: grid; grid-template-columns: 380px 1fr; gap: 2rem; align-items: start; }
+        .dr-chart-area { position: sticky; top: 100px; text-align: center; }
+
+        .dr-section { background: var(--white); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .dr-section h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--kgu-blue); }
+        .dr-section h3 i { margin-right: 0.5rem; }
+
+        .dr-axes { display: flex; flex-direction: column; gap: 0.8rem; }
+        .dr-axis-item {}
+        .dr-axis-head { display: flex; justify-content: space-between; margin-bottom: 0.3rem; }
+        .dr-axis-name { font-size: 0.85rem; font-weight: 600; }
+        .dr-axis-score { font-size: 0.8rem; color: var(--text-muted); }
+        .dr-axis-score small { font-size: 0.7rem; }
+
+        .dr-challenges { display: flex; flex-direction: column; gap: 0.8rem; }
+        .dr-challenge { display: flex; gap: 0.8rem; align-items: flex-start; }
+        .dr-priority { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 10px; border-radius: 100px; flex-shrink: 0; margin-top: 2px; }
+        .dr-priority.high { background: #f8d7da; color: #721c24; }
+        .dr-priority.mid { background: #fff3cd; color: #856404; }
+        .dr-priority.low { background: #d4edda; color: #155724; }
+        .dr-challenge strong { font-size: 0.9rem; }
+        .dr-challenge p { font-size: 0.8rem; color: var(--text-light); line-height: 1.6; }
+
+        .dr-recs { font-size: 0.85rem; line-height: 1.8; color: var(--text-light); }
+
+        .diag-bar-track { flex: 1; height: 6px; background: var(--bg-light); border-radius: 4px; overflow: hidden; }
+        .diag-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+
+        @media (max-width: 768px) {
+            .dr-header { flex-direction: column; text-align: center; }
+            .dr-body { grid-template-columns: 1fr; }
+            .dr-chart-area { position: static; }
+        }
+    </style>
+</body>
+</html>

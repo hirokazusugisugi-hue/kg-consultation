@@ -580,6 +580,11 @@
       <li><a href="#sec15">レポート配信システム</a></li>
       <li><a href="#sec16">Google Drive自動保存</a></li>
       <li><a href="#sec17">Zoom録画・YouTube自動アップロード</a></li>
+      <li><a href="#sec18">会場管理システム</a></li>
+      <li><a href="#sec19">文字起こし・報告書自動作成</a></li>
+      <li><a href="#sec20">AI経営診断</a></li>
+      <li><a href="#sec21">スタッフポータル</a></li>
+      <li><a href="#sec22">PRサイト・コラム管理</a></li>
     </ol>
   </nav>
 
@@ -646,6 +651,36 @@
           <td><strong>アンケートページ</strong></td>
           <td><span class="url-cell">上記ウェブアプリURL + ?action=survey&amp;token=xxx</span></td>
           <td>相談後アンケート（トークン付き自動生成）</td>
+        </tr>
+        <tr>
+          <td><strong>会場管理ページ</strong></td>
+          <td><span class="url-cell">上記ウェブアプリURL + ?action=venue-admin</span></td>
+          <td>会場マスタの追加・編集</td>
+        </tr>
+        <tr>
+          <td><strong>会場空き状況</strong></td>
+          <td><span class="url-cell">上記ウェブアプリURL + ?action=venue-status</span></td>
+          <td>カレンダー形式で空き状況表示</td>
+        </tr>
+        <tr>
+          <td><strong>PRサイト</strong></td>
+          <td><span class="url-cell">https://hirokazusugisugi-hue.github.io/kg-consultation/site/</span></td>
+          <td>対外的なPR・ブランディング用サイト</td>
+        </tr>
+        <tr>
+          <td><strong>AI経営診断</strong></td>
+          <td><span class="url-cell">https://hirokazusugisugi-hue.github.io/kg-consultation/site/diagnosis.html</span></td>
+          <td>AI診断ダッシュボード・結果閲覧</td>
+        </tr>
+        <tr>
+          <td><strong>スタッフポータル</strong></td>
+          <td><span class="url-cell">https://hirokazusugisugi-hue.github.io/kg-consultation/site/portal.html</span></td>
+          <td>スタッフ向けログインポータル</td>
+        </tr>
+        <tr>
+          <td><strong>記事管理ページ</strong></td>
+          <td><span class="url-cell">上記ウェブアプリURL + ?action=article-admin</span></td>
+          <td>コラム記事の投稿・管理</td>
         </tr>
       </tbody>
     </table>
@@ -758,6 +793,10 @@
     <span class="col-id">AA列</span><span>ファイルID</span>
     <span class="col-id">AB列</span><span>録画URL（Zoom共有リンク・自動取得）</span>
     <span class="col-id">AC列</span><span>YouTube URL（非公開動画リンク・自動取得）</span>
+    <span class="col-id">AD列</span><span>文字起こし状態（なし/処理待ち/処理中/完了/エラー）</span>
+    <span class="col-id">AE列</span><span>文字起こしファイルID（Drive）</span>
+    <span class="col-id">AF列</span><span>報告書ドラフトID（Google Docs）</span>
+    <span class="col-id">AG列</span><span>Notion Page ID</span>
   </div>
 
   <h4><i class="fas fa-arrow-right"></i> ステータスの流れ</h4>
@@ -906,6 +945,68 @@
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
     <div>A列のステータスには条件付き書式が設定されています。<strong>「予定」は黄色</strong>、<strong>「完了」は緑色</strong>で表示されます。シートが存在しない場合は <code>?action=setup-leader-history</code> で自動作成できます。</div>
+  </div>
+
+  <!-- 4.8 会場マスタシート -->
+  <h3><i class="fas fa-building"></i> 4.8 会場マスタシート</h3>
+
+  <p>会場の予約・空き状況管理に使用するシートです。<code>?action=setup-venue</code> で自動作成されます。</p>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>会場ID</span>
+    <span class="col-id">B列</span><span>会場名</span>
+    <span class="col-id">C列</span><span>住所</span>
+    <span class="col-id">D列</span><span>収容人数</span>
+    <span class="col-id">E列</span><span>設備</span>
+    <span class="col-id">F列</span><span>料金</span>
+    <span class="col-id">G列</span><span>備考</span>
+    <span class="col-id">H列</span><span>利用可能時間</span>
+    <span class="col-id">I列</span><span>有効フラグ（TRUE / FALSE）</span>
+  </div>
+
+  <!-- 4.9 記事管理シート -->
+  <h3><i class="fas fa-pen-fancy"></i> 4.9 記事管理シート</h3>
+
+  <p>PRサイトのコラム記事を管理するシートです。<code>?action=setup-articles</code> で自動作成されます。</p>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>記事ID</span>
+    <span class="col-id">B列</span><span>タイトル</span>
+    <span class="col-id">C列</span><span>カテゴリ</span>
+    <span class="col-id">D列</span><span>タグ</span>
+    <span class="col-id">E列</span><span>本文（Markdown）</span>
+    <span class="col-id">F列</span><span>著者</span>
+    <span class="col-id">G列</span><span>サムネイルURL</span>
+    <span class="col-id">H列</span><span>状態（下書き / 公開 / 非公開）</span>
+    <span class="col-id">I列</span><span>公開日</span>
+    <span class="col-id">J列</span><span>作成日時</span>
+    <span class="col-id">K列</span><span>更新日時</span>
+    <span class="col-id">L列</span><span>表示回数</span>
+  </div>
+
+  <!-- 4.10 AI診断結果シート -->
+  <h3><i class="fas fa-brain"></i> 4.10 AI診断結果シート</h3>
+
+  <p>AI経営診断の結果を保存するシートです。<code>?action=setup-diagnosis</code> で自動作成されます。</p>
+
+  <div class="column-list">
+    <span class="col-id">A列</span><span>診断ID</span>
+    <span class="col-id">B列</span><span>申込ID</span>
+    <span class="col-id">C列</span><span>企業名</span>
+    <span class="col-id">D列</span><span>業種</span>
+    <span class="col-id">E列</span><span>診断日</span>
+    <span class="col-id">F列</span><span>総合スコア（0-100）</span>
+    <span class="col-id">G-L列</span><span>6軸スコア（経営戦略/財務/組織・人材/マーケティング/業務プロセス/IT・DX 各1-5）</span>
+    <span class="col-id">M列</span><span>主要課題（JSON）</span>
+    <span class="col-id">N列</span><span>提言サマリ</span>
+    <span class="col-id">O列</span><span>レポートファイルID</span>
+    <span class="col-id">P列</span><span>ソース</span>
+    <span class="col-id">Q列</span><span>文字起こしID</span>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>条件付き書式: 総合スコア <strong>80点以上=緑</strong>、<strong>60-79点=黄</strong>、<strong>60点未満=赤</strong> で自動着色されます。</div>
   </div>
 
   <!-- ===== 5. お知らせ管理 ===== -->
@@ -1344,6 +1445,31 @@
           <td>レポートファイルサイズ上限</td>
           <td>5MB</td>
         </tr>
+        <tr>
+          <td><code>TRANSCRIPT.ENABLED</code></td>
+          <td>Zoom録画→文字起こし自動実行の有効/無効</td>
+          <td><code>false</code></td>
+        </tr>
+        <tr>
+          <td><code>AUTO_REPORT.ENABLED</code></td>
+          <td>文字起こし→報告書自動作成の有効/無効</td>
+          <td><code>false</code></td>
+        </tr>
+        <tr>
+          <td><code>DIAGNOSIS.ENABLED</code></td>
+          <td>AI経営診断の有効/無効</td>
+          <td><code>false</code></td>
+        </tr>
+        <tr>
+          <td><code>PORTAL.ENABLED</code></td>
+          <td>スタッフポータルの有効/無効</td>
+          <td><code>false</code></td>
+        </tr>
+        <tr>
+          <td><code>PORTAL.SESSION_HOURS</code></td>
+          <td>ポータルセッション有効期間</td>
+          <td>6（時間）</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -1614,10 +1740,236 @@
     <div><strong>YouTube OAuthトークンの更新:</strong> YouTube APIのリフレッシュトークンは長期間有効ですが、Googleアカウントのパスワード変更やアプリの権限取消しにより無効化される場合があります。その場合はSecret Managerの <code>youtube-refresh-token</code> を更新してCloud Functionを再デプロイしてください。</div>
   </div>
 
+  <!-- ===== 18. 会場管理システム ===== -->
+  <h2 id="sec18"><i class="fas fa-building"></i> 18. 会場管理システム</h2>
+
+  <p>会場の登録・空き状況確認を行う管理機能です。日程設定シートのN列（場所）と連動しています。</p>
+
+  <h3><i class="fas fa-cogs"></i> 18.1 セットアップ</h3>
+  <p>会場マスタシートを初期作成するには:</p>
+  <p><span class="url-cell">ウェブアプリURL + ?action=setup-venue</span></p>
+
+  <h3><i class="fas fa-plus-circle"></i> 18.2 会場管理ページ</h3>
+  <p>会場の追加・編集は管理ページから行います:</p>
+  <p><span class="url-cell">ウェブアプリURL + ?action=venue-admin</span></p>
+
+  <ul>
+    <li><strong>会場追加:</strong> 会場名、住所、収容人数、設備、料金、利用可能時間を入力</li>
+    <li><strong>有効/無効の切替:</strong> 使用しない会場は無効化（表示対象から除外）</li>
+    <li><strong>削除:</strong> 完全に不要な会場のみ削除可能</li>
+  </ul>
+
+  <h3><i class="fas fa-calendar-check"></i> 18.3 空き状況確認ページ</h3>
+  <p><span class="url-cell">ウェブアプリURL + ?action=venue-status</span></p>
+  <p>カレンダー形式で各会場の空き状況が確認できます。日程設定シートの日付・場所と連動しています。</p>
+
+  <!-- ===== 19. 文字起こし・報告書自動作成 ===== -->
+  <h2 id="sec19"><i class="fas fa-robot"></i> 19. 文字起こし・報告書自動作成</h2>
+
+  <p>Zoom録画から文字起こしと報告書ドラフトを自動生成するパイプラインです。3つのCloud Functionで構成されます。</p>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div>この機能を利用するには <code>config.gs</code> で <code>TRANSCRIPT.ENABLED = true</code> と <code>AUTO_REPORT.ENABLED = true</code> を設定し、Cloud Functionsをデプロイする必要があります。</div>
+  </div>
+
+  <h3><i class="fas fa-arrow-right"></i> 19.1 処理フロー</h3>
+
+  <div class="flowchart">
+    <div class="flowchart-step auto">
+      <strong>Zoom録画取得</strong>
+      <p>processZoomRecordings() が録画URLを検出</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>CF1: zoom_to_transcript</strong>
+      <p>MP4→音声抽出→Google Cloud Speech-to-Text（話者分離対応）</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>CF2: transcript_to_report</strong>
+      <p>文字起こし→Claude AI→報告書ドラフト（Google Docs作成）</p>
+    </div>
+    <div class="flowchart-step result">
+      <strong>リーダーに通知</strong>
+      <p>ドラフト完了通知メール→レビュー・編集→最終承認</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>CF3: report_to_notion（任意）</strong>
+      <p>Google Docs→PDF変換→Drive保存→Notionデータベースに登録</p>
+    </div>
+  </div>
+
+  <h3><i class="fas fa-table"></i> 19.2 ステータス管理</h3>
+  <p>予約管理シートのAD列「文字起こし状態」で進行状況を確認できます:</p>
+
+  <div class="status-flow">
+    <span class="status-badge provisional">なし</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge nda">処理待ち</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge docs">処理中</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge confirmed">完了</span>
+    <span style="margin: 0 4px; color: var(--text-light);">/</span>
+    <span class="status-badge cancel">エラー</span>
+  </div>
+
+  <h3><i class="fas fa-tools"></i> 19.3 手動操作</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>操作</th><th>URL</th></tr></thead>
+      <tbody>
+        <tr><td>手動で文字起こし開始</td><td><span class="url-cell">?action=start-transcript&amp;row=行番号</span></td></tr>
+        <tr><td>手動で報告書生成開始</td><td><span class="url-cell">?action=start-auto-report&amp;row=行番号</span></td></tr>
+        <tr><td>パイプライン状況確認</td><td><span class="url-cell">?action=transcript-pipeline</span></td></tr>
+        <tr><td>セットアップ確認</td><td><span class="url-cell">?action=transcript-setup</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><i class="fas fa-server"></i> 19.4 Cloud Functions</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>関数名</th><th>用途</th><th>必要なAPI</th></tr></thead>
+      <tbody>
+        <tr><td><code>zoom_to_transcript</code></td><td>MP4→音声→文字起こし</td><td>Google Cloud Speech-to-Text v2</td></tr>
+        <tr><td><code>transcript_to_report</code></td><td>文字起こし→報告書ドラフト</td><td>Anthropic Claude API, Google Docs API</td></tr>
+        <tr><td><code>report_to_notion</code></td><td>Docs→PDF→Notion連携</td><td>Google Drive API, Notion API</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 20. AI経営診断 ===== -->
+  <h2 id="sec20"><i class="fas fa-brain"></i> 20. AI経営診断</h2>
+
+  <p>経営相談の情報をAIが分析し、6つの評価軸で企業の経営状態をスコアリングするシステムです。</p>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div>この機能を利用するには <code>config.gs</code> で <code>DIAGNOSIS.ENABLED = true</code> を設定し、AI診断用Cloud Functionをデプロイする必要があります。</div>
+  </div>
+
+  <h3><i class="fas fa-chart-radar"></i> 20.1 6軸評価</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>評価軸</th><th>内部キー</th><th>スコア範囲</th></tr></thead>
+      <tbody>
+        <tr><td>経営戦略</td><td><code>strategy</code></td><td>1-5</td></tr>
+        <tr><td>財務</td><td><code>finance</code></td><td>1-5</td></tr>
+        <tr><td>組織・人材</td><td><code>organization</code></td><td>1-5</td></tr>
+        <tr><td>マーケティング</td><td><code>marketing</code></td><td>1-5</td></tr>
+        <tr><td>業務プロセス</td><td><code>operations</code></td><td>1-5</td></tr>
+        <tr><td>IT・DX</td><td><code>digital</code></td><td>1-5</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>総合スコアは0〜100点で算出されます。レーダーチャートで視覚的に確認可能です。</p>
+
+  <h3><i class="fas fa-play-circle"></i> 20.2 診断の実行</h3>
+  <ul>
+    <li><strong>相談ベース:</strong> <span class="url-cell">?action=run-diagnosis&amp;row=行番号</span> — 予約管理シートの案件から自動実行</li>
+    <li><strong>直接入力:</strong> <span class="url-cell">?action=run-direct-diagnosis</span> — テキスト情報を直接入力して診断</li>
+  </ul>
+
+  <h3><i class="fas fa-chart-bar"></i> 20.3 結果閲覧</h3>
+  <ul>
+    <li><strong>診断ダッシュボード:</strong> <a href="https://hirokazusugisugi-hue.github.io/kg-consultation/site/diagnosis.html">PRサイト diagnosis.html</a></li>
+    <li><strong>個別結果:</strong> <a href="https://hirokazusugisugi-hue.github.io/kg-consultation/site/diagnosis-result.html?id=xxx">diagnosis-result.html?id=xxx</a></li>
+    <li><strong>API:</strong> <span class="url-cell">?action=diagnosis-results</span>, <span class="url-cell">?action=diagnosis-stats</span></li>
+  </ul>
+
+  <!-- ===== 21. スタッフポータル ===== -->
+  <h2 id="sec21"><i class="fas fa-user-shield"></i> 21. スタッフポータル</h2>
+
+  <p>メンバーがログインしてダッシュボード・シフト管理・案件管理・ニュース投稿を行うポータルシステムです。</p>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div><code>config.gs</code> で <code>PORTAL.ENABLED = true</code> を設定してください。認証はメールベースのマジックリンク方式です。</div>
+  </div>
+
+  <h3><i class="fas fa-lock"></i> 21.1 認証フロー</h3>
+  <div class="flowchart">
+    <div class="flowchart-step">
+      <strong>メールアドレス入力</strong>
+      <p>ポータルログイン画面でメールアドレスを送信</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>マジックリンク送信</strong>
+      <p>メンバーマスタで検証→30分有効のログインリンクをメール送信</p>
+    </div>
+    <div class="flowchart-step">
+      <strong>リンクをクリック</strong>
+      <p>メール内のリンクでポータルSPAにリダイレクト→セッション発行（最大6時間）</p>
+    </div>
+  </div>
+
+  <h3><i class="fas fa-users-cog"></i> 21.2 ロール（権限）</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>ロール</th><th>条件</th><th>権限</th></tr></thead>
+      <tbody>
+        <tr><td><strong>admin</strong></td><td>ADMIN_EMAILS に含まれる / 区分が「管理者」「顧問」</td><td>全機能（メンバー一覧含む）</td></tr>
+        <tr><td><strong>leader</strong></td><td>1期/2期 かつ 診断士</td><td>案件管理・ニュース投稿・シフト管理</td></tr>
+        <tr><td><strong>member</strong></td><td>上記以外のアクティブメンバー</td><td>シフト管理・閲覧のみ</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><i class="fas fa-desktop"></i> 21.3 ポータル機能一覧</h3>
+  <ul>
+    <li><strong>ダッシュボード:</strong> 直近の相談予定、未対応タスク、最新お知らせ</li>
+    <li><strong>シフト管理:</strong> 月次カレンダー表示、参加/取消ボタン、配置点数リアルタイム再計算</li>
+    <li><strong>案件管理:</strong> 担当/リーダー案件一覧、ステータスフィルタ</li>
+    <li><strong>お知らせ:</strong> ニュース一覧表示・投稿（リーダー/管理者のみ）</li>
+    <li><strong>プロフィール:</strong> メンバー情報表示、ログアウト</li>
+  </ul>
+
+  <h3><i class="fas fa-link"></i> 21.4 ポータルURL</h3>
+  <p><span class="url-cell">https://hirokazusugisugi-hue.github.io/kg-consultation/site/portal.html</span></p>
+
+  <!-- ===== 22. PRサイト・コラム管理 ===== -->
+  <h2 id="sec22"><i class="fas fa-globe"></i> 22. PRサイト・コラム管理</h2>
+
+  <p>GitHub Pages上の対外向けPRサイトです。ニュース・メンバー紹介・コラム記事・AI診断結果・無料相談導線を提供します。</p>
+
+  <h3><i class="fas fa-sitemap"></i> 22.1 サイト構成</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>ページ</th><th>ファイル</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>ホーム</td><td><code>site/index.html</code></td><td>トップページ（ヒーロー・特徴・導線）</td></tr>
+        <tr><td>研究会について</td><td><code>site/about.html</code></td><td>概要・理念・実績</td></tr>
+        <tr><td>メンバー</td><td><code>site/members.html</code></td><td>メンバー一覧（GAS APIから取得）</td></tr>
+        <tr><td>コラム</td><td><code>site/articles.html</code></td><td>記事一覧（GAS APIから取得）</td></tr>
+        <tr><td>お知らせ</td><td><code>site/news.html</code></td><td>ニュース一覧（GAS APIから取得）</td></tr>
+        <tr><td>AI経営診断</td><td><code>site/diagnosis.html</code></td><td>AI診断ダッシュボード</td></tr>
+        <tr><td>無料相談</td><td><code>site/contact.html</code></td><td>相談申込導線</td></tr>
+        <tr><td>スタッフポータル</td><td><code>site/portal.html</code></td><td>スタッフ向けSPA</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><i class="fas fa-pen-fancy"></i> 22.2 記事管理</h3>
+  <p>記事の投稿・編集は記事管理ページから行います:</p>
+  <p><span class="url-cell">ウェブアプリURL + ?action=article-admin</span></p>
+  <ul>
+    <li>タイトル・カテゴリ・タグ・本文（Markdown対応）を入力</li>
+    <li>状態管理: 下書き / 公開 / 非公開</li>
+    <li>サムネイルURL指定可能</li>
+  </ul>
+
+  <h3><i class="fas fa-globe"></i> 22.3 PRサイトURL</h3>
+  <p><span class="url-cell">https://hirokazusugisugi-hue.github.io/kg-consultation/site/</span></p>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>PRサイトはGitHub Pagesでホスティングされています。サイトの更新はGitHubリポジトリへのpushにより自動デプロイされます。</div>
+  </div>
+
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 4.4</span>&emsp;|&emsp;2025年6月 作成 / 2026年3月 更新（Zoom録画・YouTube自動アップロード追記）
+      <span class="version">Version 5.0</span>&emsp;|&emsp;2025年6月 作成 / 2026年3月 更新（会場管理・文字起こし・AI診断・ポータル・PRサイト追加）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

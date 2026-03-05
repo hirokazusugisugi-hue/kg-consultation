@@ -570,7 +570,10 @@
       <li><a href="#sec5">相談終了後の対応</a></li>
       <li><a href="#sec6">アンケートシステムについて</a></li>
       <li><a href="#sec7">リーダー選定・レポート配信</a></li>
-      <li><a href="#sec8">よくある質問（FAQ）</a></li>
+      <li><a href="#sec8">スタッフポータル</a></li>
+      <li><a href="#sec9">文字起こし・報告書自動作成</a></li>
+      <li><a href="#sec10">AI経営診断</a></li>
+      <li><a href="#sec11">よくある質問（FAQ）</a></li>
     </ol>
   </nav>
 
@@ -993,8 +996,88 @@
     <li>Z列でレポート状態（未依頼/依頼済/アップロード済/配信済/期限超過）を確認できます</li>
   </ul>
 
-  <!-- ===== 8. よくある質問（FAQ） ===== -->
-  <h2 id="sec8"><i class="fas fa-circle-question"></i> 8. よくある質問（FAQ）</h2>
+  <!-- ===== 8. スタッフポータル ===== -->
+  <h2 id="sec8"><i class="fas fa-user-shield"></i> 8. スタッフポータル</h2>
+
+  <p>スタッフ専用のWebポータルが利用できます。シフト管理・案件確認・お知らせ投稿が一箇所で行えます。</p>
+
+  <h3><i class="fas fa-sign-in-alt"></i> 8.1 ログイン方法</h3>
+  <ol class="step-list">
+    <li>ポータル（<span class="url-cell">https://hirokazusugisugi-hue.github.io/kg-consultation/site/portal.html</span>）にアクセス</li>
+    <li>メンバーマスタに登録されたメールアドレスを入力</li>
+    <li>受信メール内のログインリンクをクリック（30分有効）</li>
+    <li>自動的にダッシュボードに移動（セッションは最大6時間有効）</li>
+  </ol>
+
+  <h3><i class="fas fa-desktop"></i> 8.2 主な機能</h3>
+  <ul>
+    <li><strong>ダッシュボード:</strong> 直近の相談予定・未対応タスク・最新お知らせを一覧表示</li>
+    <li><strong>シフト管理:</strong> 月ごとのカレンダーで参加可能日を登録。「参加」ボタンを押すとメンバーリストに自動追加され、配置点数が再計算されます</li>
+    <li><strong>案件管理:</strong> 自分がリーダー/担当の案件を一覧表示。ステータスでフィルタ可能</li>
+    <li><strong>お知らせ:</strong> ニュース一覧の閲覧。リーダー/管理者は新規投稿も可能</li>
+    <li><strong>プロフィール:</strong> 自分のメンバー情報確認・ログアウト</li>
+  </ul>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>PCではサイドバーナビゲーション、スマートフォンではボトムタブナビゲーションに自動切替されます。</div>
+  </div>
+
+  <!-- ===== 9. 文字起こし・報告書自動作成 ===== -->
+  <h2 id="sec9"><i class="fas fa-robot"></i> 9. 文字起こし・報告書自動作成</h2>
+
+  <p>Zoom録画から自動的に文字起こしと報告書ドラフトが作成されるシステムです。</p>
+
+  <h3><i class="fas fa-arrow-right"></i> 9.1 自動処理の流れ</h3>
+  <div class="flowchart">
+    <div class="flowchart-step auto">
+      <strong>Zoom録画完了</strong>
+      <p>相談終了後、Zoomクラウドに録画が保存されます</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>文字起こし</strong>
+      <p>Google Cloud Speech-to-Text APIで自動的に文字起こし（話者分離対応）</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>報告書ドラフト生成</strong>
+      <p>Claude AIが文字起こしを分析し、Google Docsに報告書ドラフトを自動作成</p>
+    </div>
+    <div class="flowchart-step result">
+      <strong>リーダーにレビュー依頼</strong>
+      <p>ドラフト完了通知メール→リーダーがレビュー・修正→承認後に相談者へ配信</p>
+    </div>
+  </div>
+
+  <h3><i class="fas fa-info-circle"></i> 9.2 担当者の対応</h3>
+  <ul>
+    <li>文字起こし・報告書生成は<strong>自動</strong>で行われるため、通常は操作不要です</li>
+    <li>リーダーは生成されたドラフトの<strong>レビュー・修正</strong>を行ってください</li>
+    <li>進行状況はスプレッドシートのAD列「文字起こし状態」で確認できます</li>
+    <li>エラーが発生した場合は管理者に連絡してください</li>
+  </ul>
+
+  <!-- ===== 10. AI経営診断 ===== -->
+  <h2 id="sec10"><i class="fas fa-brain"></i> 10. AI経営診断</h2>
+
+  <p>経営相談の情報をAIが6つの軸で分析・スコアリングするシステムです。</p>
+
+  <h3><i class="fas fa-chart-radar"></i> 10.1 6つの評価軸</h3>
+  <p>経営戦略・財務・組織/人材・マーケティング・業務プロセス・IT/DX の各軸で1〜5段階評価、総合スコア0〜100点で診断します。</p>
+
+  <h3><i class="fas fa-eye"></i> 10.2 結果の確認方法</h3>
+  <ul>
+    <li><strong>診断ダッシュボード:</strong> <a href="https://hirokazusugisugi-hue.github.io/kg-consultation/site/diagnosis.html">PRサイトのAI経営診断ページ</a>で全診断結果を一覧表示</li>
+    <li><strong>個別結果:</strong> 各診断カードの「詳細を見る」からレーダーチャート・課題・提言を確認</li>
+    <li><strong>企業別履歴:</strong> 同一企業の診断が複数ある場合、スコア推移グラフが表示されます</li>
+  </ul>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>AI診断の結果はあくまで参考情報です。最終的な判断は担当の診断士が行ってください。</div>
+  </div>
+
+  <!-- ===== 11. よくある質問（FAQ） ===== -->
+  <h2 id="sec11"><i class="fas fa-circle-question"></i> 11. よくある質問（FAQ）</h2>
 
   <div class="table-wrapper">
     <table>
@@ -1025,6 +1108,18 @@
           <td>相談者からキャンセルの連絡を受けた</td>
           <td>相談者に kgibaconsultant@gmail.com へメール送信を依頼してください。「キャンセル」と記載されたメールを送信すれば、システムが自動で処理します。手動でスプレッドシートのステータスを「キャンセル」に変更することもできます。</td>
         </tr>
+        <tr>
+          <td>ポータルにログインできない</td>
+          <td>メンバーマスタに登録されたメールアドレスを使用しているか確認してください。マジックリンクの有効期限（30分）が切れている場合は再度送信してください。</td>
+        </tr>
+        <tr>
+          <td>文字起こしがエラーになった</td>
+          <td>スプレッドシートのAD列で「エラー」が表示されている場合は管理者に連絡してください。手動での再実行も可能です。</td>
+        </tr>
+        <tr>
+          <td>AI診断結果が表示されない</td>
+          <td>診断機能は管理者が有効化する必要があります。有効になっている場合はPRサイトの「AI経営診断」ページで確認できます。</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -1032,7 +1127,7 @@
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 3.4</span>&emsp;|&emsp;2026年2月 作成 / 更新（同意書/NDA用語統一）
+      <span class="version">Version 4.0</span>&emsp;|&emsp;2026年2月 作成 / 2026年3月 更新（ポータル・文字起こし・AI診断追加）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会

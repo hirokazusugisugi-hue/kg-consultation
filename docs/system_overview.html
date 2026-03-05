@@ -1287,6 +1287,11 @@
         <li><a href="#sec9"><span class="toc-num">9</span> セキュリティ</a></li>
         <li><a href="#sec10"><span class="toc-num">10</span> リーダー選定・レポート配信</a></li>
         <li><a href="#sec11"><span class="toc-num">11</span> キャンセル自動検知・Drive自動保存</a></li>
+        <li><a href="#sec12"><span class="toc-num">12</span> 会場管理システム</a></li>
+        <li><a href="#sec13"><span class="toc-num">13</span> 文字起こし・報告書自動作成パイプライン</a></li>
+        <li><a href="#sec14"><span class="toc-num">14</span> AI経営診断</a></li>
+        <li><a href="#sec15"><span class="toc-num">15</span> スタッフポータル</a></li>
+        <li><a href="#sec16"><span class="toc-num">16</span> PRサイト</a></li>
       </ol>
     </nav>
 
@@ -1469,7 +1474,32 @@
     ├── <span class="file">triggers.gs</span>       <span class="comment"># 時限トリガー設定</span>
     ├── <span class="highlight">zoom.gs</span>           <span class="comment"># Zoom API連携（ミーティング自動作成・削除・録画リンク取得・YouTube非公開アップロード）</span>
     ├── <span class="highlight">leader.gs</span>         <span class="comment"># リーダー自動選定（専門性スコア・履歴管理）</span>
-    └── <span class="highlight">report.gs</span>         <span class="comment"># レポート配信（依頼・アップロード・自動配信）</span></div>
+    ├── <span class="highlight">report.gs</span>         <span class="comment"># レポート配信（依頼・アップロード・自動配信）</span>
+    ├── <span class="highlight">summary_sync.gs</span>   <span class="comment"># サマリーシート同期</span>
+    ├── <span class="highlight">completion.gs</span>     <span class="comment"># 相談完了確認</span>
+    ├── <span class="highlight">venue.gs</span>          <span class="comment"># 会場管理（CRUD+管理画面+空き状況）</span>
+    ├── <span class="highlight">articles.gs</span>       <span class="comment"># コラム記事管理（CRUD+管理画面）</span>
+    ├── <span class="highlight">transcript.gs</span>     <span class="comment"># 文字起こしパイプライン管理</span>
+    ├── <span class="highlight">diagnosis.gs</span>      <span class="comment"># AI経営診断（スコアリング・結果管理）</span>
+    ├── <span class="highlight">auth.gs</span>           <span class="comment"># ポータル認証（マジックリンク・セッション・ロール）</span>
+    └── <span class="highlight">portal.gs</span>         <span class="comment"># ポータルAPI（シフト・プロフィール・ニュース投稿）</span>
+├── <span class="dir">cloud_functions/</span>   <span class="comment"># Cloud Functions (Python 3.11)</span>
+│   ├── <span class="dir">zoom_to_youtube/</span>      <span class="comment"># Zoom録画→YouTube非公開アップロード</span>
+│   ├── <span class="dir">zoom_to_transcript/</span>   <span class="comment"># Zoom録画→Speech-to-Text文字起こし</span>
+│   ├── <span class="dir">transcript_to_report/</span> <span class="comment"># 文字起こし→Claude AI→報告書ドラフト</span>
+│   ├── <span class="dir">report_to_notion/</span>     <span class="comment"># 報告書→PDF→Notion連携</span>
+│   └── <span class="dir">ai_diagnosis/</span>         <span class="comment"># AI経営診断（6軸スコアリング）</span>
+└── <span class="dir">site/</span>              <span class="comment"># PRサイト (GitHub Pages)</span>
+    ├── <span class="file">index.html</span>        <span class="comment"># トップページ</span>
+    ├── <span class="file">about.html</span>        <span class="comment"># 研究会について</span>
+    ├── <span class="file">members.html</span>      <span class="comment"># メンバー一覧</span>
+    ├── <span class="file">articles.html</span>     <span class="comment"># コラム一覧</span>
+    ├── <span class="file">news.html</span>         <span class="comment"># お知らせ一覧</span>
+    ├── <span class="file">contact.html</span>      <span class="comment"># 無料相談導線</span>
+    ├── <span class="file">diagnosis.html</span>    <span class="comment"># AI診断ダッシュボード</span>
+    ├── <span class="file">portal.html</span>       <span class="comment"># スタッフポータルSPA</span>
+    ├── <span class="dir">css/</span><span class="file">style.css</span>     <span class="comment"># デザインシステム</span>
+    └── <span class="dir">js/</span><span class="file">main.js</span>, <span class="file">portal.js</span>  <span class="comment"># 共通JS・ポータルSPA</span></div>
     </section>
 
     <!-- ===== Section 3: 相談者の予約フロー ===== -->
@@ -1891,6 +1921,91 @@
               <td><span class="method-badge method-post">POST</span></td>
               <td>予約申込処理（JSON形式で送信）</td>
             </tr>
+            <tr><td colspan="3" style="background:var(--navy-pale);font-weight:700;font-size:0.8rem;padding:6px 12px;">会場管理</td></tr>
+            <tr>
+              <td><span class="api-endpoint">?action=venue-admin</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>会場管理ページ（HTML返却）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=venue-status</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>会場空き状況ページ（HTML返却）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=venues</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>会場一覧を取得（JSON）</td>
+            </tr>
+            <tr><td colspan="3" style="background:var(--navy-pale);font-weight:700;font-size:0.8rem;padding:6px 12px;">記事管理</td></tr>
+            <tr>
+              <td><span class="api-endpoint">?action=article-admin</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>記事管理ページ（HTML返却）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=articles</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>記事一覧を取得（JSON）</td>
+            </tr>
+            <tr><td colspan="3" style="background:var(--navy-pale);font-weight:700;font-size:0.8rem;padding:6px 12px;">文字起こし・報告書自動作成</td></tr>
+            <tr>
+              <td><span class="api-endpoint">?action=start-transcript&amp;row=N</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>手動で文字起こし開始</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=start-auto-report&amp;row=N</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>手動で報告書ドラフト生成</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=transcript-pipeline</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>文字起こしパイプライン状況</td>
+            </tr>
+            <tr><td colspan="3" style="background:var(--navy-pale);font-weight:700;font-size:0.8rem;padding:6px 12px;">AI経営診断</td></tr>
+            <tr>
+              <td><span class="api-endpoint">?action=diagnosis-results</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>診断結果一覧を取得</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=diagnosis-detail&amp;id=xxx</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>個別診断結果を取得</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=diagnosis-stats</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>診断統計情報を取得</td>
+            </tr>
+            <tr><td colspan="3" style="background:var(--navy-pale);font-weight:700;font-size:0.8rem;padding:6px 12px;">スタッフポータル</td></tr>
+            <tr>
+              <td><span class="api-endpoint">?action=portal-login&amp;email=xxx</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>マジックリンク送信（ログイン）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=portal-verify&amp;token=xxx</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>トークン検証→セッション発行→ポータルリダイレクト</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=portal-dashboard&amp;sessionId=xxx</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>ダッシュボードデータ取得（認証必須）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=portal-shifts&amp;sessionId=xxx</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>シフト一覧取得（認証必須）</td>
+            </tr>
+            <tr>
+              <td><span class="api-endpoint">?action=portal-cases&amp;sessionId=xxx</span></td>
+              <td><span class="method-badge method-get">GET</span></td>
+              <td>案件一覧取得（認証必須）</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -2219,6 +2334,183 @@
       </div>
     </section>
 
+    <!-- ===== Section 12: 会場管理システム ===== -->
+    <section class="section" id="sec12">
+      <div class="section-header">
+        <span class="section-number">12</span>
+        <h2 class="section-title">会場管理システム</h2>
+        <i class="fa-solid fa-building section-icon"></i>
+      </div>
+
+      <p class="section-desc">会場マスタの管理と空き状況確認を行うシステムです。日程設定シートの場所列と連動します。</p>
+
+      <ul class="component-list">
+        <li>
+          <i class="fa-solid fa-file-code comp-icon" style="color: var(--navy);"></i>
+          <div><strong>venue.gs</strong> &mdash; 会場のCRUD操作（追加・一覧取得・有効無効切替・削除）、管理画面HTML生成、空き状況カレンダー表示。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-database comp-icon" style="color: #059669;"></i>
+          <div><strong>会場マスタシート</strong> &mdash; 9列（会場ID〜有効フラグ）。<code>?action=setup-venue</code> で初期化。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-link comp-icon" style="color: #2563eb;"></i>
+          <div><strong>日程設定シート連動</strong> &mdash; 確定時にN列（場所）に会場名を自動記入。<code>CONFIG.LOCATION_OPTIONS</code> を動的化。</div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== Section 13: 文字起こし・報告書自動作成パイプライン ===== -->
+    <section class="section" id="sec13">
+      <div class="section-header">
+        <span class="section-number">13</span>
+        <h2 class="section-title">文字起こし・報告書自動作成パイプライン</h2>
+        <i class="fa-solid fa-robot section-icon"></i>
+      </div>
+
+      <p class="section-desc">Zoom録画から文字起こし→報告書ドラフト→Notion連携まで自動化するパイプライン。3つのCloud Functionで構成されます。</p>
+
+      <div class="flow">
+        <div class="flow-step">
+          <i class="fa-solid fa-video flow-step-icon" style="color: #2563eb;"></i>
+          <div class="flow-step-text"><strong>Zoom録画完了</strong><br>processZoomRecordings() が検出</div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-microphone flow-step-icon" style="color: #e67e22;"></i>
+          <div class="flow-step-text"><strong>CF1: zoom_to_transcript</strong><br>MP4→音声抽出(pydub/ffmpeg)→GCS→Speech-to-Text v2（話者分離）</div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-file-lines flow-step-icon" style="color: #059669;"></i>
+          <div class="flow-step-text"><strong>CF2: transcript_to_report</strong><br>文字起こし→Claude API→構造化レポート→Google Docs作成</div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-database flow-step-icon" style="color: #8b5cf6;"></i>
+          <div class="flow-step-text"><strong>CF3: report_to_notion（任意）</strong><br>Docs→PDF→Drive保存→Notionデータベース登録</div>
+        </div>
+      </div>
+
+      <ul class="component-list" style="margin-top: 20px;">
+        <li>
+          <i class="fa-solid fa-file-code comp-icon" style="color: var(--navy);"></i>
+          <div><strong>transcript.gs</strong> &mdash; パイプライン管理。startTranscription()→saveTranscriptToDrive()→notifyTranscriptComplete()→startAutoReportGeneration()→notifyReportDraftComplete()。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-database comp-icon" style="color: #059669;"></i>
+          <div><strong>予約管理シート拡張</strong> &mdash; AD列（文字起こし状態）、AE列（文字起こしファイルID）、AF列（報告書ドラフトID）、AG列（Notion Page ID）。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-key comp-icon" style="color: #d97706;"></i>
+          <div><strong>環境変数</strong> &mdash; SHARED_SECRET, GCS_BUCKET, ANTHROPIC_API_KEY, NOTION_API_KEY, NOTION_DATABASE_ID（Cloud Functionsで設定）。</div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== Section 14: AI経営診断 ===== -->
+    <section class="section" id="sec14">
+      <div class="section-header">
+        <span class="section-number">14</span>
+        <h2 class="section-title">AI経営診断</h2>
+        <i class="fa-solid fa-brain section-icon"></i>
+      </div>
+
+      <p class="section-desc">6つの評価軸（経営戦略・財務・組織/人材・マーケティング・業務プロセス・IT/DX）で企業の経営状態をAIがスコアリングします。</p>
+
+      <ul class="component-list">
+        <li>
+          <i class="fa-solid fa-cloud comp-icon" style="color: #2563eb;"></i>
+          <div><strong>Cloud Function: ai_diagnosis</strong> &mdash; Claude API (claude-sonnet-4-20250514) で6軸スコア(各1-5)＋総合スコア(0-100)＋課題＋提言を構造化JSON出力。temperature=0.3で一貫性確保。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-file-code comp-icon" style="color: var(--navy);"></i>
+          <div><strong>diagnosis.gs</strong> &mdash; 診断シート管理、結果保存、統計計算。runAiDiagnosis()、saveDiagnosisResult()、getDiagnosisResults()、getDiagnosisStats()。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-chart-radar comp-icon" style="color: #059669;"></i>
+          <div><strong>フロントエンド</strong> &mdash; diagnosis.html（ダッシュボード）・diagnosis-result.html（詳細）。Chart.jsでレーダーチャート・スコア推移グラフ。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-database comp-icon" style="color: #d97706;"></i>
+          <div><strong>AI診断結果シート</strong> &mdash; 17列（診断ID〜文字起こしID）。条件付き書式: 80点以上=緑、60-79=黄、60未満=赤。</div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== Section 15: スタッフポータル ===== -->
+    <section class="section" id="sec15">
+      <div class="section-header">
+        <span class="section-number">15</span>
+        <h2 class="section-title">スタッフポータル</h2>
+        <i class="fa-solid fa-user-shield section-icon"></i>
+      </div>
+
+      <p class="section-desc">メンバーがログインしてシフト管理・案件確認・ニュース投稿を行うWebポータル。GitHub Pages SPA + GAS API構成。</p>
+
+      <div class="flow">
+        <div class="flow-step">
+          <i class="fa-solid fa-envelope flow-step-icon" style="color: #2563eb;"></i>
+          <div class="flow-step-text"><strong>マジックリンク認証</strong><br>メール入力→メンバーマスタ検証→ログインリンク送信（30分有効）</div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-key flow-step-icon" style="color: #059669;"></i>
+          <div class="flow-step-text"><strong>セッション管理</strong><br>CacheService (最大6時間)。ロール: admin / leader / member</div>
+        </div>
+        <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+        <div class="flow-step">
+          <i class="fa-solid fa-desktop flow-step-icon" style="color: #8b5cf6;"></i>
+          <div class="flow-step-text"><strong>SPA ポータル</strong><br>ダッシュボード・シフト・案件・お知らせ・プロフィール</div>
+        </div>
+      </div>
+
+      <ul class="component-list" style="margin-top: 20px;">
+        <li>
+          <i class="fa-solid fa-file-code comp-icon" style="color: var(--navy);"></i>
+          <div><strong>auth.gs</strong> &mdash; 認証コア。requestPortalLogin()、verifyPortalLogin()、createSession()、validateSession()、destroySession()、determineRole()。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-file-code comp-icon" style="color: var(--navy);"></i>
+          <div><strong>portal.gs</strong> &mdash; ポータルAPI。toggleShiftParticipation()（配置点数再計算付き）、getPortalProfile()、postPortalNews()、getPortalMembers()。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-globe comp-icon" style="color: #2563eb;"></i>
+          <div><strong>site/portal.html + js/portal.js</strong> &mdash; ハッシュルーティングSPA。ログイン画面、5画面ナビゲーション、レスポンシブ（PCサイドバー/モバイルボトムタブ）。</div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== Section 16: PRサイト ===== -->
+    <section class="section" id="sec16">
+      <div class="section-header">
+        <span class="section-number">16</span>
+        <h2 class="section-title">PRサイト</h2>
+        <i class="fa-solid fa-globe section-icon"></i>
+      </div>
+
+      <p class="section-desc">GitHub Pages上の対外向けPRサイト。GAS APIからデータ取得し、静的ページとして表示します。</p>
+
+      <ul class="component-list">
+        <li>
+          <i class="fa-solid fa-palette comp-icon" style="color: #2563eb;"></i>
+          <div><strong>デザインシステム</strong> &mdash; <code>--kgu-blue: #0F2350</code>、<code>--kgu-gold: #C5A15A</code>。Noto Sans JP / Noto Serif JP。index14.htmlのCSS変数を継承。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-file-code comp-icon" style="color: var(--navy);"></i>
+          <div><strong>articles.gs</strong> &mdash; コラム記事のCRUD。記事管理シート（12列）。管理画面HTML生成。Markdown本文対応。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-code comp-icon" style="color: #059669;"></i>
+          <div><strong>js/main.js</strong> &mdash; 共通JS。fetchAPI()（GAS API呼び出し）、escapeHTML()、スクロールアニメーション、モバイルナビ。</div>
+        </li>
+        <li>
+          <i class="fa-solid fa-sitemap comp-icon" style="color: #d97706;"></i>
+          <div><strong>サイト構成</strong> &mdash; index.html（トップ）、about.html、members.html、articles.html、article.html、news.html、contact.html、diagnosis.html、diagnosis-result.html、portal.html。</div>
+        </li>
+      </ul>
+    </section>
+
   </div>
 
   <!-- ===== Footer ===== -->
@@ -2226,7 +2518,7 @@
     <div class="footer-divider"></div>
     <p>無料経営相談予約システム &mdash; システム全体構成図</p>
     <p>関西学院大学 中小企業経営診断研究会</p>
-    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 4.2 &mdash; 2026-02-26 更新（同意書/NDA用語統一）</p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 5.0 &mdash; 2026-03-05 更新（会場管理・文字起こし・AI診断・ポータル・PRサイト追加）</p>
   </footer>
 
 </body>

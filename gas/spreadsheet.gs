@@ -59,7 +59,7 @@ function getRowData(rowIndex) {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
     .getSheetByName(CONFIG.SHEET_NAME);
 
-  const row = sheet.getRange(rowIndex, 1, 1, 29).getValues()[0];
+  const row = sheet.getRange(rowIndex, 1, 1, 33).getValues()[0];
 
   return {
     timestamp: row[COLUMNS.TIMESTAMP],
@@ -92,7 +92,11 @@ function getRowData(rowIndex) {
     reportStatus: row[COLUMNS.REPORT_STATUS],
     fileId: row[COLUMNS.FILE_ID],
     recordingUrl: row[COLUMNS.RECORDING_URL],
-    youtubeUrl: row[COLUMNS.YOUTUBE_URL]
+    youtubeUrl: row[COLUMNS.YOUTUBE_URL],
+    transcriptStatus: row[COLUMNS.TRANSCRIPT_STATUS],
+    transcriptFileId: row[COLUMNS.TRANSCRIPT_FILE_ID],
+    reportDraftId: row[COLUMNS.REPORT_DRAFT_ID],
+    notionPageId: row[COLUMNS.NOTION_PAGE_ID]
   };
 }
 
@@ -142,7 +146,11 @@ function setupSpreadsheetHeaders() {
     'レポート状態',      // Z
     'ファイルID',        // AA
     '録画URL',           // AB
-    'YouTube URL'        // AC
+    'YouTube URL',        // AC
+    '文字起こし状態',     // AD
+    '文字起こしファイルID', // AE
+    '報告書ドラフトID',    // AF
+    'Notion Page ID'       // AG
   ];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -183,14 +191,18 @@ function setupSpreadsheetHeaders() {
   sheet.setColumnWidth(27, 250); // AA: ファイルID
   sheet.setColumnWidth(28, 300); // AB: 録画URL
   sheet.setColumnWidth(29, 300); // AC: YouTube URL
+  sheet.setColumnWidth(30, 100); // AD: 文字起こし状態
+  sheet.setColumnWidth(31, 250); // AE: 文字起こしファイルID
+  sheet.setColumnWidth(32, 250); // AF: 報告書ドラフトID
+  sheet.setColumnWidth(33, 250); // AG: Notion Page ID
 
   // 1行目を固定
   sheet.setFrozenRows(1);
 
-  // 場所列にプルダウン設定
+  // 場所列にプルダウン設定（会場マスタから動的取得）
   const locationRange = sheet.getRange(2, COLUMNS.LOCATION + 1, 1000, 1);
   const locationRule = SpreadsheetApp.newDataValidation()
-    .requireValueInList(LOCATION_OPTIONS)
+    .requireValueInList(getLocationOptions())
     .build();
   locationRange.setDataValidation(locationRule);
 
@@ -214,6 +226,18 @@ function setupSpreadsheetHeaders() {
     .requireValueInList(['済', '未'])
     .build();
   ndaRange.setDataValidation(ndaRule);
+
+  // 文字起こし状態列にプルダウン設定
+  var transcriptRange = sheet.getRange(2, COLUMNS.TRANSCRIPT_STATUS + 1, 1000, 1);
+  var transcriptRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList([
+      TRANSCRIPT_STATUS.PENDING,
+      TRANSCRIPT_STATUS.PROCESSING,
+      TRANSCRIPT_STATUS.COMPLETED,
+      TRANSCRIPT_STATUS.ERROR
+    ])
+    .build();
+  transcriptRange.setDataValidation(transcriptRule);
 
   console.log('スプレッドシート（拡張版）のセットアップが完了しました');
 }
@@ -318,10 +342,10 @@ function migrateAddLocationColumn() {
     .setFontWeight('bold');
   sheet.setColumnWidth(14, 120);
 
-  // プルダウン設定
+  // プルダウン設定（会場マスタから動的取得）
   var locationRange = sheet.getRange(2, 14, 1000, 1);
   var locationRule = SpreadsheetApp.newDataValidation()
-    .requireValueInList(LOCATION_OPTIONS)
+    .requireValueInList(getLocationOptions())
     .build();
   locationRange.setDataValidation(locationRule);
 

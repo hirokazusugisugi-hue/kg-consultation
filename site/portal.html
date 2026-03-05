@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スタッフポータル | 関西学院大学 中小企業経営診断研究会</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- PORTAL HEADER (simplified) -->
+    <header class="portal-header" id="header">
+        <a href="./" class="header-logo">
+            <img src="../images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="header-logo-img">
+            <span class="logo-sub">スタッフポータル</span>
+        </a>
+        <div class="portal-header-right" id="portalHeaderRight" style="display:none">
+            <span class="portal-user-name" id="portalUserName"></span>
+            <span class="portal-role-badge" id="portalRoleBadge"></span>
+            <button class="portal-logout-btn" onclick="portalLogout()" title="ログアウト"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main id="portalMain" class="portal-main">
+        <!-- Content injected by JS router -->
+        <div class="loading" style="padding:8rem 0;text-align:center"><i class="fas fa-spinner fa-spin"></i> 読み込み中...</div>
+    </main>
+
+    <!-- PORTAL NAV (bottom bar on mobile, sidebar on desktop) -->
+    <nav class="portal-nav" id="portalNav" style="display:none">
+        <a href="#/dashboard" class="portal-nav-item active" data-page="dashboard">
+            <i class="fas fa-home"></i><span>ダッシュボード</span>
+        </a>
+        <a href="#/shifts" class="portal-nav-item" data-page="shifts">
+            <i class="fas fa-calendar-alt"></i><span>シフト</span>
+        </a>
+        <a href="#/cases" class="portal-nav-item" data-page="cases">
+            <i class="fas fa-briefcase"></i><span>案件</span>
+        </a>
+        <a href="#/news" class="portal-nav-item" data-page="news">
+            <i class="fas fa-newspaper"></i><span>お知らせ</span>
+        </a>
+        <a href="#/profile" class="portal-nav-item" data-page="profile">
+            <i class="fas fa-user"></i><span>プロフィール</span>
+        </a>
+    </nav>
+
+    <script src="js/main.js"></script>
+    <script src="js/portal.js"></script>
+
+    <style>
+        /* ── PORTAL LAYOUT ── */
+        body { background: var(--bg-light); }
+
+        .portal-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: var(--header-height); background: var(--kgu-blue);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 1.5rem; color: var(--white);
+        }
+        .portal-header .header-logo { display: flex; align-items: center; gap: 0.5rem; }
+        .portal-header .header-logo-img { height: 28px; filter: brightness(10); }
+        .portal-header .logo-sub { font-size: 0.75rem; font-weight: 500; color: var(--kgu-gold); }
+
+        .portal-header-right { display: flex; align-items: center; gap: 0.8rem; }
+        .portal-user-name { font-size: 0.8rem; font-weight: 500; }
+        .portal-role-badge {
+            font-size: 0.65rem; font-weight: 700; padding: 2px 8px;
+            border-radius: 100px; background: var(--kgu-gold); color: var(--kgu-blue);
+        }
+        .portal-logout-btn {
+            background: none; border: 1px solid rgba(255,255,255,0.3); color: var(--white);
+            padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .portal-logout-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.5); }
+
+        .portal-main {
+            padding-top: calc(var(--header-height) + 1.5rem);
+            padding-bottom: 5rem;
+            min-height: 100vh;
+        }
+
+        /* ── BOTTOM NAV ── */
+        .portal-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+            height: 60px; background: var(--white);
+            display: flex; align-items: center; justify-content: space-around;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+            border-top: 1px solid var(--border-light);
+        }
+        .portal-nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            font-size: 0.65rem; color: var(--text-muted); text-decoration: none;
+            padding: 6px 12px; border-radius: 8px; transition: all 0.2s;
+        }
+        .portal-nav-item i { font-size: 1.1rem; }
+        .portal-nav-item.active { color: var(--kgu-blue); font-weight: 700; }
+        .portal-nav-item:hover { color: var(--kgu-blue); background: var(--kgu-gold-dim); }
+
+        /* ── LOGIN PAGE ── */
+        .login-page {
+            display: flex; align-items: center; justify-content: center;
+            min-height: calc(100vh - var(--header-height));
+            padding: 2rem;
+        }
+        .login-card {
+            background: var(--white); border-radius: 16px; padding: 2.5rem;
+            box-shadow: var(--shadow-md); max-width: 400px; width: 100%; text-align: center;
+        }
+        .login-card h2 { font-size: 1.3rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--kgu-blue); }
+        .login-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6; }
+        .login-card .login-icon { font-size: 3rem; color: var(--kgu-blue); margin-bottom: 1rem; }
+        .login-input {
+            width: 100%; padding: 12px 16px; border: 2px solid var(--border-light);
+            border-radius: 8px; font-size: 0.9rem; font-family: var(--font-sans);
+            transition: border-color 0.2s; outline: none;
+        }
+        .login-input:focus { border-color: var(--kgu-blue); }
+        .login-btn {
+            width: 100%; margin-top: 1rem; padding: 12px; border: none; border-radius: 8px;
+            background: var(--kgu-blue); color: var(--white); font-size: 0.9rem;
+            font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: var(--font-sans);
+        }
+        .login-btn:hover { background: var(--kgu-blue-light); }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .login-msg { margin-top: 1rem; font-size: 0.8rem; padding: 8px 12px; border-radius: 8px; display: none; }
+        .login-msg.success { display: block; background: #d4edda; color: #155724; }
+        .login-msg.error { display: block; background: #f8d7da; color: #721c24; }
+
+        /* ── PORTAL CARDS ── */
+        .portal-container { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
+        .portal-page-title { font-size: 1.2rem; font-weight: 900; color: var(--kgu-blue); margin-bottom: 1.5rem; }
+        .portal-page-title i { margin-right: 0.5rem; }
+
+        .portal-card {
+            background: var(--white); border-radius: 12px; padding: 1.5rem;
+            box-shadow: var(--shadow-sm); margin-bottom: 1rem;
+        }
+        .portal-card h3 {
+            font-size: 0.9rem; font-weight: 700; color: var(--kgu-blue);
+            margin-bottom: 1rem; padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--kgu-gold-dim);
+        }
+        .portal-card h3 i { margin-right: 0.5rem; color: var(--kgu-gold); }
+
+        /* ── DASHBOARD ── */
+        .dash-welcome { font-size: 1rem; font-weight: 500; margin-bottom: 1.5rem; }
+        .dash-welcome strong { color: var(--kgu-blue); }
+
+        .dash-consultation {
+            display: flex; align-items: center; gap: 1rem; padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .dash-consultation:last-child { border-bottom: none; }
+        .dash-consultation-date {
+            flex-shrink: 0; width: 60px; text-align: center; font-size: 0.7rem;
+            font-weight: 700; color: var(--kgu-blue); background: var(--kgu-gold-dim);
+            padding: 4px 8px; border-radius: 6px;
+        }
+        .dash-consultation-info { flex: 1; }
+        .dash-consultation-info strong { font-size: 0.85rem; display: block; }
+        .dash-consultation-info small { font-size: 0.75rem; color: var(--text-muted); }
+
+        .dash-task {
+            display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border-light); font-size: 0.85rem;
+        }
+        .dash-task:last-child { border-bottom: none; }
+        .dash-task-badge {
+            font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 100px;
+            background: #fff3cd; color: #856404; flex-shrink: 0;
+        }
+        .dash-task-badge.overdue { background: #f8d7da; color: #721c24; }
+        .dash-news-item { padding: 0.6rem 0; border-bottom: 1px solid var(--border-light); }
+        .dash-news-item:last-child { border-bottom: none; }
+        .dash-news-item strong { font-size: 0.85rem; display: block; }
+        .dash-news-item small { font-size: 0.7rem; color: var(--text-muted); }
+
+        .empty-state { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
+        .empty-state i { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+
+        /* ── SHIFT CALENDAR ── */
+        .shift-month-nav {
+            display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .shift-month-nav button {
+            background: var(--white); border: 1px solid var(--border-light); border-radius: 8px;
+            padding: 6px 12px; cursor: pointer; font-size: 0.9rem; color: var(--kgu-blue);
+        }
+        .shift-month-nav span { font-size: 1rem; font-weight: 700; color: var(--kgu-blue); min-width: 120px; text-align: center; }
+
+        .shift-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .shift-item {
+            display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem;
+            background: var(--white); border-radius: 10px; box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--border-light);
+        }
+        .shift-item.participating { border-left-color: var(--kgu-blue); background: rgba(15,35,80,0.02); }
+        .shift-item.booked { border-left-color: var(--kgu-gold); }
+        .shift-date { flex-shrink: 0; width: 70px; text-align: center; }
+        .shift-date-num { font-size: 1.2rem; font-weight: 900; color: var(--kgu-blue); }
+        .shift-date-day { font-size: 0.7rem; color: var(--text-muted); }
+        .shift-info { flex: 1; font-size: 0.8rem; }
+        .shift-info strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
+        .shift-info .shift-meta { color: var(--text-muted); }
+        .shift-toggle-btn {
+            padding: 6px 14px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+            cursor: pointer; border: none; transition: all 0.2s; font-family: var(--font-sans);
+        }
+        .shift-toggle-btn.join { background: var(--kgu-blue); color: var(--white); }
+        .shift-toggle-btn.leave { background: var(--bg-light); color: var(--text-light); }
+        .shift-toggle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .shift-score { font-size: 0.7rem; color: var(--text-muted); text-align: center; }
+        .shift-score strong { color: var(--kgu-blue); font-size: 0.85rem; }
+
+        /* ── CASES ── */
+        .case-filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .case-filter-btn {
+            padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; border: 1px solid var(--border-light);
+            background: var(--white); cursor: pointer; transition: all 0.2s; font-family: var(--font-sans);
+        }
+        .case-filter-btn.active { background: var(--kgu-blue); color: var(--white); border-color: var(--kgu-blue); }
+
+        .case-item {
+            padding: 1rem; background: var(--white); border-radius: 10px;
+            box-shadow: var(--shadow-sm); margin-bottom: 0.8rem;
+        }
+        .case-item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        .case-item-header h4 { font-size: 0.9rem; font-weight: 700; }
+        .case-status {
+            font-size: 0.65rem; font-weight: 700; padding: 2px 10px; border-radius: 100px;
+        }
+        .case-status.confirmed { background: #d4edda; color: #155724; }
+        .case-status.tentative { background: #cce5ff; color: #004085; }
+        .case-status.completed { background: var(--bg-light); color: var(--text-muted); }
+        .case-status.cancelled { background: #f8d7da; color: #721c24; }
+        .case-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1rem; flex-wrap: wrap; }
+        .case-meta i { margin-right: 0.2rem; }
+
+        /* ── NEWS POSTING ── */
+        .news-form-group { margin-bottom: 1rem; }
+        .news-form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .news-form-input, .news-form-textarea, .news-form-select {
+            width: 100%; padding: 10px 14px; border: 2px solid var(--border-light); border-radius: 8px;
+            font-size: 0.85rem; font-family: var(--font-sans); outline: none; transition: border-color 0.2s;
+        }
+        .news-form-input:focus, .news-form-textarea:focus, .news-form-select:focus { border-color: var(--kgu-blue); }
+        .news-form-textarea { min-height: 120px; resize: vertical; }
+        .news-submit-btn {
+            padding: 10px 24px; background: var(--kgu-blue); color: var(--white); border: none;
+            border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+            font-family: var(--font-sans); transition: all 0.2s;
+        }
+        .news-submit-btn:hover { background: var(--kgu-blue-light); }
+
+        /* ── PROFILE ── */
+        .profile-field { display: flex; padding: 0.6rem 0; border-bottom: 1px solid var(--border-light); }
+        .profile-field:last-child { border-bottom: none; }
+        .profile-label { width: 100px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
+        .profile-value { font-size: 0.85rem; flex: 1; }
+
+        /* ── RESPONSIVE ── */
+        @media (min-width: 769px) {
+            .portal-nav {
+                position: fixed; left: 0; top: var(--header-height); bottom: 0;
+                width: 200px; height: auto;
+                flex-direction: column; justify-content: flex-start;
+                padding-top: 1.5rem; border-top: none;
+                border-right: 1px solid var(--border-light);
+                box-shadow: 2px 0 10px rgba(0,0,0,0.03);
+            }
+            .portal-nav-item {
+                flex-direction: row; gap: 0.8rem; width: 100%;
+                padding: 10px 1.5rem; border-radius: 0; font-size: 0.8rem;
+            }
+            .portal-nav-item.active { background: var(--kgu-gold-dim); }
+            .portal-main { padding-left: 200px; }
+        }
+    </style>
+</body>
+</html>

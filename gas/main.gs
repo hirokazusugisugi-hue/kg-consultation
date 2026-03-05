@@ -658,6 +658,157 @@ function doGet(e) {
       }
     }
 
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 記事管理（CMS）
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // 記事管理ページ
+    if (action === 'article-admin') {
+      return generateArticleAdminPage();
+    }
+
+    // 記事一覧API（JSON）
+    if (action === 'articles') {
+      var artResult = getArticles({
+        category: e.parameter.category || null,
+        limit: e.parameter.limit || '20',
+        offset: e.parameter.offset || '0'
+      });
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, articles: artResult.articles, total: artResult.total }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 記事詳細API（JSON）
+    if (action === 'article') {
+      var artId = e.parameter.id;
+      if (!artId) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'id パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var artDetail = getArticleById(artId);
+      if (!artDetail) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '記事が見つかりません: ' + artId }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, article: artDetail }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 記事カテゴリ一覧API
+    if (action === 'article-categories') {
+      var cats = getArticleCategories();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, categories: cats }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 記事追加
+    if (action === 'article-add') {
+      addArticle({
+        title: e.parameter.title,
+        category: e.parameter.category,
+        tags: e.parameter.tags,
+        body: e.parameter.body,
+        author: e.parameter.author,
+        summary: e.parameter.summary,
+        status: e.parameter.status,
+        publishDate: e.parameter.publishDate
+      });
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=article-admin";</script>'
+      );
+    }
+
+    // 記事ステータス切替
+    if (action === 'article-toggle') {
+      toggleArticleStatus(e.parameter.row);
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=article-admin";</script>'
+      );
+    }
+
+    // 記事削除
+    if (action === 'article-delete') {
+      deleteArticle(e.parameter.row);
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=article-admin";</script>'
+      );
+    }
+
+    // 記事管理シートセットアップ（管理用）
+    if (action === 'setup-articles') {
+      var artSetupResult = setupArticlesSheet();
+      return ContentService
+        .createTextOutput(JSON.stringify(artSetupResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 会場管理
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // 会場管理ページ
+    if (action === 'venue-admin') {
+      return generateVenueAdminPage();
+    }
+
+    // 会場空き状況ページ
+    if (action === 'venue-status') {
+      return generateVenueStatusPage(e);
+    }
+
+    // 会場追加
+    if (action === 'venue-add') {
+      addVenue({
+        name: e.parameter.name,
+        address: e.parameter.address,
+        capacity: e.parameter.capacity,
+        equipment: e.parameter.equipment,
+        price: e.parameter.price,
+        notes: e.parameter.notes,
+        hours: e.parameter.hours
+      });
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=venue-admin";</script>'
+      );
+    }
+
+    // 会場有効/無効切替
+    if (action === 'venue-toggle') {
+      toggleVenueActive(e.parameter.row);
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=venue-admin";</script>'
+      );
+    }
+
+    // 会場削除
+    if (action === 'venue-delete') {
+      deleteVenue(e.parameter.row);
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=venue-admin";</script>'
+      );
+    }
+
+    // 会場マスタシートセットアップ（管理用）
+    if (action === 'setup-venue') {
+      var venueResult = setupVenueSheet();
+      return ContentService
+        .createTextOutput(JSON.stringify(venueResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 会場一覧API（JSON）
+    if (action === 'venues') {
+      var venueList = getVenues(e.parameter.all !== 'true');
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, venues: venueList }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // リーダー履歴の業種・テーマ一括補完（管理用）
     if (action === 'backfill-leader-history') {
       try {
@@ -858,6 +1009,215 @@ function doGet(e) {
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 文字起こし・報告書自動作成（Phase 3）
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // 文字起こし手動実行（管理用）
+    if (action === 'start-transcript') {
+      var trRow = parseInt(e.parameter.row);
+      if (!trRow || trRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var trResult = manualStartTranscription(trRow);
+      return ContentService
+        .createTextOutput(JSON.stringify(trResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 報告書自動生成手動実行（管理用）
+    if (action === 'start-auto-report') {
+      var arRow = parseInt(e.parameter.row);
+      if (!arRow || arRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var arResult = manualStartReportGeneration(arRow);
+      return ContentService
+        .createTextOutput(JSON.stringify(arResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // パイプライン状態一覧（管理用）
+    if (action === 'transcript-pipeline') {
+      var pipeResult = getTranscriptPipelineStatus();
+      return ContentService
+        .createTextOutput(JSON.stringify(pipeResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 文字起こし・報告書設定確認（管理用）
+    if (action === 'transcript-setup') {
+      var setupResult = checkTranscriptSetup();
+      return ContentService
+        .createTextOutput(JSON.stringify(setupResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 文字起こし・報告書 Cloud Function 設定（管理用）
+    if (action === 'setup-transcript') {
+      try {
+        var stResult = setupTranscriptCredentials(
+          e.parameter.transcriptCfUrl || '',
+          e.parameter.transcriptCfSecret || '',
+          e.parameter.reportCfUrl || '',
+          e.parameter.reportCfSecret || ''
+        );
+        return ContentService
+          .createTextOutput(JSON.stringify(stResult))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // Notion CF 設定（管理用）
+    if (action === 'setup-notion-cf') {
+      try {
+        var props = PropertiesService.getScriptProperties();
+        if (e.parameter.cfUrl) props.setProperty('NOTION_CF_URL', e.parameter.cfUrl);
+        if (e.parameter.cfSecret) props.setProperty('NOTION_CF_SECRET', e.parameter.cfSecret);
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: true,
+            message: 'Notion CF設定を保存しました',
+            cfUrl: e.parameter.cfUrl ? '設定済み' : 'スキップ',
+            cfSecret: e.parameter.cfSecret ? '設定済み' : 'スキップ'
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // AI診断（Phase 4）
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // AI診断手動実行（予約データから）
+    if (action === 'run-diagnosis') {
+      var diagRow = parseInt(e.parameter.row);
+      if (!diagRow || diagRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var diagResult = manualRunDiagnosis(diagRow);
+      return ContentService
+        .createTextOutput(JSON.stringify(diagResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // AI診断テキスト直接入力実行
+    if (action === 'run-direct-diagnosis') {
+      var directResult = runDirectDiagnosis({
+        text: e.parameter.text || '',
+        company: e.parameter.company || '',
+        industry: e.parameter.industry || '',
+        theme: e.parameter.theme || ''
+      });
+      return ContentService
+        .createTextOutput(JSON.stringify(directResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 診断結果一覧API
+    if (action === 'diagnosis-results') {
+      var diagResults = getDiagnosisResults({
+        company: e.parameter.company || '',
+        limit: e.parameter.limit || '20',
+        offset: e.parameter.offset || '0'
+      });
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, results: diagResults.results, total: diagResults.total }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 診断結果詳細API
+    if (action === 'diagnosis-detail') {
+      var diagId = e.parameter.id;
+      if (!diagId) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'id パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var diagDetail = getDiagnosisById(diagId);
+      if (!diagDetail) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '診断結果が見つかりません: ' + diagId }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, diagnosis: diagDetail }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 企業別診断履歴API
+    if (action === 'diagnosis-history') {
+      var histCompany = e.parameter.company;
+      if (!histCompany) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'company パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var histResult = getDiagnosisHistory(histCompany);
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, company: histCompany, history: histResult }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 診断統計サマリーAPI
+    if (action === 'diagnosis-stats') {
+      var statsResult = getDiagnosisStats();
+      return ContentService
+        .createTextOutput(JSON.stringify(statsResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // AI診断シートセットアップ（管理用）
+    if (action === 'setup-diagnosis') {
+      var diagSetupResult = setupDiagnosisSheet();
+      return ContentService
+        .createTextOutput(JSON.stringify(diagSetupResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // AI診断設定確認（管理用）
+    if (action === 'diagnosis-setup') {
+      var diagSetup = checkDiagnosisSetup();
+      return ContentService
+        .createTextOutput(JSON.stringify(diagSetup))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // AI診断CF設定（管理用）
+    if (action === 'setup-diagnosis-cf') {
+      try {
+        var diagProps = PropertiesService.getScriptProperties();
+        if (e.parameter.cfUrl) diagProps.setProperty('DIAGNOSIS_CF_URL', e.parameter.cfUrl);
+        if (e.parameter.cfSecret) diagProps.setProperty('DIAGNOSIS_CF_SECRET', e.parameter.cfSecret);
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: true,
+            message: 'AI診断CF設定を保存しました',
+            cfUrl: e.parameter.cfUrl ? '設定済み' : 'スキップ',
+            cfSecret: e.parameter.cfSecret ? '設定済み' : 'スキップ'
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // オブザーバー専用ページ
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -871,6 +1231,165 @@ function doGet(e) {
       var observerNdaResult = setupObserverNdaSheet();
       return ContentService
         .createTextOutput(JSON.stringify(observerNdaResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // スタッフポータル（Phase 5）
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // ログインリクエスト（メールアドレスでマジックリンク送信）
+    if (action === 'portal-login') {
+      var loginResult = requestPortalLogin(e.parameter.email || '');
+      return ContentService
+        .createTextOutput(JSON.stringify(loginResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // マジックリンク検証 → セッション発行 → ポータルSPAにリダイレクト
+    if (action === 'portal-verify') {
+      var verifyResult = verifyPortalLogin(e.parameter.token || '');
+      if (verifyResult.success) {
+        // セッションIDを付与してGitHub PagesポータルSPAにリダイレクト
+        var portalUrl = CONFIG.PORTAL.SITE_URL + '#/verified?sessionId=' + verifyResult.sessionId;
+        return HtmlService.createHtmlOutput(
+          '<html><head><meta charset="UTF-8"><meta http-equiv="refresh" content="0;url=' + portalUrl + '"><script>window.location.href="' + portalUrl + '";</script></head><body style="font-family:sans-serif;padding:3rem;text-align:center"><p>ポータルに移動中...</p><p><a href="' + portalUrl + '">こちらをクリック</a></p></body></html>'
+        ).setTitle('ポータルに移動中');
+      } else {
+        // エラーページを表示
+        var retryUrl = CONFIG.PORTAL.SITE_URL + '#/login';
+        return HtmlService.createHtmlOutput(
+          '<html><head><meta charset="UTF-8"><title>ログインエラー</title></head><body style="font-family:sans-serif;padding:3rem;text-align:center"><h2>' + verifyResult.message + '</h2><p style="margin-top:1rem"><a href="' + retryUrl + '">再度ログイン</a></p></body></html>'
+        ).setTitle('ログインエラー');
+      }
+    }
+
+    // セッション検証
+    if (action === 'portal-session') {
+      var sessionData = requireAuth(e);
+      if (!sessionData) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'セッションが無効です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, session: sessionData }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ログアウト
+    if (action === 'portal-logout') {
+      destroySession(e.parameter.sessionId || e.parameter.session || '');
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: 'ログアウトしました' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ダッシュボード
+    if (action === 'portal-dashboard') {
+      var dashSession = requireAuth(e);
+      if (!dashSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var dashData = getPortalDashboard(dashSession);
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, data: dashData }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // シフト一覧
+    if (action === 'portal-shifts') {
+      var shiftSession = requireAuth(e);
+      if (!shiftSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var shiftData = getMyShifts(shiftSession, e.parameter.month || '');
+      return ContentService
+        .createTextOutput(JSON.stringify(shiftData))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 案件一覧
+    if (action === 'portal-cases') {
+      var caseSession = requireAuth(e);
+      if (!caseSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var caseData = getMyCases(caseSession);
+      return ContentService
+        .createTextOutput(JSON.stringify(caseData))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // シフト参加/取消
+    if (action === 'portal-shift-toggle') {
+      var shiftToggleSession = requireAuth(e);
+      if (!shiftToggleSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var toggleResult = toggleShiftParticipation(shiftToggleSession, e.parameter.row, e.parameter.join === 'true');
+      return ContentService
+        .createTextOutput(JSON.stringify(toggleResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // プロフィール取得
+    if (action === 'portal-profile') {
+      var profSession = requireAuth(e);
+      if (!profSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var profData = getPortalProfile(profSession);
+      return ContentService
+        .createTextOutput(JSON.stringify(profData))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ニュース投稿（リーダー/管理者のみ）
+    if (action === 'portal-news-post') {
+      var newsSession = requireAuth(e);
+      if (!newsSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (!hasRole(newsSession.role, 'leader')) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '権限がありません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var newsResult = postPortalNews(newsSession, e.parameter);
+      return ContentService
+        .createTextOutput(JSON.stringify(newsResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 全メンバー一覧（管理者のみ）
+    if (action === 'portal-members') {
+      var memSession = requireAuth(e);
+      if (!memSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (!hasRole(memSession.role, 'admin')) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '管理者権限が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var memData = getPortalMembers();
+      return ContentService
+        .createTextOutput(JSON.stringify(memData))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -890,6 +1409,14 @@ function doGet(e) {
           'GET ?action=observer': 'オブザーバー専用ページ',
           'GET ?action=report-upload&token=xxx': 'レポートアップロードページ',
           'GET ?action=completion&token=xxx': '相談完了確認ページ',
+          'GET ?action=article-admin': '記事管理ページ',
+          'GET ?action=articles': '記事一覧API（JSON）',
+          'GET ?action=article&id=xxx': '記事詳細API（JSON）',
+          'GET ?action=setup-articles': '記事管理シートセットアップ',
+          'GET ?action=venue-admin': '会場管理ページ',
+          'GET ?action=venue-status': '会場空き状況ページ',
+          'GET ?action=venues': '会場一覧API（JSON）',
+          'GET ?action=setup-venue': '会場マスタシートセットアップ',
           'GET ?action=setup-completion-trigger': '完了確認トリガーセットアップ',
           'GET ?action=check-recordings': '録画リンク手動チェック',
           'GET ?action=setup-recording-trigger': '録画チェックトリガーセットアップ',
@@ -897,6 +1424,19 @@ function doGet(e) {
           'GET ?action=setup-youtube&cfUrl=URL&cfSecret=SECRET': 'YouTube設定セットアップ',
           'GET ?action=setup-leader-history': 'リーダー履歴シートセットアップ',
           'GET ?action=setup-report': 'レポート管理シートセットアップ',
+          'GET ?action=start-transcript&row=N': '文字起こし手動実行',
+          'GET ?action=start-auto-report&row=N': '報告書自動生成手動実行',
+          'GET ?action=transcript-pipeline': 'パイプライン状態一覧',
+          'GET ?action=transcript-setup': '文字起こし設定確認',
+          'GET ?action=setup-transcript': '文字起こしCF設定',
+          'GET ?action=setup-notion-cf': 'Notion CF設定',
+          'GET ?action=run-diagnosis&row=N': 'AI診断実行（予約データから）',
+          'GET ?action=diagnosis-results': '診断結果一覧',
+          'GET ?action=diagnosis-detail&id=xxx': '診断結果詳細',
+          'GET ?action=diagnosis-history&company=xxx': '企業別診断履歴',
+          'GET ?action=diagnosis-stats': '診断統計',
+          'GET ?action=setup-diagnosis': 'AI診断シートセットアップ',
+          'GET ?action=setup-diagnosis-cf': 'AI診断CF設定',
           'POST': '予約申込'
         }
       }))

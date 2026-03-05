@@ -100,6 +100,9 @@ const CONFIG = {
   // アンケートシート名
   SURVEY_SHEET_NAME: 'アンケート',
 
+  // 会場マスタシート名
+  VENUE_SHEET_NAME: '会場マスタ',
+
   // オブザーバーNDAシート名
   OBSERVER_NDA_SHEET_NAME: 'オブザーバーNDA',
 
@@ -132,6 +135,43 @@ const CONFIG = {
     DRIVE_FOLDER_ID: '',  // レポート保存先DriveフォルダID（未設定時はルート）
     DEADLINE_DAYS: 3,     // レポート提出期限（日数）
     MAX_FILE_SIZE: 5 * 1024 * 1024  // 5MB
+  },
+
+  // 文字起こし・報告書自動作成設定（Phase 3）
+  TRANSCRIPT: {
+    CLOUD_FUNCTION_URL: '',     // zoom_to_transcript Cloud Function URL
+    CLOUD_FUNCTION_SECRET: '',  // 共有シークレット（ScriptPropertiesに TRANSCRIPT_CF_SECRET として設定推奨）
+    ENABLED: false              // 文字起こし自動実行の有効/無効
+  },
+
+  // 報告書自動作成設定（Phase 3）
+  AUTO_REPORT: {
+    CLOUD_FUNCTION_URL: '',     // transcript_to_report Cloud Function URL
+    CLOUD_FUNCTION_SECRET: '',  // 共有シークレット（ScriptPropertiesに REPORT_CF_SECRET として設定推奨）
+    ENABLED: false,             // 自動レポート生成の有効/無効
+    DRIVE_FOLDER_ID: ''         // 報告書ドラフト保存先フォルダID
+  },
+
+  // Notion連携用 report_to_notion Cloud Function（Phase 3）
+  NOTION_CF: {
+    CLOUD_FUNCTION_URL: '',     // report_to_notion Cloud Function URL
+    CLOUD_FUNCTION_SECRET: '',  // 共有シークレット
+    ENABLED: false              // Notion連携の有効/無効
+  },
+
+  // AI診断設定（Phase 4）
+  DIAGNOSIS: {
+    CLOUD_FUNCTION_URL: '',     // ai_diagnosis Cloud Function URL
+    CLOUD_FUNCTION_SECRET: '',  // 共有シークレット（ScriptPropertiesに DIAGNOSIS_CF_SECRET として設定推奨）
+    ENABLED: false              // AI診断の有効/無効
+  },
+
+  // スタッフポータル設定（Phase 5）
+  PORTAL: {
+    ENABLED: false,            // ポータルの有効/無効
+    SESSION_HOURS: 6,          // セッション有効期間
+    TOKEN_EXPIRY_MIN: 30,      // マジックリンク有効期限（分）
+    SITE_URL: 'https://hirokazusugisugi-hue.github.io/kg-consultation/site/portal.html'
   },
 
   // 返信先メールアドレス
@@ -192,18 +232,50 @@ const COLUMNS = {
   REPORT_STATUS: 25, // Z: レポート状態
   FILE_ID: 26,       // AA: ファイルID（Drive）
   RECORDING_URL: 27, // AB: 録画URL（Zoom共有リンク）
-  YOUTUBE_URL: 28    // AC: YouTube URL（非公開動画リンク）
+  YOUTUBE_URL: 28,   // AC: YouTube URL（非公開動画リンク）
+  TRANSCRIPT_STATUS: 29,    // AD: 文字起こし状態
+  TRANSCRIPT_FILE_ID: 30,   // AE: 文字起こしファイルID（Drive）
+  REPORT_DRAFT_ID: 31,      // AF: 報告書ドラフトID（Google Docs ID）
+  NOTION_PAGE_ID: 32        // AG: Notion Page ID
 };
 
 /**
- * 場所の選択肢
+ * 場所の選択肢（デフォルト値・会場マスタ未設定時のフォールバック）
  */
-const LOCATION_OPTIONS = [
+const LOCATION_OPTIONS_DEFAULT = [
   'アプローズタワー',
   'スミセスペース',
   'ナレッジサロン',
   'その他'
 ];
+
+/**
+ * 場所の選択肢（会場マスタシートから動的取得、フォールバック付き）
+ */
+function getLocationOptions() {
+  try {
+    var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    var sheet = ss.getSheetByName(CONFIG.VENUE_SHEET_NAME);
+    if (!sheet || sheet.getLastRow() < 2) return LOCATION_OPTIONS_DEFAULT;
+
+    var data = sheet.getDataRange().getValues();
+    var options = [];
+    for (var i = 1; i < data.length; i++) {
+      var active = data[i][VENUE_COLUMNS.ACTIVE];
+      if (active === true || active === 'TRUE' || active === 'true') {
+        options.push(String(data[i][VENUE_COLUMNS.NAME]));
+      }
+    }
+    if (options.length === 0) return LOCATION_OPTIONS_DEFAULT;
+    options.push('その他');
+    return options;
+  } catch (e) {
+    return LOCATION_OPTIONS_DEFAULT;
+  }
+}
+
+// 後方互換: 既存コードで LOCATION_OPTIONS を参照している箇所用
+var LOCATION_OPTIONS = LOCATION_OPTIONS_DEFAULT;
 
 /**
  * ステータス定義
@@ -300,6 +372,44 @@ const OBSERVER_NDA_COLUMNS = {
   FILE_ID: 5,        // F: Drive上のファイルID
   FILE_URL: 6,       // G: ダウンロードURL
   APP_ID: 7          // H: 申込ID
+};
+
+/**
+ * 会場マスタシートの列定義
+ */
+const VENUE_COLUMNS = {
+  ID: 0,           // A: 会場ID
+  NAME: 1,         // B: 名称
+  ADDRESS: 2,      // C: 住所
+  CAPACITY: 3,     // D: 収容人数
+  EQUIPMENT: 4,    // E: 設備
+  PRICE: 5,        // F: 料金
+  NOTES: 6,        // G: 備考
+  HOURS: 7,        // H: 利用可能時間
+  ACTIVE: 8        // I: 有効フラグ
+};
+
+/**
+ * 文字起こし状態定数
+ */
+const TRANSCRIPT_STATUS = {
+  NONE: '',
+  PENDING: '処理待ち',
+  PROCESSING: '処理中',
+  COMPLETED: '完了',
+  ERROR: 'エラー'
+};
+
+/**
+ * 報告書ドラフト状態定数
+ */
+const DRAFT_STATUS = {
+  NONE: '',
+  GENERATING: '生成中',
+  DRAFT_READY: 'ドラフト完了',
+  REVIEW: 'レビュー中',
+  APPROVED: '承認済',
+  ERROR: 'エラー'
 };
 
 /**

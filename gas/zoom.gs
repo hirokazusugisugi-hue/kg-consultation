@@ -338,15 +338,34 @@ function processZoomRecordings() {
       var rowData = getRowData(rowInfo.rowIndex);
       notifyRecordingToLeader(rowData, shareUrl, passcode);
 
+      // MP4ファイルを取得（YouTube・文字起こし共通）
+      var mp4File = findMp4Recording(meeting.recording_files || []);
+
       // YouTube非公開アップロード（有効時）
       if (CONFIG.YOUTUBE && CONFIG.YOUTUBE.ENABLED) {
         try {
-          var mp4File = findMp4Recording(meeting.recording_files || []);
           if (mp4File) {
             uploadToYouTube(mp4File, rowData, rowInfo.rowIndex, token);
           }
         } catch (ytErr) {
           console.error('YouTube upload error (row ' + rowInfo.rowIndex + '):', ytErr);
+        }
+      }
+
+      // 文字起こし自動実行（有効時）
+      if (CONFIG.TRANSCRIPT && CONFIG.TRANSCRIPT.ENABLED) {
+        try {
+          if (mp4File) {
+            // 既に文字起こし済みでないかチェック
+            var existingTranscript = sheet.getRange(rowInfo.rowIndex, COLUMNS.TRANSCRIPT_STATUS + 1).getValue();
+            if (!existingTranscript || existingTranscript === TRANSCRIPT_STATUS.ERROR) {
+              startTranscription(mp4File, rowData, rowInfo.rowIndex, token);
+            } else {
+              console.log('文字起こし済みのためスキップ: 行' + rowInfo.rowIndex + ' (' + existingTranscript + ')');
+            }
+          }
+        } catch (trErr) {
+          console.error('Transcript error (row ' + rowInfo.rowIndex + '):', trErr);
         }
       }
 

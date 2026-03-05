@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メンバー | 関西学院大学 中小企業経営診断研究会</title>
+    <meta name="description" content="中小企業経営診断研究会のメンバーをご紹介します。中小企業診断士・オブザーバーがチームで経営課題に取り組みます。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <a href="./" class="header-logo">
+            <img src="../images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="header-logo-img">
+            <span class="logo-sub">中小企業経営診断研究会</span>
+        </a>
+        <button class="nav-toggle" aria-label="メニュー"><i class="fas fa-bars"></i></button>
+        <nav>
+            <ul class="nav-list">
+                <li><a href="./">ホーム</a></li>
+                <li><a href="about.html">研究会について</a></li>
+                <li><a href="members.html">メンバー</a></li>
+                <li><a href="articles.html">コラム</a></li>
+                <li><a href="news.html">お知らせ</a></li>
+                <li class="nav-cta"><a href="contact.html">無料相談</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- PAGE HERO -->
+    <section class="page-hero">
+        <div class="container">
+            <p class="section-label reveal">MEMBERS</p>
+            <h1 class="section-title reveal delay-1">メンバー紹介</h1>
+            <p class="section-subtitle reveal delay-2">中小企業診断士・オブザーバーがチームを組んで<br>経営課題の解決を支援します</p>
+        </div>
+    </section>
+
+    <!-- BREADCRUMB -->
+    <div class="container" style="padding-top:1.5rem">
+        <div class="breadcrumb">
+            <a href="./">ホーム</a><span>/</span>メンバー
+        </div>
+    </div>
+
+    <!-- FILTER -->
+    <section class="section" style="padding-top:1rem">
+        <div class="container">
+            <div class="filter-bar" id="memberFilter">
+                <button class="filter-btn active" data-filter="all">すべて</button>
+                <button class="filter-btn" data-filter="diagnostician">診断士</button>
+                <button class="filter-btn" data-filter="observer">オブザーバー</button>
+            </div>
+            <div class="member-grid" id="memberGrid">
+                <div class="loading"><i class="fas fa-spinner fa-spin"></i> メンバー情報を読み込み中...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-banner">
+        <div class="container reveal">
+            <h2 class="section-title">まずは気軽にご相談ください</h2>
+            <p class="section-subtitle">経験豊富なメンバーがチームでサポートします</p>
+            <a href="contact.html" class="btn btn-gold">無料相談を申し込む</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <img src="../images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="footer-logo-img">
+                    <p>経営戦略研究科（IBA）研究フォーラム｜中小企業経営診断研究会</p>
+                </div>
+                <div class="footer-links">
+                    <a href="./">ホーム</a>
+                    <a href="about.html">研究会について</a>
+                    <a href="members.html">メンバー</a>
+                    <a href="articles.html">コラム</a>
+                    <a href="news.html">お知らせ</a>
+                    <a href="contact.html">無料相談</a>
+                </div>
+            </div>
+            <div class="footer-copy">&copy; Kwansei Gakuin University. All Rights Reserved.</div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        let allMembers = [];
+
+        async function loadMembers() {
+            const data = await fetchAPI('members');
+            const grid = document.getElementById('memberGrid');
+
+            if (data.success && data.members && data.members.length > 0) {
+                allMembers = data.members;
+                renderMembers('all');
+            } else {
+                // Fallback sample data
+                allMembers = [
+                    { name: '（メンバー情報はAPIから取得されます）', term: '', cert: '中小企業診断士', type: '診断士', titles: '', specialties: '', themes: '' }
+                ];
+                renderMembers('all');
+            }
+        }
+
+        function renderMembers(filter) {
+            const grid = document.getElementById('memberGrid');
+            let filtered = allMembers;
+
+            if (filter === 'diagnostician') {
+                filtered = allMembers.filter(m => m.type === '診断士' || m.cert === '中小企業診断士');
+            } else if (filter === 'observer') {
+                filtered = allMembers.filter(m => m.type === 'オブザーバー' || m.term === '3期' || m.term === '4期');
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem">該当するメンバーがいません</p>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map((m, i) => {
+                const initial = m.name ? m.name.charAt(0) : '?';
+                const isObserver = m.type === 'オブザーバー' || m.term === '3期' || m.term === '4期';
+                const roleLabel = isObserver ? 'オブザーバー' : (m.cert || m.type || '');
+                const tags = [];
+                if (m.specialties) tags.push(...m.specialties.split(/[,、]/));
+                if (m.themes) tags.push(...m.themes.split(/[,、]/));
+
+                return `
+                    <div class="member-card reveal delay-${(i % 4) + 1}">
+                        <div class="member-avatar">${escapeHTML(initial)}</div>
+                        <div class="member-name">${escapeHTML(m.name)}</div>
+                        <div class="member-role">${escapeHTML(roleLabel)}${m.term ? ' / ' + escapeHTML(m.term) : ''}${m.titles ? '<br>' + escapeHTML(m.titles) : ''}</div>
+                        ${tags.length > 0 ? '<div class="member-tags">' + tags.slice(0, 4).map(t => '<span>' + escapeHTML(t.trim()) + '</span>').join('') + '</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            initScrollReveal();
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderMembers(btn.dataset.filter);
+            });
+        });
+
+        loadMembers();
+    </script>
+</body>
+</html>

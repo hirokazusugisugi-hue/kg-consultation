@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI経営診断 | 関西学院大学 中小企業経営診断研究会</title>
+    <meta name="description" content="AIを活用した経営診断で、6つの軸から企業の経営状態を分析します。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <a href="./" class="header-logo">
+            <img src="../images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="header-logo-img">
+            <span class="logo-sub">中小企業経営診断研究会</span>
+        </a>
+        <button class="nav-toggle" aria-label="メニュー"><i class="fas fa-bars"></i></button>
+        <nav>
+            <ul class="nav-list">
+                <li><a href="./">ホーム</a></li>
+                <li><a href="about.html">研究会について</a></li>
+                <li><a href="members.html">メンバー</a></li>
+                <li><a href="articles.html">コラム</a></li>
+                <li><a href="news.html">お知らせ</a></li>
+                <li class="nav-cta"><a href="contact.html">無料相談</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- PAGE HERO -->
+    <section class="page-hero">
+        <div class="container">
+            <p class="section-label reveal">AI DIAGNOSIS</p>
+            <h1 class="section-title reveal delay-1">AI経営診断</h1>
+            <p class="section-subtitle reveal delay-2">6つの評価軸で企業の経営状態を<br>AIがスコアリングします</p>
+        </div>
+    </section>
+
+    <!-- BREADCRUMB -->
+    <div class="container" style="padding-top:1.5rem">
+        <div class="breadcrumb">
+            <a href="./">ホーム</a><span>/</span>AI経営診断
+        </div>
+    </div>
+
+    <!-- DIAGNOSIS DASHBOARD -->
+    <section class="section" style="padding-top:1rem">
+        <div class="container">
+            <!-- Stats -->
+            <div class="diag-stats" id="diagStats">
+                <div class="loading"><i class="fas fa-spinner fa-spin"></i> 統計を読み込み中...</div>
+            </div>
+
+            <!-- Results Grid -->
+            <div class="section-header reveal" style="margin-top:3rem">
+                <p class="section-label">RESULTS</p>
+                <h2 class="section-title">診断結果一覧</h2>
+            </div>
+
+            <div id="resultsContainer">
+                <div class="loading"><i class="fas fa-spinner fa-spin"></i> 結果を読み込み中...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-banner">
+        <div class="container reveal">
+            <h2 class="section-title">無料経営相談のお申し込み</h2>
+            <p class="section-subtitle">AI診断と専門家による相談を組み合わせて<br>より深い経営支援を提供します</p>
+            <a href="contact.html" class="btn btn-gold">相談を申し込む</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <img src="../images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="footer-logo-img">
+                    <p>経営戦略研究科（IBA）研究フォーラム｜中小企業経営診断研究会</p>
+                </div>
+                <div class="footer-links">
+                    <a href="./">ホーム</a>
+                    <a href="about.html">研究会について</a>
+                    <a href="members.html">メンバー</a>
+                    <a href="articles.html">コラム</a>
+                    <a href="news.html">お知らせ</a>
+                    <a href="contact.html">無料相談</a>
+                </div>
+            </div>
+            <div class="footer-copy">&copy; Kwansei Gakuin University. All Rights Reserved.</div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        const AXIS_LABELS = {
+            strategy: '経営戦略',
+            finance: '財務',
+            organization: '組織・人材',
+            marketing: 'マーケティング',
+            operations: '業務プロセス',
+            digital: 'IT・DX'
+        };
+
+        function getScoreColor(score) {
+            if (score >= 80) return '#28a745';
+            if (score >= 60) return '#ffc107';
+            return '#dc3545';
+        }
+
+        async function loadStats() {
+            const data = await fetchAPI('diagnosis-stats');
+            const container = document.getElementById('diagStats');
+
+            if (!data.success || data.totalDiagnoses === 0) {
+                container.innerHTML = '<div class="diag-stats-grid"><div class="diag-stat-card"><div class="diag-stat-num">0</div><div class="diag-stat-label">診断件数</div></div></div><p style="text-align:center;color:var(--text-muted);margin-top:1rem">まだ診断結果がありません</p>';
+                return;
+            }
+
+            let axisHtml = '';
+            if (data.axisAverages) {
+                const axes = Object.keys(AXIS_LABELS);
+                axisHtml = '<div class="diag-axis-bars">' + axes.map(key => {
+                    const val = data.axisAverages[key] || 0;
+                    const pct = (val / 5) * 100;
+                    return '<div class="diag-axis-bar"><span class="diag-axis-label">' + AXIS_LABELS[key] + '</span><div class="diag-bar-track"><div class="diag-bar-fill" style="width:' + pct + '%;background:' + getScoreColor(pct) + '"></div></div><span class="diag-axis-val">' + val.toFixed(1) + '</span></div>';
+                }).join('') + '</div>';
+            }
+
+            let industryHtml = '';
+            if (data.industryBreakdown) {
+                const industries = Object.keys(data.industryBreakdown);
+                if (industries.length > 0) {
+                    industryHtml = '<div class="diag-industry"><h4>業種別平均スコア</h4><div class="diag-industry-list">' +
+                        industries.map(ind => {
+                            const d = data.industryBreakdown[ind];
+                            return '<span class="diag-industry-item">' + escapeHTML(ind) + ' <strong>' + d.averageScore + '点</strong> (' + d.count + '件)</span>';
+                        }).join('') + '</div></div>';
+                }
+            }
+
+            container.innerHTML =
+                '<div class="diag-stats-grid">' +
+                '  <div class="diag-stat-card"><div class="diag-stat-num">' + data.totalDiagnoses + '</div><div class="diag-stat-label">診断件数</div></div>' +
+                '  <div class="diag-stat-card"><div class="diag-stat-num" style="color:' + getScoreColor(data.averageScore) + '">' + data.averageScore + '<small>/100</small></div><div class="diag-stat-label">平均スコア</div></div>' +
+                '</div>' +
+                axisHtml + industryHtml;
+        }
+
+        async function loadResults() {
+            const data = await fetchAPI('diagnosis-results', { limit: '12' });
+            const container = document.getElementById('resultsContainer');
+
+            if (!data.success || !data.results || data.results.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:3rem">診断結果がまだありません</p>';
+                return;
+            }
+
+            container.innerHTML = '<div class="diag-grid">' + data.results.map((r, i) => {
+                const scores = r.scores || {};
+                const canvasId = 'chart-' + i;
+                return '<div class="diag-card reveal delay-' + ((i % 3) + 1) + '">' +
+                    '<div class="diag-card-header">' +
+                    '  <div class="diag-score-circle" style="border-color:' + getScoreColor(r.totalScore) + '"><span>' + r.totalScore + '</span></div>' +
+                    '  <div><h3>' + escapeHTML(r.company || '企業名不明') + '</h3><p>' + escapeHTML(r.industry || '') + ' | ' + (r.date || '') + '</p></div>' +
+                    '</div>' +
+                    '<canvas id="' + canvasId + '" width="280" height="200"></canvas>' +
+                    '<a href="diagnosis-result.html?id=' + r.diagnosisId + '" class="btn btn-outline" style="width:100%;text-align:center;margin-top:0.5rem;font-size:0.85rem">詳細を見る</a>' +
+                    '</div>';
+            }).join('') + '</div>';
+
+            initScrollReveal();
+
+            // レーダーチャート描画
+            data.results.forEach((r, i) => {
+                const ctx = document.getElementById('chart-' + i);
+                if (!ctx) return;
+                const scores = r.scores || {};
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: Object.values(AXIS_LABELS),
+                        datasets: [{
+                            data: [scores.strategy||3, scores.finance||3, scores.organization||3, scores.marketing||3, scores.operations||3, scores.digital||3],
+                            backgroundColor: 'rgba(15,35,80,0.15)',
+                            borderColor: '#0F2350',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#0F2350',
+                            pointRadius: 3
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            r: {
+                                min: 0, max: 5,
+                                ticks: { stepSize: 1, font: { size: 9 } },
+                                pointLabels: { font: { size: 10, family: 'Noto Sans JP' } }
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        loadStats();
+        loadResults();
+    </script>
+
+    <style>
+        .diag-stats-grid { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+        .diag-stat-card { background: var(--white); border-radius: 12px; padding: 1.5rem 2rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); min-width: 140px; }
+        .diag-stat-num { font-size: 2.5rem; font-weight: 900; color: var(--kgu-blue); line-height: 1.2; }
+        .diag-stat-num small { font-size: 1rem; font-weight: 400; }
+        .diag-stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+        .diag-axis-bars { max-width: 500px; margin: 2rem auto 0; }
+        .diag-axis-bar { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.6rem; }
+        .diag-axis-label { width: 100px; font-size: 0.8rem; font-weight: 600; text-align: right; flex-shrink: 0; }
+        .diag-bar-track { flex: 1; height: 8px; background: var(--bg-light); border-radius: 4px; overflow: hidden; }
+        .diag-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+        .diag-axis-val { width: 30px; font-size: 0.8rem; font-weight: 700; }
+
+        .diag-industry { margin-top: 1.5rem; text-align: center; }
+        .diag-industry h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .diag-industry-list { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .diag-industry-item { font-size: 0.8rem; padding: 4px 12px; background: var(--bg-light); border-radius: 100px; }
+
+        .diag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .diag-card { background: var(--white); border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .diag-card-header { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+        .diag-score-circle { width: 56px; height: 56px; border-radius: 50%; border: 3px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .diag-score-circle span { font-size: 1.3rem; font-weight: 900; }
+        .diag-card-header h3 { font-size: 0.95rem; font-weight: 700; }
+        .diag-card-header p { font-size: 0.75rem; color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .diag-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</body>
+</html>
