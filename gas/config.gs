@@ -168,7 +168,7 @@ const CONFIG = {
 
   // スタッフポータル設定（Phase 5）
   PORTAL: {
-    ENABLED: false,            // ポータルの有効/無効
+    ENABLED: true,             // ポータルの有効/無効
     SESSION_HOURS: 6,          // セッション有効期間
     TOKEN_EXPIRY_MIN: 30,      // マジックリンク有効期限（分）
     SITE_URL: 'https://hirokazusugisugi-hue.github.io/kg-consultation/site/portal.html'
