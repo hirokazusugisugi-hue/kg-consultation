@@ -13,6 +13,42 @@
 </head>
 <body>
 
+    <!-- AUTH GATE -->
+    <div id="authGate" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg-light,#f5f5f7)">
+        <div style="text-align:center;max-width:400px;padding:2rem">
+            <div id="authForm">
+                <p style="font-size:0.85rem;color:#999;margin-bottom:1.5rem"><i class="fas fa-lock" style="font-size:2rem;display:block;margin-bottom:1rem;color:#ccc"></i>このページは管理者専用です</p>
+                <input type="password" id="authPassword" placeholder="パスワードを入力" style="width:100%;padding:0.8rem 1.2rem;border:1.5px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.9rem;outline:none;font-family:inherit" onkeydown="if(event.key==='Enter')checkAuth()">
+                <button onclick="checkAuth()" style="width:100%;margin-top:0.8rem;padding:0.8rem;border:none;border-radius:8px;background:#0F2350;color:#fff;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit">認証</button>
+                <p id="authError" style="color:#dc3545;font-size:0.8rem;margin-top:0.8rem;display:none">パスワードが正しくありません</p>
+            </div>
+            <div id="authNotFound" style="display:none">
+                <p style="font-size:4rem;font-weight:900;color:#ddd;line-height:1">404</p>
+                <p style="font-size:0.9rem;color:#999;margin-top:0.5rem">ページが見つかりません</p>
+                <a href="./" style="display:inline-block;margin-top:1.5rem;font-size:0.85rem;color:#0F2350;font-weight:600">ホームに戻る</a>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function(){
+        var ADMIN_PASS = 'kgdiag2026';
+        var KEY = 'kg_diag_auth';
+        if(sessionStorage.getItem(KEY)==='1'){document.getElementById('authGate').style.display='none';return;}
+        document.querySelectorAll('header,main,footer').forEach(function(el){el.style.display='none';});
+        window.checkAuth=function(){
+            var v=document.getElementById('authPassword').value;
+            if(v===ADMIN_PASS){
+                sessionStorage.setItem(KEY,'1');
+                document.getElementById('authGate').style.display='none';
+                document.querySelectorAll('header,main,footer').forEach(function(el){el.style.display='';});
+            } else {
+                document.getElementById('authError').style.display='block';
+                document.getElementById('authPassword').value='';
+            }
+        };
+    })();
+    </script>
+
     <!-- HEADER -->
     <header class="header" id="header">
         <a href="./" class="header-logo">
@@ -27,7 +63,7 @@
                 <li><a href="members.html">メンバー</a></li>
                 <li><a href="articles.html">コラム</a></li>
                 <li><a href="news.html">お知らせ</a></li>
-                <li class="nav-cta"><a href="contact.html">無料相談</a></li>
+                <li class="nav-cta"><a href="../index14.html#contact">無料相談</a></li>
             </ul>
         </nav>
     </header>
@@ -51,7 +87,7 @@
                     <a href="members.html">メンバー</a>
                     <a href="articles.html">コラム</a>
                     <a href="news.html">お知らせ</a>
-                    <a href="contact.html">無料相談</a>
+                    <a href="../index14.html#contact">無料相談</a>
                 </div>
             </div>
             <div class="footer-copy">&copy; Kwansei Gakuin University. All Rights Reserved.</div>
