@@ -579,6 +579,7 @@
       <li><a href="#sec14">リーダー自動選定</a></li>
       <li><a href="#sec15">レポート配信システム</a></li>
       <li><a href="#sec16">Google Drive自動保存</a></li>
+      <li><a href="#sec17">Zoom録画・YouTube自動アップロード</a></li>
     </ol>
   </nav>
 
@@ -1131,7 +1132,7 @@
 
   <p>GASエディタを開き、左メニューの「トリガー」（<i class="fas fa-clock"></i> 時計アイコン）をクリックして確認します。</p>
 
-  <p><strong>以下の7つのトリガーが登録されていることを確認してください:</strong></p>
+  <p><strong>以下の8つのトリガーが登録されていることを確認してください:</strong></p>
 
   <div style="margin: 16px 0 20px;">
     <div class="trigger-item">
@@ -1157,6 +1158,10 @@
     <div class="trigger-item">
       <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> sendDailyReminders</span>
       <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 毎日 9:00（担当者: 1週間前・3日前 / 相談者: 3日前・前日リマインド）</span>
+    </div>
+    <div class="trigger-item">
+      <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> processZoomRecordings</span>
+      <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 1時間おき（Zoom録画チェック＋YouTube自動アップロード）</span>
     </div>
     <div class="trigger-item">
       <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> onSheetEdit</span>
@@ -1320,6 +1325,16 @@
           <td>Zoom Marketplaceで取得</td>
         </tr>
         <tr>
+          <td><code>YOUTUBE.ENABLED</code></td>
+          <td>YouTube非公開自動アップロードの有効/無効</td>
+          <td><code>true</code></td>
+        </tr>
+        <tr>
+          <td><code>YOUTUBE_CF_URL</code><br><code>YOUTUBE_CF_SECRET</code></td>
+          <td>YouTube Cloud Function URL・共有シークレット（スクリプトプロパティに設定）</td>
+          <td>デプロイ後に設定</td>
+        </tr>
+        <tr>
           <td><code>REPORT.DEADLINE_DAYS</code></td>
           <td>レポート提出期限（日数）</td>
           <td>3（日）</td>
@@ -1464,10 +1479,145 @@
     <div>フォルダIDはGASのスクリプトプロパティ（<code>DRIVE_FOLDER_SUMMARY</code>、<code>DRIVE_FOLDER_SURVEY</code>、<code>DRIVE_FOLDER_REPORT</code>）に保存されています。フォルダを変更する場合はスクリプトプロパティを更新してください。</div>
   </div>
 
+  <!-- ===== 17. Zoom録画・YouTube自動アップロード ===== -->
+  <h2 id="sec17"><i class="fas fa-video"></i> 17. Zoom録画・YouTube自動アップロード</h2>
+
+  <p>Zoomミーティング終了後、録画の共有リンクを自動取得し、さらにYouTubeに非公開動画として自動アップロードする機能です。</p>
+
+  <h3><i class="fas fa-cogs"></i> 17.1 全体フロー</h3>
+  <div class="flowchart">
+    <div class="flowchart-step auto">
+      <div class="step-date">
+        <i class="fas fa-video"></i> Zoomミーティング終了
+        <span class="badge">自動</span>
+      </div>
+      <ul>
+        <li>Zoomクラウド録画が自動保存される（<code>auto_recording: 'cloud'</code>）</li>
+      </ul>
+    </div>
+    <div class="flowchart-step auto">
+      <div class="step-date">
+        <i class="fas fa-clock"></i> 1時間以内（processZoomRecordingsトリガー）
+        <span class="badge">自動</span>
+      </div>
+      <ul>
+        <li>Zoom APIから過去48時間の録画一覧を取得</li>
+        <li>スプレッドシートのZoom URL（R列）と照合し、未処理の録画を特定</li>
+        <li>録画共有リンクを<strong>AB列</strong>に自動保存</li>
+        <li>リーダーに録画リンク＋パスワード付きメールを自動送信</li>
+      </ul>
+    </div>
+    <div class="flowchart-step auto">
+      <div class="step-date">
+        <i class="fab fa-youtube" style="color: #c00;"></i> YouTube非公開アップロード
+        <span class="badge">自動</span>
+      </div>
+      <ul>
+        <li>Cloud Function（Google Cloud）経由でZoom録画（MP4）をYouTubeに非公開アップロード</li>
+        <li>YouTube URLを<strong>AC列</strong>に自動保存</li>
+        <li>管理者に「YouTube Studioでリーダーに共有してください」メールを送信</li>
+      </ul>
+    </div>
+    <div class="flowchart-step">
+      <div class="step-date">
+        <i class="fas fa-share-alt"></i> 管理者の作業（手動）
+      </div>
+      <ul>
+        <li>メールに記載のYouTube Studio共有リンクをクリック</li>
+        <li>リーダーのメールアドレスを入力して共有</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>YouTubeの自動字幕（文字起こし）が利用可能なため、リーダーは診断報告書作成時に録画と字幕の両方を活用できます。</div>
+  </div>
+
+  <h3><i class="fas fa-gear"></i> 17.2 セットアップ・設定確認</h3>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>操作</th>
+          <th>エンドポイント</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>YouTube設定確認</strong></td>
+          <td><code>?action=youtube-status</code></td>
+          <td>ENABLED、Cloud Function URL、Secretの設定状態を確認</td>
+        </tr>
+        <tr>
+          <td><strong>YouTube設定登録</strong></td>
+          <td><code>?action=setup-youtube&amp;cfUrl=URL&amp;cfSecret=SECRET</code></td>
+          <td>Cloud FunctionのURLとシークレットをスクリプトプロパティに保存</td>
+        </tr>
+        <tr>
+          <td><strong>録画手動チェック</strong></td>
+          <td><code>?action=check-recordings</code></td>
+          <td>録画チェック処理を即座に実行（トリガーを待たずに確認）</td>
+        </tr>
+        <tr>
+          <td><strong>録画トリガー設定</strong></td>
+          <td><code>?action=setup-recording-trigger</code></td>
+          <td>1時間ごとの録画チェックトリガーをセットアップ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><i class="fas fa-cloud"></i> 17.3 Cloud Function構成</h3>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>値</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>関数名</strong></td>
+          <td><code>zoom-to-youtube</code></td>
+        </tr>
+        <tr>
+          <td><strong>リージョン</strong></td>
+          <td><code>asia-northeast1</code>（東京）</td>
+        </tr>
+        <tr>
+          <td><strong>ランタイム</strong></td>
+          <td>Python 3.11（2nd gen）</td>
+        </tr>
+        <tr>
+          <td><strong>GCPプロジェクト</strong></td>
+          <td><code>kg-consultation</code></td>
+        </tr>
+        <tr>
+          <td><strong>URL</strong></td>
+          <td><span class="url-cell">https://asia-northeast1-kg-consultation.cloudfunctions.net/zoom-to-youtube</span></td>
+        </tr>
+        <tr>
+          <td><strong>シークレット</strong></td>
+          <td>Secret Manager経由（SHARED_SECRET, YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div><strong>YouTube OAuthトークンの更新:</strong> YouTube APIのリフレッシュトークンは長期間有効ですが、Googleアカウントのパスワード変更やアプリの権限取消しにより無効化される場合があります。その場合はSecret Managerの <code>youtube-refresh-token</code> を更新してCloud Functionを再デプロイしてください。</div>
+  </div>
+
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 4.3</span>&emsp;|&emsp;2025年6月 作成 / 2026年2月 更新（同意書/NDA用語統一・リマインド詳細化）
+      <span class="version">Version 4.4</span>&emsp;|&emsp;2025年6月 作成 / 2026年3月 更新（Zoom録画・YouTube自動アップロード追記）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 中小企業経営診断研究会
