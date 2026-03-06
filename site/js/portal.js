@@ -127,8 +127,6 @@ async function router() {
         case '/dashboard': await renderDashboard(main); break;
         case '/shifts': await renderShifts(main); break;
         case '/cases': await renderCases(main); break;
-        case '/evaluations': await renderEvaluations(main); break;
-        case '/evaluation-detail': await renderEvaluationDetail(main, params); break;
         case '/news': await renderNews(main); break;
         case '/profile': await renderProfile(main); break;
         default: window.location.hash = '#/dashboard';
@@ -270,24 +268,72 @@ async function renderShifts(container) {
         '<span>' + PORTAL.shiftYear + '年' + PORTAL.shiftMonth + '月</span>' +
         '<button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button></div>';
 
-    if (!res.success || !res.shifts || res.shifts.length === 0) {
-        html += '<div class="empty-state"><i class="far fa-calendar-times"></i>この月の日程はありません</div>';
-    } else {
-        html += '<div class="shift-list">';
+    // Build calendar
+    const year = PORTAL.shiftYear;
+    const month = PORTAL.shiftMonth;
+    const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const DOW = ['日', '月', '火', '水', '木', '金', '土'];
+
+    // Map shifts by day number
+    const shiftsByDay = {};
+    if (res.success && res.shifts) {
         res.shifts.forEach(s => {
-            const cls = s.participating ? 'participating' : (s.bookingStatus === '予約済み' ? 'booked' : '');
-            const dateParts = s.date.split('/');
-            html += '<div class="shift-item ' + cls + '">' +
-                '<div class="shift-date"><div class="shift-date-num">' + parseInt(dateParts[2]) + '</div><div class="shift-date-day">' + escapeHTML(s.dayOfWeek) + '</div></div>' +
-                '<div class="shift-info"><strong>' + escapeHTML(s.time) + ' ' + escapeHTML(s.method) + '</strong>' +
-                '<div class="shift-meta">予約: ' + escapeHTML(s.bookingStatus || '未定') + '</div></div>' +
-                '<div class="shift-score">配置<br><strong>' + s.score + '</strong>pt</div>' +
-                '<button class="shift-toggle-btn ' + (s.participating ? 'leave' : 'join') + '" onclick="toggleShift(' + s.row + ',' + !s.participating + ',this)" ' +
-                (s.bookable === '不可' ? 'disabled' : '') + '>' +
-                (s.participating ? '取消' : '参加') + '</button></div>';
+            const day = parseInt(s.date.split('/')[2]);
+            if (!shiftsByDay[day]) shiftsByDay[day] = [];
+            shiftsByDay[day].push(s);
         });
+    }
+
+    html += '<div class="cal-grid">';
+    // Day-of-week header
+    DOW.forEach((d, i) => {
+        const cls = i === 0 ? ' cal-sun' : (i === 6 ? ' cal-sat' : '');
+        html += '<div class="cal-dow' + cls + '">' + d + '</div>';
+    });
+    // Blank cells before 1st
+    for (let i = 0; i < firstDay; i++) html += '<div class="cal-cell cal-empty"></div>';
+    // Day cells
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dow = (firstDay + d - 1) % 7;
+        const isToday = (d === new Date().getDate() && month === new Date().getMonth() + 1 && year === new Date().getFullYear());
+        let cls = 'cal-cell';
+        if (dow === 0) cls += ' cal-sun';
+        if (dow === 6) cls += ' cal-sat';
+        if (isToday) cls += ' cal-today';
+
+        const shifts = shiftsByDay[d] || [];
+        const hasShift = shifts.length > 0;
+        const participating = shifts.some(s => s.participating);
+        if (participating) cls += ' cal-participating';
+        else if (hasShift) cls += ' cal-has-shift';
+
+        html += '<div class="' + cls + '">';
+        html += '<div class="cal-day-num">' + d + '</div>';
+        if (hasShift) {
+            shifts.forEach(s => {
+                const booked = s.bookingStatus === '予約済み';
+                html += '<div class="cal-shift' + (s.participating ? ' mine' : '') + (booked ? ' booked' : '') + '">';
+                html += '<span class="cal-shift-time">' + escapeHTML(s.time) + '</span>';
+                html += '<span class="cal-shift-method">' + escapeHTML(s.method) + '</span>';
+                if (s.participating) {
+                    html += '<span class="cal-shift-badge joined">参加済</span>';
+                } else if (s.bookable !== '不可') {
+                    html += '<button class="cal-join-btn" onclick="event.stopPropagation();toggleShift(' + s.row + ',true,this)">参加</button>';
+                }
+                html += '</div>';
+            });
+        }
         html += '</div>';
     }
+    html += '</div>';
+
+    // Legend
+    html += '<div class="cal-legend">' +
+        '<span><span class="cal-legend-dot participating"></span>参加済</span>' +
+        '<span><span class="cal-legend-dot has-shift"></span>日程あり</span>' +
+        '<span><span class="cal-legend-dot booked"></span>予約済み</span>' +
+        '</div>';
 
     html += '</div>';
     container.innerHTML = html;
@@ -301,18 +347,23 @@ function changeMonth(delta) {
 }
 
 async function toggleShift(row, join, el) {
+    // 参加のみ許可（取消は不可）
+    if (!join) {
+        alert('シフトの取り消しはできません。管理者にご連絡ください。');
+        return;
+    }
     const btn = el || document.activeElement;
     btn.disabled = true;
     btn.textContent = '処理中...';
 
-    const res = await portalFetch('portal-shift-toggle', { row: String(row), join: String(join) });
+    const res = await portalFetch('portal-shift-toggle', { row: String(row), join: 'true' });
 
     if (res.success) {
         renderShifts(document.getElementById('portalMain'));
     } else {
         alert(res.message || 'エラーが発生しました');
         btn.disabled = false;
-        btn.textContent = join ? '参加' : '取消';
+        btn.textContent = '参加';
     }
 }
 
@@ -523,6 +574,15 @@ async function renderProfile(container) {
             }
         });
         html += '</div>';
+
+        // Profile change request
+        html += '<div class="portal-card"><h3><i class="fas fa-edit"></i> プロフィール変更依頼</h3>' +
+            '<p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem">変更したい内容を記入して送信してください。管理者が確認後、更新いたします。</p>' +
+            '<form onsubmit="submitProfileChange(event)">' +
+            '<textarea class="news-form-textarea" id="profileChangeDetail" placeholder="例：電話番号を 090-xxxx-xxxx に変更したい\n得意テーマに「IT戦略」を追加したい" required style="min-height:100px"></textarea>' +
+            '<button type="submit" class="news-submit-btn" id="profileChangeBtn" style="margin-top:0.8rem">' +
+            '<i class="fas fa-paper-plane" style="margin-right:0.3rem"></i>変更を依頼する</button>' +
+            '</form><div id="profileChangeMsg" style="margin-top:0.5rem;font-size:0.8rem"></div></div>';
     }
 
     // Logout button
@@ -534,356 +594,26 @@ async function renderProfile(container) {
     container.innerHTML = html;
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// Evaluations
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const EVAL_CATEGORY_LABELS = {
-    c1: '問題把握', c2: '解決策', c3: 'コミュニケーション',
-    c4: '時間管理', c5: '論理的展開', c6: '倫理・自律性'
-};
-
-const EVAL_STATUS_MAP = {
-    '完了': 'complete', 'AI完了': 'ai-complete', 'AI評価中': 'running',
-    '人間評価中': 'ai-complete', 'エラー': 'error', '未評価': ''
-};
-
-function getEvalScoreColor(score) {
-    if (score >= 80) return '#28a745';
-    if (score >= 60) return '#ffc107';
-    return '#dc3545';
-}
-
-async function renderEvaluations(container) {
-    container.innerHTML = '<div class="portal-container"><div class="loading" style="padding:3rem 0;text-align:center"><i class="fas fa-spinner fa-spin"></i> 評価データを読み込み中...</div></div>';
-
-    const [statsRes, listRes] = await Promise.all([
-        portalFetch('evaluation-stats'),
-        portalFetch('portal-evaluations', { limit: '50' })
-    ]);
-
-    let html = '<div class="portal-container">';
-    html += '<h2 class="portal-page-title"><i class="fas fa-chart-bar"></i> コンサルタント評価</h2>';
-
-    // Summary cards
-    if (statsRes.success) {
-        html += '<div class="eval-summary-grid">' +
-            '<div class="eval-summary-card"><div class="eval-summary-num">' + (statsRes.totalEvaluations || 0) + '</div><div class="eval-summary-label">総評価数</div></div>' +
-            '<div class="eval-summary-card"><div class="eval-summary-num" style="color:' + getEvalScoreColor(statsRes.averageScore || 0) + '">' + (statsRes.averageScore || 0) + '<small>/100</small></div><div class="eval-summary-label">平均スコア</div></div>';
-
-        if (statsRes.categoryAverages) {
-            const cats = Object.keys(EVAL_CATEGORY_LABELS);
-            const topCat = cats.reduce((a, b) => (statsRes.categoryAverages[a] || 0) >= (statsRes.categoryAverages[b] || 0) ? a : b);
-            html += '<div class="eval-summary-card"><div class="eval-summary-num" style="font-size:1.2rem">' + EVAL_CATEGORY_LABELS[topCat] + '</div><div class="eval-summary-label">最高カテゴリ</div></div>';
-        }
-        html += '</div>';
-    }
-
-    // Admin: run evaluation button
-    if (PORTAL.session && PORTAL.session.role === 'admin') {
-        html += '<div class="portal-card"><h3><i class="fas fa-play-circle"></i> 評価を実行</h3>' +
-            '<p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.8rem">予約管理シートの行番号を指定して評価を実行します（文字起こし済みが必要）</p>' +
-            '<div style="display:flex;gap:0.5rem;align-items:center">' +
-            '<input type="number" id="evalRunRow" min="2" placeholder="行番号" style="padding:8px 12px;border:2px solid var(--border-light);border-radius:8px;width:120px;font-size:0.85rem">' +
-            '<button class="eval-submit-btn" id="evalRunBtn" onclick="runPortalEvaluation()">実行</button>' +
-            '</div><div id="evalRunMsg" style="margin-top:0.5rem;font-size:0.8rem"></div></div>';
-    }
-
-    // Filter
-    html += '<div class="case-filters" style="margin-top:1rem">';
-    const statuses = ['all', '完了', 'AI完了', '人間評価中', 'エラー'];
-    statuses.forEach(s => {
-        const label = s === 'all' ? 'すべて' : s;
-        const active = (PORTAL.evalFilter || 'all') === s ? 'active' : '';
-        html += '<button class="case-filter-btn ' + active + '" onclick="filterEvals(\'' + s + '\')">' + label + '</button>';
-    });
-    html += '</div>';
-
-    // Evaluation list
-    if (listRes.success && listRes.results && listRes.results.length > 0) {
-        const filtered = (PORTAL.evalFilter && PORTAL.evalFilter !== 'all')
-            ? listRes.results.filter(r => r.status === PORTAL.evalFilter)
-            : listRes.results;
-
-        if (filtered.length === 0) {
-            html += '<div class="empty-state" style="margin-top:1rem">該当する評価はありません</div>';
-        } else {
-            filtered.forEach(r => {
-                const statusCls = EVAL_STATUS_MAP[r.status] || '';
-                html += '<div class="eval-card status-' + statusCls + '" onclick="window.location.hash=\'#/evaluation-detail?id=' + r.evalId + '\'">' +
-                    '<div class="eval-card-header"><h4>' + escapeHTML(r.consultantName || '未設定') + '</h4>' +
-                    '<span class="eval-score-badge">' + (r.totalScore || 0) + '</span></div>' +
-                    '<div class="eval-card-meta">' +
-                    '<span><i class="far fa-calendar"></i> ' + escapeHTML(r.evalDate || '') + '</span>' +
-                    '<span><i class="fas fa-building"></i> ' + escapeHTML(r.companyName || '') + '</span>' +
-                    '<span class="eval-status-badge ' + statusCls + '">' + escapeHTML(r.status || '') + '</span>' +
-                    '</div></div>';
-            });
-        }
-        html += '<p style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">合計: ' + listRes.total + '件</p>';
-    } else {
-        html += '<div class="empty-state" style="margin-top:2rem"><i class="fas fa-chart-bar"></i>評価データがまだありません</div>';
-    }
-
-    html += '</div>';
-    container.innerHTML = html;
-    window._evalData = listRes;
-}
-
-function filterEvals(status) {
-    PORTAL.evalFilter = status;
-    renderEvaluations(document.getElementById('portalMain'));
-}
-
-async function runPortalEvaluation() {
-    const row = document.getElementById('evalRunRow').value;
-    const btn = document.getElementById('evalRunBtn');
-    const msg = document.getElementById('evalRunMsg');
-    if (!row) { msg.innerHTML = '<span style="color:#dc3545">行番号を入力してください</span>'; return; }
+async function submitProfileChange(e) {
+    e.preventDefault();
+    const btn = document.getElementById('profileChangeBtn');
+    const msg = document.getElementById('profileChangeMsg');
+    const detail = document.getElementById('profileChangeDetail').value.trim();
+    if (!detail) return;
 
     btn.disabled = true;
-    btn.textContent = '実行中...';
-    msg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 評価を実行中（数分かかる場合があります）...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 送信中...';
 
-    const res = await portalFetch('portal-run-evaluation', { row });
+    const res = await portalFetch('portal-profile-change', { detail });
+
     if (res.success) {
-        msg.innerHTML = '<span style="color:#28a745"><i class="fas fa-check-circle"></i> ' + escapeHTML(res.message || '完了') + '</span>';
-        setTimeout(() => renderEvaluations(document.getElementById('portalMain')), 2000);
+        msg.innerHTML = '<span style="color:#155724;background:#d4edda;padding:6px 12px;border-radius:6px;display:inline-block"><i class="fas fa-check-circle"></i> ' + escapeHTML(res.message) + '</span>';
+        document.getElementById('profileChangeDetail').value = '';
     } else {
-        msg.innerHTML = '<span style="color:#dc3545"><i class="fas fa-exclamation-circle"></i> ' + escapeHTML(res.message || res.error || 'エラー') + '</span>';
+        msg.innerHTML = '<span style="color:#721c24;background:#f8d7da;padding:6px 12px;border-radius:6px;display:inline-block"><i class="fas fa-exclamation-circle"></i> ' + escapeHTML(res.message || 'エラーが発生しました') + '</span>';
     }
     btn.disabled = false;
-    btn.textContent = '実行';
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// Evaluation Detail
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const EVAL_ITEM_NAMES = {
-    '1': '傾聴・受容', '2': '質問力・深掘り', '3': '本質課題の特定', '4': '情報収集の網羅性',
-    '5': '解決策の具体性', '6': '複数選択肢の提示', '7': '実現可能性への配慮', '8': '専門知識の活用', '9': 'リスク説明',
-    '10': 'わかりやすさ', '11': '信頼関係構築', '12': '要約・確認', '13': '言葉遣い',
-    '14': '時間配分', '15': '議論の進行管理', '16': 'ネクストステップ',
-    '17': '論理構成', '18': '根拠に基づく説明', '19': '構造化・可視化',
-    '20': '自律性尊重', '21': '守秘義務・倫理', '22': '継続的改善'
-};
-
-const ITEM_TO_CATEGORY = {
-    '1': 'c1', '2': 'c1', '3': 'c1', '4': 'c1',
-    '5': 'c2', '6': 'c2', '7': 'c2', '8': 'c2', '9': 'c2',
-    '10': 'c3', '11': 'c3', '12': 'c3', '13': 'c3',
-    '14': 'c4', '15': 'c4', '16': 'c4',
-    '17': 'c5', '18': 'c5', '19': 'c5',
-    '20': 'c6', '21': 'c6', '22': 'c6'
-};
-
-async function renderEvaluationDetail(container, params) {
-    container.innerHTML = '<div class="portal-container"><div class="loading" style="padding:3rem 0;text-align:center"><i class="fas fa-spinner fa-spin"></i> 評価詳細を読み込み中...</div></div>';
-
-    const evalId = params.id;
-    if (!evalId) { window.location.hash = '#/evaluations'; return; }
-
-    const res = await portalFetch('portal-evaluation-detail', { id: evalId });
-    if (!res.success || !res.evaluation) {
-        container.innerHTML = '<div class="portal-container"><div class="empty-state"><i class="fas fa-exclamation-circle"></i>評価データが見つかりません</div><a href="#/evaluations" style="display:block;text-align:center;margin-top:1rem;font-size:0.85rem;color:var(--kgu-blue)">一覧に戻る</a></div>';
-        return;
-    }
-
-    const ev = res.evaluation;
-    const scoreColor = getEvalScoreColor(ev.totalScore);
-
-    let html = '<div class="portal-container">';
-    html += '<a href="#/evaluations" style="font-size:0.8rem;color:var(--kgu-blue);text-decoration:none"><i class="fas fa-arrow-left"></i> 評価一覧に戻る</a>';
-
-    // Header
-    html += '<div class="eval-detail-header" style="margin-top:1rem">' +
-        '<div class="eval-score-circle" style="border-color:' + scoreColor + '"><span style="color:' + scoreColor + '">' + ev.totalScore + '</span></div>' +
-        '<div class="eval-detail-info"><h3>' + escapeHTML(ev.consultantName || '未設定') + '</h3>' +
-        '<p>' + escapeHTML(ev.companyName || '') + ' | ' + escapeHTML(ev.evalDate || '') + '</p>' +
-        '<p>AI: ' + ev.aiTotal + '/90 + 人間: ' + ev.humanTotal + '/10 = <strong>' + ev.totalScore + '/100</strong></p>' +
-        '<span class="eval-status-badge ' + (EVAL_STATUS_MAP[ev.status] || '') + '">' + escapeHTML(ev.status || '') + '</span>' +
-        '</div></div>';
-
-    // Radar chart
-    html += '<div class="portal-card"><h3><i class="fas fa-chart-radar"></i> カテゴリ別スコア</h3>' +
-        '<div class="eval-radar-wrap"><canvas id="evalRadar" width="350" height="280"></canvas></div></div>';
-
-    // 22-item breakdown
-    html += '<div class="portal-card"><h3><i class="fas fa-list-ol"></i> 22項目ブレークダウン</h3>';
-    const catOrder = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'];
-    catOrder.forEach(cat => {
-        const catLabel = EVAL_CATEGORY_LABELS[cat];
-        const catScore = ev.categories[cat] || 0;
-        const items = Object.keys(ITEM_TO_CATEGORY).filter(k => ITEM_TO_CATEGORY[k] === cat);
-
-        html += '<div class="eval-category-section">' +
-            '<div class="eval-category-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'\':\'none\'">' +
-            '<h4>' + catLabel + '</h4><span class="eval-category-score">' + catScore.toFixed(1) + '</span></div>' +
-            '<div style="display:none">';
-
-        items.forEach(num => {
-            const itemName = EVAL_ITEM_NAMES[num] || 'No.' + num;
-            const score = (ev.itemScores && ev.itemScores[num]) || 3;
-            const pct = (score / 5) * 100;
-            const evid = (ev.evidence && ev.evidence[num]) || {};
-            const fillColor = score >= 4 ? '#28a745' : (score >= 3 ? '#ffc107' : '#dc3545');
-
-            html += '<div class="eval-item">' +
-                '<div class="eval-item-header"><span class="eval-item-name">No.' + num + ' ' + itemName + '</span><span class="eval-item-score">' + score + '/5</span></div>' +
-                '<div class="eval-progress"><div class="eval-progress-fill" style="width:' + pct + '%;background:' + fillColor + '"></div></div>';
-            if (evid.evidence) {
-                html += '<div class="eval-evidence">"' + escapeHTML(evid.evidence).substring(0, 200) + '"</div>';
-            }
-            html += '</div>';
-        });
-
-        html += '</div></div>';
-    });
-    html += '</div>';
-
-    // NG words
-    if (ev.ngWords && ev.ngWords.length > 0) {
-        html += '<div class="portal-card"><h3><i class="fas fa-exclamation-triangle"></i> NG語句検出</h3><div class="eval-ng-section">';
-        ev.ngWords.forEach(ng => {
-            html += '<div class="eval-ng-item"><span class="eval-ng-cat ' + (ng.category || 'C') + '">' + escapeHTML(ng.category || 'C') + '</span>' +
-                '<span>"' + escapeHTML(ng.text || '') + '"</span>' +
-                '<span style="color:var(--text-muted);font-size:0.75rem">' + escapeHTML(ng.context || '') + '</span></div>';
-        });
-        html += '</div></div>';
-    }
-
-    // Human score form (leader+ and AI complete)
-    if (PORTAL.session && (PORTAL.session.role === 'admin' || PORTAL.session.role === 'leader') &&
-        (ev.status === 'AI完了' || ev.status === '人間評価中' || ev.status === '完了')) {
-        html += '<div class="portal-card"><h3><i class="fas fa-user-edit"></i> 人間評価</h3>' +
-            '<p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem">AI評価では測れない対面品質を評価してください</p>' +
-            '<form class="eval-human-form" onsubmit="submitHumanScore(event,\'' + ev.evalId + '\')">' +
-            '<div class="eval-slider-group"><label>H1: 相談時の雰囲気 <span id="h1Val">' + (ev.humanScores.h1 || 0) + '</span>/4</label>' +
-            '<input type="range" id="h1" min="0" max="4" value="' + (ev.humanScores.h1 || 0) + '" oninput="document.getElementById(\'h1Val\').textContent=this.value"></div>' +
-            '<div class="eval-slider-group"><label>H2: 相談者の態度変化 <span id="h2Val">' + (ev.humanScores.h2 || 0) + '</span>/3</label>' +
-            '<input type="range" id="h2" min="0" max="3" value="' + (ev.humanScores.h2 || 0) + '" oninput="document.getElementById(\'h2Val\').textContent=this.value"></div>' +
-            '<div class="eval-slider-group"><label>H3: 身だしなみ・マナー <span id="h3Val">' + (ev.humanScores.h3 || 0) + '</span>/3</label>' +
-            '<input type="range" id="h3" min="0" max="3" value="' + (ev.humanScores.h3 || 0) + '" oninput="document.getElementById(\'h3Val\').textContent=this.value"></div>' +
-            '<button type="submit" class="eval-submit-btn" id="humanScoreBtn"><i class="fas fa-save" style="margin-right:0.3rem"></i>採点を登録</button>' +
-            '</form><div id="humanScoreMsg" style="margin-top:0.5rem;font-size:0.8rem"></div></div>';
-    }
-
-    // Growth chart (same consultant history)
-    html += '<div class="portal-card"><h3><i class="fas fa-chart-line"></i> 成長推移</h3>' +
-        '<div id="growthChartWrap"><div class="loading" style="text-align:center;padding:1rem"><i class="fas fa-spinner fa-spin"></i></div></div></div>';
-
-    html += '</div>';
-    container.innerHTML = html;
-
-    // Draw radar chart
-    drawEvalRadar(ev);
-
-    // Load growth data
-    if (ev.consultantName) {
-        loadGrowthChart(ev.consultantName);
-    }
-}
-
-function drawEvalRadar(ev) {
-    const ctx = document.getElementById('evalRadar');
-    if (!ctx) return;
-
-    const cats = ev.categories || {};
-    // Normalize category scores to a 0-5 display scale for radar
-    const catMaxScaled = { c1: 16.4, c2: 20.5, c3: 16.4, c4: 12.3, c5: 12.3, c6: 12.3 };
-    const data = Object.keys(EVAL_CATEGORY_LABELS).map(k => {
-        const maxVal = catMaxScaled[k] || 15;
-        return Math.round((cats[k] || 0) / maxVal * 5 * 10) / 10;
-    });
-
-    new Chart(ctx, {
-        type: 'radar',
-        data: {
-            labels: Object.values(EVAL_CATEGORY_LABELS),
-            datasets: [{
-                data: data,
-                backgroundColor: 'rgba(15,35,80,0.15)',
-                borderColor: '#0F2350',
-                borderWidth: 2,
-                pointBackgroundColor: '#0F2350',
-                pointRadius: 4
-            }]
-        },
-        options: {
-            responsive: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                r: {
-                    min: 0, max: 5,
-                    ticks: { stepSize: 1, font: { size: 10 } },
-                    pointLabels: { font: { size: 11, family: 'Noto Sans JP' } }
-                }
-            }
-        }
-    });
-}
-
-async function loadGrowthChart(consultantName) {
-    const wrap = document.getElementById('growthChartWrap');
-    const res = await portalFetch('portal-evaluation-growth', { consultant: consultantName });
-
-    if (!res.success || !res.history || res.history.length < 2) {
-        wrap.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i>成長データが不足しています（2件以上の評価が必要）</div>';
-        return;
-    }
-
-    wrap.innerHTML = '<canvas id="growthChart" width="500" height="250"></canvas>';
-    const ctx = document.getElementById('growthChart');
-
-    const labels = res.history.map(h => h.evalDate);
-    const scores = res.history.map(h => h.totalScore);
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '総合スコア',
-                data: scores,
-                borderColor: '#0F2350',
-                backgroundColor: 'rgba(15,35,80,0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { min: 0, max: 100, ticks: { stepSize: 20 } }
-            }
-        }
-    });
-}
-
-async function submitHumanScore(e, evalId) {
-    e.preventDefault();
-    const btn = document.getElementById('humanScoreBtn');
-    const msg = document.getElementById('humanScoreMsg');
-    const h1 = document.getElementById('h1').value;
-    const h2 = document.getElementById('h2').value;
-    const h3 = document.getElementById('h3').value;
-
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登録中...';
-
-    const res = await portalFetch('portal-evaluation-human-score', { id: evalId, h1, h2, h3 });
-
-    if (res.success) {
-        msg.innerHTML = '<span style="color:#28a745"><i class="fas fa-check-circle"></i> ' + escapeHTML(res.message || '登録完了') + '</span>';
-        setTimeout(() => renderEvaluationDetail(document.getElementById('portalMain'), { id: evalId }), 1500);
-    } else {
-        msg.innerHTML = '<span style="color:#dc3545"><i class="fas fa-exclamation-circle"></i> ' + escapeHTML(res.message || 'エラー') + '</span>';
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save" style="margin-right:0.3rem"></i>採点を登録';
-    }
+    btn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:0.3rem"></i>変更を依頼する';
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━

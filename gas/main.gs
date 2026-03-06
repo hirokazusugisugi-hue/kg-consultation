@@ -1329,6 +1329,20 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // プロフィール変更依頼
+    if (action === 'portal-profile-change') {
+      var pcSession = requireAuth(e);
+      if (!pcSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var pcResult = requestProfileChange(pcSession, e.parameter.detail || '');
+      return ContentService
+        .createTextOutput(JSON.stringify(pcResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // プロフィール取得
     if (action === 'portal-profile') {
       var profSession = requireAuth(e);

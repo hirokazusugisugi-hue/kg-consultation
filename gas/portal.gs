@@ -22,6 +22,14 @@
 function toggleShiftParticipation(session, rowStr, join) {
   if (!rowStr) return { success: false, message: '行番号が指定されていません' };
 
+  // 取消は不可（管理者以外）
+  if (!join) {
+    var isAdmin = PORTAL_CONFIG.ADMIN_EMAILS.indexOf(session.email.toLowerCase()) >= 0;
+    if (!isAdmin) {
+      return { success: false, message: 'シフトの取り消しはできません。管理者にご連絡ください。' };
+    }
+  }
+
   var row = parseInt(rowStr);
   if (isNaN(row) || row < 2) return { success: false, message: '無効な行番号です' };
 
@@ -162,6 +170,45 @@ function postPortalNews(session, params) {
     return { success: true, message: 'ニュースを投稿しました', id: result.id || '' };
   } catch (e) {
     return { success: false, message: 'ニュース投稿に失敗しました: ' + e.message };
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// プロフィール変更依頼
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * プロフィール変更依頼を管理者にメール送信
+ * @param {Object} session - セッションデータ
+ * @param {string} detail - 変更依頼の内容
+ * @returns {Object} { success, message }
+ */
+function requestProfileChange(session, detail) {
+  if (!detail || !detail.trim()) {
+    return { success: false, message: '変更内容を入力してください' };
+  }
+
+  var subject = '【ポータル】プロフィール変更依頼 - ' + session.name;
+  var body = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    'プロフィール変更依頼\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+    '依頼者: ' + session.name + '\n' +
+    'メール: ' + session.email + '\n' +
+    'ロール: ' + session.role + '\n' +
+    '日時: ' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm') + '\n\n' +
+    '■ 変更内容:\n' + detail.trim() + '\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    'スタッフポータルから自動送信';
+
+  try {
+    CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+      GmailApp.sendEmail(adminEmail, subject, body, { name: CONFIG.SENDER_NAME });
+    });
+    console.log('プロフィール変更依頼送信: ' + session.name);
+    return { success: true, message: '変更依頼を管理者に送信しました' };
+  } catch (e) {
+    console.error('プロフィール変更依頼エラー:', e);
+    return { success: false, message: '送信に失敗しました: ' + e.message };
   }
 }
 
