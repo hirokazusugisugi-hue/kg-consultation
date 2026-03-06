@@ -55,7 +55,7 @@ function setupScheduleSheet() {
 
   // 予約状況のプルダウン
   const statusRule = SpreadsheetApp.newDataValidation()
-    .requireValueInList(['空き', '予約済み'])
+    .requireValueInList(['空き', '予約済み', 'クローズ'])
     .build();
   sheet.getRange(2, 6, 500, 1).setDataValidation(statusRule);
 
@@ -292,7 +292,7 @@ function getAvailableSchedule(method) {
     }
 
     // 対応可否が「○」かつ予約状況が「空き」かつ予約可能判定が「○」の場合のみ
-    if (isAvailable !== '○' || bookingStatus === '予約済み') {
+    if (isAvailable !== '○' || bookingStatus === '予約済み' || bookingStatus === 'クローズ') {
       continue;
     }
 

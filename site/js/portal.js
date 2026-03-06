@@ -304,25 +304,36 @@ async function renderShifts(container) {
 
         const shifts = shiftsByDay[d] || [];
         const hasShift = shifts.length > 0;
+        const activeShifts = shifts.filter(s => s.bookingStatus !== 'クローズ');
         const participating = shifts.some(s => s.participating);
         if (participating) cls += ' cal-participating';
-        else if (hasShift) cls += ' cal-has-shift';
+        else if (activeShifts.length > 0) cls += ' cal-has-shift';
 
         html += '<div class="' + cls + '">';
         html += '<div class="cal-day-num">' + d + '</div>';
         if (hasShift) {
             shifts.forEach(s => {
                 const booked = s.bookingStatus === '予約済み';
-                html += '<div class="cal-shift' + (s.participating ? ' mine' : '') + (booked ? ' booked' : '') + '">';
+                const closed = s.bookingStatus === 'クローズ';
+                // メソッド表示名変換
+                let methodLabel = s.method;
+                if (methodLabel === '両方') methodLabel = 'Zoom＋対面';
+                else if (methodLabel === 'オンライン') methodLabel = 'Zoom';
+
+                html += '<div class="cal-shift' + (s.participating ? ' mine' : '') + (booked ? ' booked' : '') + (closed ? ' closed' : '') + '">';
                 html += '<span class="cal-shift-time">' + escapeHTML(s.time) + '</span>';
-                html += '<span class="cal-shift-method">' + escapeHTML(s.method) + '</span>';
-                if (booked) {
+                html += '<span class="cal-shift-method">' + escapeHTML(methodLabel) + '</span>';
+                if (closed) {
+                    html += '<span class="cal-shift-badge closed">クローズ</span>';
+                } else if (booked) {
                     html += '<span class="cal-shift-badge confirmed">確定</span>';
                 }
-                if (s.participating) {
-                    html += '<span class="cal-shift-badge joined">参加予定</span>';
-                } else if (s.bookable !== '不可') {
-                    html += '<button class="cal-join-btn" onclick="event.stopPropagation();toggleShift(' + s.row + ',true,this)">参加を申請</button>';
+                if (!closed) {
+                    if (s.participating) {
+                        html += '<span class="cal-shift-status-text">参加予定</span>';
+                    } else if (s.bookable !== '不可' && !booked) {
+                        html += '<button class="cal-join-btn" onclick="event.stopPropagation();toggleShift(' + s.row + ',true,this)">参加を申請</button>';
+                    }
                 }
                 html += '</div>';
             });
@@ -336,6 +347,7 @@ async function renderShifts(container) {
         '<span><span class="cal-legend-dot confirmed"></span>確定（予約済み）</span>' +
         '<span><span class="cal-legend-dot participating"></span>参加予定</span>' +
         '<span><span class="cal-legend-dot has-shift"></span>日程あり</span>' +
+        '<span><span class="cal-legend-dot closed"></span>クローズ</span>' +
         '</div>';
 
     html += '</div>';

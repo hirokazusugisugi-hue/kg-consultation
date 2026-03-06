@@ -461,6 +461,26 @@ function getMyShifts(session, yearMonth) {
     targetMonth = parseInt(parts[1]);
   }
 
+  // 予約済み枠の実際の相談方法を取得するため予約データを読む
+  var bookedMethods = {};
+  try {
+    var resSheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+    if (resSheet && resSheet.getLastRow() > 1) {
+      var resData = resSheet.getDataRange().getValues();
+      for (var r = 1; r < resData.length; r++) {
+        var confDate = resData[r][COLUMNS.CONFIRMED_DATE];
+        if (!confDate) continue;
+        var parsed = parseConfirmedDateTime(confDate);
+        if (parsed.date && parsed.time) {
+          var key = parsed.date + '_' + parsed.time;
+          var m = (resData[r][COLUMNS.METHOD] || '').toString();
+          if (m === '対面' || m === 'visit') bookedMethods[key] = '対面';
+          else if (m === 'オンライン' || m === 'zoom' || m === 'Zoom') bookedMethods[key] = 'Zoom';
+        }
+      }
+    }
+  } catch (e) { /* ignore */ }
+
   for (var i = 1; i < data.length; i++) {
     var dateVal = data[i][SCHEDULE_COLUMNS.DATE];
     if (!dateVal) continue;
@@ -473,6 +493,21 @@ function getMyShifts(session, yearMonth) {
 
     var members = (data[i][SCHEDULE_COLUMNS.MEMBERS] || '').toString();
     var isParticipating = members.indexOf(memberName) >= 0;
+    var bookingStatus = data[i][SCHEDULE_COLUMNS.BOOKING_STATUS] || '';
+    var slotMethod = data[i][SCHEDULE_COLUMNS.METHOD] || '';
+
+    // 確定枠は予約データから実際の方法を取得
+    var displayMethod = slotMethod;
+    if (bookingStatus === '予約済み') {
+      var dateKey = Utilities.formatDate(date, 'Asia/Tokyo', 'yyyy/MM/dd');
+      var timeVal = data[i][SCHEDULE_COLUMNS.TIME] instanceof Date
+        ? Utilities.formatDate(data[i][SCHEDULE_COLUMNS.TIME], 'Asia/Tokyo', 'HH:mm')
+        : String(data[i][SCHEDULE_COLUMNS.TIME]);
+      var lookupKey = dateKey + '_' + timeVal;
+      if (bookedMethods[lookupKey]) {
+        displayMethod = bookedMethods[lookupKey];
+      }
+    }
 
     shifts.push({
       row: i + 1,
@@ -481,8 +516,8 @@ function getMyShifts(session, yearMonth) {
       time: data[i][SCHEDULE_COLUMNS.TIME] instanceof Date
         ? Utilities.formatDate(data[i][SCHEDULE_COLUMNS.TIME], 'Asia/Tokyo', 'HH:mm')
         : String(data[i][SCHEDULE_COLUMNS.TIME]),
-      method: data[i][SCHEDULE_COLUMNS.METHOD] || '',
-      bookingStatus: data[i][SCHEDULE_COLUMNS.BOOKING_STATUS] || '',
+      method: displayMethod,
+      bookingStatus: bookingStatus,
       participating: isParticipating,
       score: data[i][SCHEDULE_COLUMNS.SCORE] || 0,
       bookable: data[i][SCHEDULE_COLUMNS.BOOKABLE] || ''
