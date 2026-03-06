@@ -290,6 +290,42 @@
         .case-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1rem; flex-wrap: wrap; }
         .case-meta i { margin-right: 0.2rem; }
 
+        .venue-unset-btn {
+            display: inline-block; margin-top: 0.5rem; padding: 4px 12px; border-radius: 4px;
+            font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer;
+            background: #dc3545; color: var(--white); font-family: var(--font-sans);
+        }
+        .venue-unset-btn:hover { background: #c82333; }
+        .venue-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 9999;
+            display: flex; align-items: center; justify-content: center; padding: 1rem;
+        }
+        .venue-dialog {
+            background: var(--white); border-radius: 12px; padding: 1.5rem;
+            max-width: 360px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .venue-dialog h3 { font-size: 1rem; margin-bottom: 0.3rem; }
+        .venue-company { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; }
+        .venue-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.2rem; }
+        .venue-option {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer;
+            font-size: 0.85rem; transition: all 0.2s;
+        }
+        .venue-option:has(input:checked) { border-color: var(--kgu-blue); background: rgba(15,35,80,0.04); }
+        .venue-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+        .venue-cancel-btn {
+            padding: 6px 16px; border-radius: 6px; border: 1px solid var(--border-light);
+            background: var(--white); font-size: 0.8rem; cursor: pointer; font-family: var(--font-sans);
+        }
+        .venue-confirm-btn {
+            padding: 6px 16px; border-radius: 6px; border: none;
+            background: var(--kgu-blue); color: var(--white); font-size: 0.8rem;
+            font-weight: 700; cursor: pointer; font-family: var(--font-sans);
+        }
+        .venue-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
         /* ── NEWS POSTING ── */
         .news-form-group { margin-bottom: 1rem; }
         .news-form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; }

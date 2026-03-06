@@ -419,6 +419,8 @@ async function renderCases(container) {
     } else {
         filtered.forEach(c => {
             const statusCls = STATUS_MAP[c.status] || 'tentative';
+            const isOffline = c.method && c.method !== 'オンライン' && c.method !== 'Zoom';
+            const needsVenue = isOffline && !c.location && c.status !== '確定' && c.status !== '完了' && c.status !== 'キャンセル';
             html += '<div class="case-item"><div class="case-item-header"><h4>' + escapeHTML(c.company || '企業名不明') + '</h4>' +
                 '<span class="case-status ' + statusCls + '">' + escapeHTML(c.status) + '</span></div>' +
                 '<div class="case-meta">' +
@@ -426,8 +428,11 @@ async function renderCases(container) {
                 '<span><i class="fas fa-user"></i> ' + escapeHTML(c.leader || '未定') + '</span>' +
                 '<span><i class="fas fa-tag"></i> ' + escapeHTML(c.theme || '') + '</span>' +
                 '<span><i class="fas fa-desktop"></i> ' + escapeHTML(c.method || '') + '</span>' +
+                (c.location ? '<span><i class="fas fa-map-marker-alt"></i> ' + escapeHTML(c.location) + '</span>' : '') +
                 (c.reportStatus ? '<span><i class="fas fa-file-alt"></i> ' + escapeHTML(c.reportStatus) + '</span>' : '') +
-                '</div></div>';
+                '</div>' +
+                (needsVenue ? '<button class="venue-unset-btn" onclick="openVenueDialog(' + c.row + ',\'' + escapeHTML(c.company || '').replace(/'/g, "\\'") + '\')"><i class="fas fa-map-marker-alt"></i> 会場未設定</button>' : '') +
+                '</div>';
         });
     }
     html += '</div>';
@@ -446,6 +451,46 @@ function filterCases(status) {
         renderCasesFromData(window._portalCases);
     } else {
         renderCases(document.getElementById('portalMain'));
+    }
+}
+
+const VENUE_OPTIONS = ['アプローズタワー 14階', 'アプローズタワー 10階', 'ナレッジサロン', '貸会議室（住友生命）'];
+
+function openVenueDialog(row, company) {
+    let html = '<div class="venue-overlay" id="venueOverlay" onclick="if(event.target===this)closeVenueDialog()">' +
+        '<div class="venue-dialog">' +
+        '<h3><i class="fas fa-map-marker-alt"></i> 会場を選択</h3>' +
+        '<p class="venue-company">' + escapeHTML(company) + '</p>' +
+        '<div class="venue-options">';
+    VENUE_OPTIONS.forEach((v, i) => {
+        html += '<label class="venue-option"><input type="radio" name="venueChoice" value="' + escapeHTML(v) + '"' + (i === 0 ? ' checked' : '') + '> ' + escapeHTML(v) + '</label>';
+    });
+    html += '</div>' +
+        '<div class="venue-actions">' +
+        '<button class="venue-cancel-btn" onclick="closeVenueDialog()">キャンセル</button>' +
+        '<button class="venue-confirm-btn" id="venueConfirmBtn" onclick="confirmVenue(' + row + ')">確定する</button>' +
+        '</div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeVenueDialog() {
+    const el = document.getElementById('venueOverlay');
+    if (el) el.remove();
+}
+
+async function confirmVenue(row) {
+    const selected = document.querySelector('input[name="venueChoice"]:checked');
+    if (!selected) return;
+    const btn = document.getElementById('venueConfirmBtn');
+    btn.disabled = true;
+    btn.textContent = '処理中...';
+    const res = await portalFetch('portal-set-venue', { row: String(row), venue: selected.value });
+    closeVenueDialog();
+    if (res.success) {
+        alert(res.message);
+        renderCases(document.getElementById('portalMain'));
+    } else {
+        alert(res.message || 'エラーが発生しました');
     }
 }
 
@@ -470,6 +515,8 @@ function renderCasesFromData(res) {
     } else {
         filtered.forEach(c => {
             const statusCls = STATUS_MAP[c.status] || 'tentative';
+            const isOffline = c.method && c.method !== 'オンライン' && c.method !== 'Zoom';
+            const needsVenue = isOffline && !c.location && c.status !== '確定' && c.status !== '完了' && c.status !== 'キャンセル';
             html += '<div class="case-item"><div class="case-item-header"><h4>' + escapeHTML(c.company || '企業名不明') + '</h4>' +
                 '<span class="case-status ' + statusCls + '">' + escapeHTML(c.status) + '</span></div>' +
                 '<div class="case-meta">' +
@@ -477,8 +524,11 @@ function renderCasesFromData(res) {
                 '<span><i class="fas fa-user"></i> ' + escapeHTML(c.leader || '未定') + '</span>' +
                 '<span><i class="fas fa-tag"></i> ' + escapeHTML(c.theme || '') + '</span>' +
                 '<span><i class="fas fa-desktop"></i> ' + escapeHTML(c.method || '') + '</span>' +
+                (c.location ? '<span><i class="fas fa-map-marker-alt"></i> ' + escapeHTML(c.location) + '</span>' : '') +
                 (c.reportStatus ? '<span><i class="fas fa-file-alt"></i> ' + escapeHTML(c.reportStatus) + '</span>' : '') +
-                '</div></div>';
+                '</div>' +
+                (needsVenue ? '<button class="venue-unset-btn" onclick="openVenueDialog(' + c.row + ',\'' + escapeHTML(c.company || '').replace(/'/g, "\\'") + '\')"><i class="fas fa-map-marker-alt"></i> 会場未設定</button>' : '') +
+                '</div>';
         });
     }
     html += '</div>';

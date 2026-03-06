@@ -1329,6 +1329,25 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 会場設定+確定
+    if (action === 'portal-set-venue') {
+      var venueSession = requireAuth(e);
+      if (!venueSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (!hasRole(venueSession.role, 'member')) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '権限がありません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var venueResult = setVenueAndConfirm(venueSession, e.parameter);
+      return ContentService
+        .createTextOutput(JSON.stringify(venueResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // プロフィール変更依頼
     if (action === 'portal-profile-change') {
       var pcSession = requireAuth(e);

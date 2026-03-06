@@ -552,6 +552,7 @@ function getMyCases(session) {
 
     cases.push({
       id: data[i][COLUMNS.ID],
+      row: i + 1,
       company: data[i][COLUMNS.COMPANY],
       name: data[i][COLUMNS.NAME],
       industry: data[i][COLUMNS.INDUSTRY],
@@ -561,6 +562,7 @@ function getMyCases(session) {
         ? Utilities.formatDate(data[i][COLUMNS.CONFIRMED_DATE], 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')
         : String(data[i][COLUMNS.CONFIRMED_DATE] || ''),
       method: data[i][COLUMNS.METHOD],
+      location: data[i][COLUMNS.LOCATION] || '',
       leader: leader,
       reportStatus: data[i][COLUMNS.REPORT_STATUS] || '',
       transcriptStatus: data[i][COLUMNS.TRANSCRIPT_STATUS] || ''

@@ -273,10 +273,16 @@ function notifyConsentAgreed(data, signature) {
 電子署名：${signature}
 同意日時：${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
 
-【対応事項】
-会場を確保し、スプレッドシートの場所（N列）を設定後、
-ステータスを「確定」に変更してください。
-確定メールが自動送信されます。
+【対応事項】会場の予約をお願いします。
+
+手順：
+1. スタッフポータルにログイン
+   ${CONFIG.PORTAL.SITE_URL}
+2.「案件」ページを開く
+3. 該当案件の「会場未設定」をタップ
+4. 会場を選択して「確定」をタップ
+
+確定すると相談者に予約確定メールが自動送信されます。
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
   CONFIG.ADMIN_EMAILS.forEach(email => {
@@ -292,7 +298,8 @@ function notifyConsentAgreed(data, signature) {
 希望日時: ${data.date1}
 同意日時: ${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
 
-→ 会場を確保してステータスを「確定」にしてください。`;
+→ 会場の予約をお願いします。
+→ ポータル「案件」から会場を選択して確定してください。`;
 
   sendLineMessage(CONFIG.LINE.GROUP_ID, lineMessage);
 }

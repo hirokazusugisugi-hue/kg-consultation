@@ -241,3 +241,47 @@ function getPortalMembers() {
 
   return { success: true, members: members, total: members.length };
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 会場設定 + 予約確定
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * 会場を設定しステータスを確定に変更（対面相談用）
+ * @param {Object} session - セッションデータ
+ * @param {Object} params - { row, venue }
+ * @returns {Object} { success, message }
+ */
+function setVenueAndConfirm(session, params) {
+  var row = parseInt(params.row);
+  var venue = (params.venue || '').trim();
+  if (!row || isNaN(row) || row < 2) return { success: false, message: '無効な行番号です' };
+  if (!venue) return { success: false, message: '会場を選択してください' };
+
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  if (!sheet) return { success: false, message: 'シートが見つかりません' };
+
+  var data = sheet.getRange(row, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var currentStatus = data[COLUMNS.STATUS];
+  var method = (data[COLUMNS.METHOD] || '').toString();
+
+  // Zoom相談は会場不要
+  if (method === 'オンライン' || method === 'zoom' || method === 'Zoom') {
+    return { success: false, message: 'オンライン相談は会場設定不要です' };
+  }
+
+  // 既に確定済みの場合
+  if (currentStatus === STATUS.CONFIRMED) {
+    return { success: false, message: '既に確定済みです' };
+  }
+
+  // 会場をN列にセット
+  sheet.getRange(row, COLUMNS.LOCATION + 1).setValue(venue);
+
+  // ステータスを確定に変更（onSheetEditトリガーが確定メール送信を処理）
+  sheet.getRange(row, COLUMNS.STATUS + 1).setValue(STATUS.CONFIRMED);
+
+  console.log('会場設定+確定: ' + venue + ' (行' + row + ') by ' + session.name);
+  return { success: true, message: '会場を「' + venue + '」に設定し、予約を確定しました' };
+}
