@@ -1097,115 +1097,103 @@ function doGet(e) {
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // AI診断（Phase 4）
+    // コンサルタント評価（Phase 4 v2）
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    // AI診断手動実行（予約データから）
-    if (action === 'run-diagnosis') {
-      var diagRow = parseInt(e.parameter.row);
-      if (!diagRow || diagRow < 2) {
+    // 評価実行（予約行から）
+    if (action === 'run-evaluation') {
+      var evalRow = parseInt(e.parameter.row);
+      if (!evalRow || evalRow < 2) {
         return ContentService
           .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です' }))
           .setMimeType(ContentService.MimeType.JSON);
       }
-      var diagResult = manualRunDiagnosis(diagRow);
+      var evalResult = manualRunEvaluation(evalRow);
       return ContentService
-        .createTextOutput(JSON.stringify(diagResult))
+        .createTextOutput(JSON.stringify(evalResult))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // AI診断テキスト直接入力実行
-    if (action === 'run-direct-diagnosis') {
-      var directResult = runDirectDiagnosis({
-        text: e.parameter.text || '',
-        company: e.parameter.company || '',
-        industry: e.parameter.industry || '',
-        theme: e.parameter.theme || ''
-      });
-      return ContentService
-        .createTextOutput(JSON.stringify(directResult))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-
-    // 診断結果一覧API
-    if (action === 'diagnosis-results') {
-      var diagResults = getDiagnosisResults({
-        company: e.parameter.company || '',
+    // 評価結果一覧API
+    if (action === 'evaluation-results') {
+      var evalResults = getEvaluationResults({
+        consultant: e.parameter.consultant || '',
+        status: e.parameter.status || '',
         limit: e.parameter.limit || '20',
         offset: e.parameter.offset || '0'
       });
       return ContentService
-        .createTextOutput(JSON.stringify({ success: true, results: diagResults.results, total: diagResults.total }))
+        .createTextOutput(JSON.stringify({ success: true, results: evalResults.results, total: evalResults.total }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 診断結果詳細API
-    if (action === 'diagnosis-detail') {
-      var diagId = e.parameter.id;
-      if (!diagId) {
+    // 評価結果詳細API
+    if (action === 'evaluation-detail') {
+      var evalId = e.parameter.id;
+      if (!evalId) {
         return ContentService
           .createTextOutput(JSON.stringify({ success: false, message: 'id パラメータが必要です' }))
           .setMimeType(ContentService.MimeType.JSON);
       }
-      var diagDetail = getDiagnosisById(diagId);
-      if (!diagDetail) {
+      var evalDetail = getEvaluationById(evalId);
+      if (!evalDetail) {
         return ContentService
-          .createTextOutput(JSON.stringify({ success: false, message: '診断結果が見つかりません: ' + diagId }))
+          .createTextOutput(JSON.stringify({ success: false, message: '評価結果が見つかりません: ' + evalId }))
           .setMimeType(ContentService.MimeType.JSON);
       }
       return ContentService
-        .createTextOutput(JSON.stringify({ success: true, diagnosis: diagDetail }))
+        .createTextOutput(JSON.stringify({ success: true, evaluation: evalDetail }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 企業別診断履歴API
-    if (action === 'diagnosis-history') {
-      var histCompany = e.parameter.company;
-      if (!histCompany) {
+    // コンサルタント別履歴API
+    if (action === 'evaluation-history') {
+      var histConsultant = e.parameter.consultant;
+      if (!histConsultant) {
         return ContentService
-          .createTextOutput(JSON.stringify({ success: false, message: 'company パラメータが必要です' }))
+          .createTextOutput(JSON.stringify({ success: false, message: 'consultant パラメータが必要です' }))
           .setMimeType(ContentService.MimeType.JSON);
       }
-      var histResult = getDiagnosisHistory(histCompany);
+      var histResult = getConsultantHistory(histConsultant);
       return ContentService
-        .createTextOutput(JSON.stringify({ success: true, company: histCompany, history: histResult }))
+        .createTextOutput(JSON.stringify({ success: true, consultant: histConsultant, history: histResult }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 診断統計サマリーAPI
-    if (action === 'diagnosis-stats') {
-      var statsResult = getDiagnosisStats();
+    // 統計サマリーAPI
+    if (action === 'evaluation-stats') {
+      var evalStats = getEvaluationStats();
       return ContentService
-        .createTextOutput(JSON.stringify(statsResult))
+        .createTextOutput(JSON.stringify(evalStats))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // AI診断シートセットアップ（管理用）
-    if (action === 'setup-diagnosis') {
-      var diagSetupResult = setupDiagnosisSheet();
+    // 評価シートセットアップ（管理用）
+    if (action === 'setup-evaluation') {
+      var evalSetupResult = setupEvaluationSheet();
       return ContentService
-        .createTextOutput(JSON.stringify(diagSetupResult))
+        .createTextOutput(JSON.stringify(evalSetupResult))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // AI診断設定確認（管理用）
-    if (action === 'diagnosis-setup') {
-      var diagSetup = checkDiagnosisSetup();
+    // 評価設定確認（管理用）
+    if (action === 'evaluation-setup') {
+      var evalSetup = checkEvaluationSetup();
       return ContentService
-        .createTextOutput(JSON.stringify(diagSetup))
+        .createTextOutput(JSON.stringify(evalSetup))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // AI診断CF設定（管理用）
-    if (action === 'setup-diagnosis-cf') {
+    // 評価CF設定（管理用）
+    if (action === 'setup-evaluation-cf') {
       try {
-        var diagProps = PropertiesService.getScriptProperties();
-        if (e.parameter.cfUrl) diagProps.setProperty('DIAGNOSIS_CF_URL', e.parameter.cfUrl);
-        if (e.parameter.cfSecret) diagProps.setProperty('DIAGNOSIS_CF_SECRET', e.parameter.cfSecret);
+        var evalProps = PropertiesService.getScriptProperties();
+        if (e.parameter.cfUrl) evalProps.setProperty('EVALUATION_CF_URL', e.parameter.cfUrl);
+        if (e.parameter.cfSecret) evalProps.setProperty('EVALUATION_CF_SECRET', e.parameter.cfSecret);
         return ContentService
           .createTextOutput(JSON.stringify({
             success: true,
-            message: 'AI診断CF設定を保存しました',
+            message: 'コンサルタント評価CF設定を保存しました',
             cfUrl: e.parameter.cfUrl ? '設定済み' : 'スキップ',
             cfSecret: e.parameter.cfSecret ? '設定済み' : 'スキップ'
           }))
@@ -1393,6 +1381,124 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ポータル: コンサルタント評価
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // 評価一覧（認証必須）
+    if (action === 'portal-evaluations') {
+      var peSession = requireAuth(e);
+      if (!peSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var peResults = getEvaluationResults({
+        consultant: e.parameter.consultant || '',
+        status: e.parameter.status || '',
+        limit: e.parameter.limit || '20',
+        offset: e.parameter.offset || '0'
+      });
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, results: peResults.results, total: peResults.total }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 評価詳細（認証必須）
+    if (action === 'portal-evaluation-detail') {
+      var pdSession = requireAuth(e);
+      if (!pdSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var pdId = e.parameter.id;
+      if (!pdId) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'id パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var pdDetail = getEvaluationById(pdId);
+      if (!pdDetail) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '評価結果が見つかりません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, evaluation: pdDetail }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 人間採点登録（リーダー以上）
+    if (action === 'portal-evaluation-human-score') {
+      var phSession = requireAuth(e);
+      if (!phSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (!hasRole(phSession.role, 'leader')) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'リーダー以上の権限が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var hsResult = updateHumanScores(
+        e.parameter.id || '',
+        parseInt(e.parameter.h1) || 0,
+        parseInt(e.parameter.h2) || 0,
+        parseInt(e.parameter.h3) || 0,
+        phSession.name
+      );
+      return ContentService
+        .createTextOutput(JSON.stringify(hsResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 評価実行トリガー（管理者のみ）
+    if (action === 'portal-run-evaluation') {
+      var preSession = requireAuth(e);
+      if (!preSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (!hasRole(preSession.role, 'admin')) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '管理者権限が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var preRow = parseInt(e.parameter.row);
+      if (!preRow || preRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var preResult = manualRunEvaluation(preRow);
+      return ContentService
+        .createTextOutput(JSON.stringify(preResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 成長データ（認証必須）
+    if (action === 'portal-evaluation-growth') {
+      var pgSession = requireAuth(e);
+      if (!pgSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var pgConsultant = e.parameter.consultant;
+      if (!pgConsultant) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'consultant パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var pgHistory = getConsultantHistory(pgConsultant);
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, consultant: pgConsultant, history: pgHistory }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // デフォルト: ステータス確認
     return ContentService
       .createTextOutput(JSON.stringify({
@@ -1430,13 +1536,14 @@ function doGet(e) {
           'GET ?action=transcript-setup': '文字起こし設定確認',
           'GET ?action=setup-transcript': '文字起こしCF設定',
           'GET ?action=setup-notion-cf': 'Notion CF設定',
-          'GET ?action=run-diagnosis&row=N': 'AI診断実行（予約データから）',
-          'GET ?action=diagnosis-results': '診断結果一覧',
-          'GET ?action=diagnosis-detail&id=xxx': '診断結果詳細',
-          'GET ?action=diagnosis-history&company=xxx': '企業別診断履歴',
-          'GET ?action=diagnosis-stats': '診断統計',
-          'GET ?action=setup-diagnosis': 'AI診断シートセットアップ',
-          'GET ?action=setup-diagnosis-cf': 'AI診断CF設定',
+          'GET ?action=run-evaluation&row=N': '評価実行（予約データから）',
+          'GET ?action=evaluation-results': '評価結果一覧',
+          'GET ?action=evaluation-detail&id=xxx': '評価結果詳細',
+          'GET ?action=evaluation-history&consultant=xxx': 'コンサルタント別履歴',
+          'GET ?action=evaluation-stats': '評価統計',
+          'GET ?action=setup-evaluation': '評価シートセットアップ',
+          'GET ?action=evaluation-setup': '評価設定確認',
+          'GET ?action=setup-evaluation-cf': '評価CF設定',
           'POST': '予約申込'
         }
       }))

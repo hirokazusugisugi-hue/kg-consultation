@@ -1,0 +1,7 @@
+anthropic>=0.39.0
+streamlit>=1.30.0
+pandas>=2.0.0
+plotly>=5.18.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+faster-whisper>=1.0.0

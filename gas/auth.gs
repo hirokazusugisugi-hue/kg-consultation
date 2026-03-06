@@ -14,12 +14,23 @@
  */
 
 /**
- * ポータル設定
+ * ポータル設定（lazy init — config.gs のロード順に依存しない）
  */
+var PORTAL_CONFIG_ = null;
+function getPortalConfig_() {
+  if (!PORTAL_CONFIG_) {
+    PORTAL_CONFIG_ = {
+      SESSION_HOURS: (CONFIG.PORTAL && CONFIG.PORTAL.SESSION_HOURS) || 6,
+      TOKEN_EXPIRY_MIN: (CONFIG.PORTAL && CONFIG.PORTAL.TOKEN_EXPIRY_MIN) || 30,
+      ADMIN_EMAILS: (CONFIG.ADMIN_EMAILS || []).map(function(e) { return e.toLowerCase(); })
+    };
+  }
+  return PORTAL_CONFIG_;
+}
 var PORTAL_CONFIG = {
-  SESSION_HOURS: 6,       // セッション有効期間（時間）
-  TOKEN_EXPIRY_MIN: 30,   // マジックリンクの有効期限（分）
-  ADMIN_EMAILS: (CONFIG.ADMIN_EMAILS || []).map(function(e) { return e.toLowerCase(); })
+  get SESSION_HOURS() { return getPortalConfig_().SESSION_HOURS; },
+  get TOKEN_EXPIRY_MIN() { return getPortalConfig_().TOKEN_EXPIRY_MIN; },
+  get ADMIN_EMAILS() { return getPortalConfig_().ADMIN_EMAILS; }
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━

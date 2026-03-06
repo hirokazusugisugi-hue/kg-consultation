@@ -159,11 +159,12 @@ const CONFIG = {
     ENABLED: false              // Notion連携の有効/無効
   },
 
-  // AI診断設定（Phase 4）
-  DIAGNOSIS: {
-    CLOUD_FUNCTION_URL: '',     // ai_diagnosis Cloud Function URL
-    CLOUD_FUNCTION_SECRET: '',  // 共有シークレット（ScriptPropertiesに DIAGNOSIS_CF_SECRET として設定推奨）
-    ENABLED: false              // AI診断の有効/無効
+  // コンサルタント評価設定（Phase 4 v2）
+  EVALUATION: {
+    CLOUD_FUNCTION_URL: '',     // consultation_evaluation Cloud Function URL
+    CLOUD_FUNCTION_SECRET: '',  // 共有シークレット（ScriptPropertiesに EVALUATION_CF_SECRET として設定推奨）
+    ENABLED: false,             // コンサルタント評価の有効/無効
+    SHEET_NAME: 'コンサルタント評価'
   },
 
   // スタッフポータル設定（Phase 5）
@@ -421,6 +422,18 @@ const REPORT_STATUS = {
   UPLOADED: 'アップロード済',
   DELIVERED: '配信済',
   OVERDUE: '期限超過'
+};
+
+/**
+ * コンサルタント評価ステータス定数
+ */
+const EVALUATION_STATUS = {
+  NONE: '未評価',
+  AI_RUNNING: 'AI評価中',
+  AI_COMPLETE: 'AI完了',
+  HUMAN_PENDING: '人間評価中',
+  COMPLETE: '完了',
+  ERROR: 'エラー'
 };
 
 /**
