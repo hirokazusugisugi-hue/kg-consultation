@@ -234,6 +234,7 @@
             border-radius: 100px; margin-top: 1px;
         }
         .cal-shift-badge.joined { background: var(--kgu-blue); color: var(--white); }
+        .cal-shift-badge.confirmed { background: #dc3545; color: var(--white); }
         .cal-join-btn {
             display: inline-block; font-size: 0.55rem; font-weight: 700; padding: 1px 6px;
             border-radius: 4px; border: none; cursor: pointer; margin-top: 1px;
@@ -247,9 +248,9 @@
         .cal-legend-dot {
             display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: middle;
         }
+        .cal-legend-dot.confirmed { background: #dc3545; border: 1px solid #dc3545; }
         .cal-legend-dot.participating { background: rgba(15,35,80,0.15); border: 1px solid var(--kgu-blue); }
         .cal-legend-dot.has-shift { background: var(--kgu-gold-dim); border: 1px solid var(--kgu-gold); }
-        .cal-legend-dot.booked { background: #f8d7da; border: 1px solid #dc3545; }
 
         /* ── CASES ── */
         .case-filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }

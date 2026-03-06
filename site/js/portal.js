@@ -316,10 +316,13 @@ async function renderShifts(container) {
                 html += '<div class="cal-shift' + (s.participating ? ' mine' : '') + (booked ? ' booked' : '') + '">';
                 html += '<span class="cal-shift-time">' + escapeHTML(s.time) + '</span>';
                 html += '<span class="cal-shift-method">' + escapeHTML(s.method) + '</span>';
+                if (booked) {
+                    html += '<span class="cal-shift-badge confirmed">確定</span>';
+                }
                 if (s.participating) {
-                    html += '<span class="cal-shift-badge joined">参加済</span>';
+                    html += '<span class="cal-shift-badge joined">参加予定</span>';
                 } else if (s.bookable !== '不可') {
-                    html += '<button class="cal-join-btn" onclick="event.stopPropagation();toggleShift(' + s.row + ',true,this)">参加</button>';
+                    html += '<button class="cal-join-btn" onclick="event.stopPropagation();toggleShift(' + s.row + ',true,this)">参加を申請</button>';
                 }
                 html += '</div>';
             });
@@ -330,9 +333,9 @@ async function renderShifts(container) {
 
     // Legend
     html += '<div class="cal-legend">' +
-        '<span><span class="cal-legend-dot participating"></span>参加済</span>' +
+        '<span><span class="cal-legend-dot confirmed"></span>確定（予約済み）</span>' +
+        '<span><span class="cal-legend-dot participating"></span>参加予定</span>' +
         '<span><span class="cal-legend-dot has-shift"></span>日程あり</span>' +
-        '<span><span class="cal-legend-dot booked"></span>予約済み</span>' +
         '</div>';
 
     html += '</div>';
