@@ -223,9 +223,9 @@
         .cal-shift {
             font-size: 0.6rem; padding: 2px 4px; border-radius: 4px; margin-bottom: 2px;
             background: var(--kgu-gold-dim); border-left: 3px solid var(--kgu-gold);
-            line-height: 1.4;
+            line-height: 1.4; overflow: hidden;
         }
-        .cal-shift.mine { background: rgba(15,35,80,0.08); border-left-color: var(--kgu-blue); }
+        .cal-shift.mine { background: rgba(220,53,69,0.08); border-left-color: #dc3545; }
         .cal-shift.booked { border-left-color: #dc3545; }
         .cal-shift-time { font-weight: 700; display: block; }
         .cal-shift-method { color: var(--text-muted); }
@@ -236,15 +236,15 @@
         .cal-shift-badge.confirmed { background: #dc3545; color: var(--white); }
         .cal-shift-badge.closed { background: #6c757d; color: var(--white); }
         .cal-shift-status-text {
-            display: block; font-size: 0.5rem; font-weight: 600; color: var(--kgu-blue);
+            display: block; font-size: 0.5rem; font-weight: 600; color: #dc3545;
             margin-top: 1px;
         }
         .cal-shift.closed { opacity: 0.5; border-left-color: #6c757d; background: #f0f0f0; }
         .cal-join-btn {
-            display: block; font-size: 0.55rem; font-weight: 700; padding: 2px 6px;
-            border-radius: 4px; border: none; cursor: pointer; margin-top: 2px;
+            display: inline-block; font-size: 0.5rem; font-weight: 700; padding: 1px 5px;
+            border-radius: 3px; border: none; cursor: pointer; margin-top: 2px;
             background: var(--kgu-blue); color: var(--white); font-family: var(--font-sans);
-            width: 100%; text-align: center;
+            float: right; text-align: center; white-space: nowrap;
         }
         .cal-join-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .cal-legend {
@@ -255,7 +255,7 @@
             display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: middle;
         }
         .cal-legend-dot.confirmed { background: #dc3545; border: 1px solid #dc3545; }
-        .cal-legend-dot.participating { background: rgba(15,35,80,0.15); border: 1px solid var(--kgu-blue); }
+        .cal-legend-dot.participating { background: rgba(220,53,69,0.15); border: 1px solid #dc3545; }
         .cal-legend-dot.has-shift { background: var(--kgu-gold-dim); border: 1px solid var(--kgu-gold); }
         .cal-legend-dot.closed { background: #6c757d; border: 1px solid #6c757d; }
 
