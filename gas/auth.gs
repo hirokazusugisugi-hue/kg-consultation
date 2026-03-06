@@ -249,11 +249,9 @@ function determineRole(member, email) {
     return 'admin';
   }
 
-  // 1期/2期の診断士はリーダー候補
-  var term = (member.term || '').toString();
-  var cert = (member.cert || '').toString();
-  if ((term === '1期' || term === '2期') && cert.indexOf('診断士') >= 0) {
-    return 'leader';
+  // オブザーバー判定
+  if (type === 'オブザーバー') {
+    return 'observer';
   }
 
   return 'member';
@@ -266,7 +264,7 @@ function determineRole(member, email) {
  * @returns {boolean} 権限があるか
  */
 function hasRole(role, requiredRole) {
-  var hierarchy = { 'admin': 3, 'leader': 2, 'member': 1 };
+  var hierarchy = { 'admin': 3, 'member': 2, 'observer': 1 };
   return (hierarchy[role] || 0) >= (hierarchy[requiredRole] || 0);
 }
 
@@ -407,7 +405,7 @@ function getPortalDashboard(session) {
   } catch (e) {}
 
   // 未対応タスク（リーダー/管理者向け）
-  if (hasRole(session.role, 'leader')) {
+  if (hasRole(session.role, 'member')) {
     try {
       var reportSheet = ss.getSheetByName(CONFIG.REPORT_SHEET_NAME);
       if (reportSheet && reportSheet.getLastRow() > 1) {

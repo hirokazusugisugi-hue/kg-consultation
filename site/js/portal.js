@@ -16,7 +16,7 @@ const PORTAL = {
     caseFilter: 'all'
 };
 
-const ROLE_LABELS = { admin: '管理者', leader: 'リーダー', member: 'メンバー' };
+const ROLE_LABELS = { admin: '管理者', member: 'メンバー', observer: 'オブザーバー' };
 const STATUS_MAP = {
     '仮予約': 'tentative', 'NDA同意済': 'tentative', '書類受領': 'tentative',
     '確定': 'confirmed', '完了': 'completed', 'キャンセル': 'cancelled'
@@ -214,7 +214,7 @@ async function renderDashboard(container) {
             html += '<div class="dash-consultation">' +
                 '<div class="dash-consultation-date">' + escapeHTML(c.date.split(' ')[0].split('/').slice(1).join('/')) + '</div>' +
                 '<div class="dash-consultation-info"><strong>' + escapeHTML(c.company) + '</strong>' +
-                '<small>' + escapeHTML(c.method || '') + ' | リーダー: ' + escapeHTML(c.leader || '未定') + ' | ' + escapeHTML(c.theme || '') + '</small></div></div>';
+                '<small>' + escapeHTML(c.method || '') + ' | 担当: ' + escapeHTML(c.leader || '未定') + ' | ' + escapeHTML(c.theme || '') + '</small></div></div>';
         });
     } else {
         html += '<div class="empty-state"><i class="far fa-calendar"></i>直近の相談予定はありません</div>';
@@ -500,7 +500,7 @@ async function renderNews(container) {
     html += '<h2 class="portal-page-title"><i class="fas fa-newspaper"></i> お知らせ</h2>';
 
     // News posting form (leader/admin only)
-    if (PORTAL.session && (PORTAL.session.role === 'admin' || PORTAL.session.role === 'leader')) {
+    if (PORTAL.session && (PORTAL.session.role === 'admin' || PORTAL.session.role === 'member')) {
         html += '<div class="portal-card" id="newsFormCard">' +
             '<h3><i class="fas fa-pen"></i> 新規投稿</h3>' +
             '<form onsubmit="submitNews(event)">' +

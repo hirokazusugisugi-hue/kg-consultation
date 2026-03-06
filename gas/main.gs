@@ -1365,7 +1365,7 @@ function doGet(e) {
           .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
           .setMimeType(ContentService.MimeType.JSON);
       }
-      if (!hasRole(newsSession.role, 'leader')) {
+      if (!hasRole(newsSession.role, 'member')) {
         return ContentService
           .createTextOutput(JSON.stringify({ success: false, message: '権限がありません' }))
           .setMimeType(ContentService.MimeType.JSON);
@@ -1451,9 +1451,9 @@ function doGet(e) {
           .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
           .setMimeType(ContentService.MimeType.JSON);
       }
-      if (!hasRole(phSession.role, 'leader')) {
+      if (!hasRole(phSession.role, 'member')) {
         return ContentService
-          .createTextOutput(JSON.stringify({ success: false, message: 'リーダー以上の権限が必要です' }))
+          .createTextOutput(JSON.stringify({ success: false, message: 'メンバー以上の権限が必要です' }))
           .setMimeType(ContentService.MimeType.JSON);
       }
       var hsResult = updateHumanScores(
