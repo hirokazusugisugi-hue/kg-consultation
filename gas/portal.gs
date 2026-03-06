@@ -22,13 +22,7 @@
 function toggleShiftParticipation(session, rowStr, join) {
   if (!rowStr) return { success: false, message: '行番号が指定されていません' };
 
-  // 取消は不可（管理者以外）
-  if (!join) {
-    var isAdmin = PORTAL_CONFIG.ADMIN_EMAILS.indexOf(session.email.toLowerCase()) >= 0;
-    if (!isAdmin) {
-      return { success: false, message: 'シフトの取り消しはできません。管理者にご連絡ください。' };
-    }
-  }
+  // 取消は警告確認済みの前提で許可
 
   var row = parseInt(rowStr);
   if (isNaN(row) || row < 2) return { success: false, message: '無効な行番号です' };

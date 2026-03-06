@@ -330,7 +330,7 @@ async function renderShifts(container) {
                 }
                 if (!closed) {
                     if (s.participating) {
-                        html += '<span class="cal-shift-status-text">参加予定</span>';
+                        html += '<span class="cal-shift-status-text">参加予定 <button class="cal-cancel-btn" onclick="event.stopPropagation();cancelShift(' + s.row + ',this)" title="キャンセル">&times;</button></span>';
                     } else if (s.bookable !== '不可' && !booked) {
                         html += '<button class="cal-join-btn" onclick="event.stopPropagation();toggleShift(' + s.row + ',true,this)">参加を申請</button>';
                     }
@@ -362,24 +362,25 @@ function changeMonth(delta) {
 }
 
 async function toggleShift(row, join, el) {
-    // 参加のみ許可（取消は不可）
-    if (!join) {
-        alert('シフトの取り消しはできません。管理者にご連絡ください。');
-        return;
-    }
     const btn = el || document.activeElement;
     btn.disabled = true;
     btn.textContent = '処理中...';
 
-    const res = await portalFetch('portal-shift-toggle', { row: String(row), join: 'true' });
+    const res = await portalFetch('portal-shift-toggle', { row: String(row), join: join ? 'true' : 'false' });
 
     if (res.success) {
         renderShifts(document.getElementById('portalMain'));
     } else {
         alert(res.message || 'エラーが発生しました');
         btn.disabled = false;
-        btn.textContent = '参加';
+        btn.textContent = join ? '参加を申請' : '×';
     }
+}
+
+async function cancelShift(row, el) {
+    const ok = confirm('⚠ 警告\n\n本当にキャンセルしますか？\n\nキャンセルすることで他の方に迷惑がかかる可能性があるため、十分にご注意ください。');
+    if (!ok) return;
+    toggleShift(row, false, el);
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
