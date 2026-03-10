@@ -45,19 +45,17 @@
 
     <!-- HEADER -->
     <header class="header" id="header">
-        <a href="./" class="header-logo">
+        <a href="../index15.html" class="header-logo">
             <img src="../images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="header-logo-img">
             <span class="logo-sub">中小企業経営診断研究会</span>
         </a>
         <button class="nav-toggle" aria-label="メニュー"><i class="fas fa-bars"></i></button>
         <nav>
             <ul class="nav-list">
-                <li><a href="./">ホーム</a></li>
+                <li><a href="../index15.html">ホーム</a></li>
                 <li><a href="about.html">研究会について</a></li>
-                <li><a href="members.html">メンバー</a></li>
-                <li><a href="articles.html">コラム</a></li>
-                <li><a href="news.html">お知らせ</a></li>
-                <li class="nav-cta"><a href="../index14.html#contact">相談申込</a></li>
+                <li><a href="../news.html">お知らせ</a></li>
+                <li class="nav-cta"><a href="../index15.html#contact">相談申込</a></li>
             </ul>
         </nav>
     </header>
@@ -78,7 +76,7 @@
                     経営のプロフェッショナルが無料でご相談に応じます。
                 </p>
                 <div class="hero-top-actions">
-                    <a href="../index14.html#contact" class="btn btn-primary">相談を申し込む <i class="fas fa-arrow-right" style="margin-left:0.5rem;font-size:0.8rem"></i></a>
+                    <a href="../index15.html#contact" class="btn btn-primary">相談を申し込む <i class="fas fa-arrow-right" style="margin-left:0.5rem;font-size:0.8rem"></i></a>
                     <a href="about.html" class="btn btn-outline">研究会について</a>
                 </div>
             </div>
@@ -170,29 +168,12 @@
         </div>
     </section>
 
-    <!-- ARTICLES PREVIEW -->
-    <section class="section">
-        <div class="container">
-            <div class="section-header reveal">
-                <p class="section-label">COLUMN</p>
-                <h2 class="section-title">コラム・記事</h2>
-                <p class="section-subtitle">研究会メンバーによる経営に役立つ情報発信</p>
-            </div>
-            <div class="card-grid" id="articleCards">
-                <div class="loading"><i class="fas fa-spinner fa-spin"></i> 読み込み中...</div>
-            </div>
-            <div style="text-align:center;margin-top:2rem" class="reveal">
-                <a href="articles.html" class="btn btn-outline">すべての記事を見る</a>
-            </div>
-        </div>
-    </section>
-
     <!-- CTA BANNER -->
     <section class="cta-banner">
         <div class="container reveal">
             <h2 class="section-title">まずは気軽にご相談ください</h2>
             <p class="section-subtitle">経営に関するお悩み、どんなことでもお気軽にご相談いただけます。<br>オンライン・対面どちらも対応可能です。</p>
-            <a href="../index14.html#contact" class="btn btn-gold">相談を申し込む <i class="fas fa-arrow-right" style="margin-left:0.5rem;font-size:0.8rem"></i></a>
+            <a href="../index15.html#contact" class="btn btn-gold">相談を申し込む <i class="fas fa-arrow-right" style="margin-left:0.5rem;font-size:0.8rem"></i></a>
         </div>
     </section>
 
@@ -205,12 +186,10 @@
                     <p>経営戦略研究科（IBA）研究フォーラム｜中小企業経営診断研究会</p>
                 </div>
                 <div class="footer-links">
-                    <a href="./">ホーム</a>
+                    <a href="../index15.html">ホーム</a>
                     <a href="about.html">研究会について</a>
-                    <a href="members.html">メンバー</a>
-                    <a href="articles.html">コラム</a>
-                    <a href="news.html">お知らせ</a>
-                    <a href="../index14.html#contact">相談申込</a>
+                    <a href="../news.html">お知らせ</a>
+                    <a href="../index15.html#contact">相談申込</a>
                 </div>
             </div>
             <div class="footer-copy">
@@ -227,77 +206,13 @@
             const container = document.getElementById('newsTickerContent');
             if (data.success && data.news && data.news.length > 0) {
                 const latest = data.news[0];
-                container.innerHTML = '<a href="news.html">' + latest.date + ' — ' + escapeHTML(latest.content) + '</a>';
+                container.innerHTML = '<a href="../news.html">' + latest.date + ' — ' + escapeHTML(latest.content) + '</a>';
             } else {
                 container.innerHTML = '<span>現在お知らせはありません</span>';
             }
         }
 
-        // Load article preview cards
-        async function loadArticlePreview() {
-            const data = await fetchAPI('articles', { limit: '3' });
-            const container = document.getElementById('articleCards');
-
-            if (data.success && data.articles && data.articles.length > 0) {
-                container.innerHTML = data.articles.map(a => `
-                    <a href="article.html?id=${a.id}" class="card reveal">
-                        <div class="card-img" style="background:linear-gradient(135deg, var(--kgu-blue) 0%, #1a4a8a 100%);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:3rem">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <div class="card-body">
-                            <div class="card-tag">${escapeHTML(a.category || 'COLUMN')}</div>
-                            <div class="card-title">${escapeHTML(a.title)}</div>
-                            <div class="card-text">${escapeHTML(truncate(a.summary || '', 80))}</div>
-                            <div class="card-meta">
-                                <span><i class="far fa-calendar"></i> ${a.publishDate || ''}</span>
-                                <span><i class="far fa-user"></i> ${escapeHTML(a.author || '')}</span>
-                            </div>
-                        </div>
-                    </a>
-                `).join('');
-                initScrollReveal();
-            } else {
-                container.innerHTML = `
-                    <div class="card reveal">
-                        <div class="card-img" style="background:linear-gradient(135deg, var(--kgu-blue) 0%, #1a4a8a 100%);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:3rem">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <div class="card-body">
-                            <div class="card-tag">COLUMN</div>
-                            <div class="card-title">中小企業の経営課題と診断士の役割</div>
-                            <div class="card-text">経営環境の変化に対応するために、中小企業が取るべき戦略について解説します。</div>
-                            <div class="card-meta"><span><i class="far fa-calendar"></i> 2026.04.01</span></div>
-                        </div>
-                    </div>
-                    <div class="card reveal delay-1">
-                        <div class="card-img" style="background:linear-gradient(135deg, #1a4a8a 0%, var(--kgu-blue) 100%);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:3rem">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                        <div class="card-body">
-                            <div class="card-tag">FINANCE</div>
-                            <div class="card-title">資金繰り改善のための5つのポイント</div>
-                            <div class="card-text">中小企業経営者が押さえておくべき資金管理の基本と改善策をまとめました。</div>
-                            <div class="card-meta"><span><i class="far fa-calendar"></i> 2026.04.01</span></div>
-                        </div>
-                    </div>
-                    <div class="card reveal delay-2">
-                        <div class="card-img" style="background:linear-gradient(135deg, var(--kgu-blue) 0%, #2a5a9a 100%);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:3rem">
-                            <i class="fas fa-lightbulb"></i>
-                        </div>
-                        <div class="card-body">
-                            <div class="card-tag">DX</div>
-                            <div class="card-title">DX推進の第一歩 — まず何から始めるか</div>
-                            <div class="card-text">デジタルトランスフォーメーションに取り組む際の実践的なステップを紹介します。</div>
-                            <div class="card-meta"><span><i class="far fa-calendar"></i> 2026.04.01</span></div>
-                        </div>
-                    </div>
-                `;
-                initScrollReveal();
-            }
-        }
-
         loadNewsTicker();
-        loadArticlePreview();
     </script>
 
     <style>

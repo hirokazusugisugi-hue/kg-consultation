@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>コラム・記事 | 関西学院大学 中小企業経営診断研究会</title>
-    <meta name="description" content="中小企業経営に役立つコラム・記事を配信しています。経営戦略、財務、マーケティング、DXなど幅広いテーマをカバー。">
+    <meta name="description" content="コラム・記事ページは現在準備中です。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -15,19 +15,17 @@
 
     <!-- HEADER -->
     <header class="header" id="header">
-        <a href="./" class="header-logo">
+        <a href="../index15.html" class="header-logo">
             <img src="../images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="header-logo-img">
             <span class="logo-sub">中小企業経営診断研究会</span>
         </a>
         <button class="nav-toggle" aria-label="メニュー"><i class="fas fa-bars"></i></button>
         <nav>
             <ul class="nav-list">
-                <li><a href="./">ホーム</a></li>
+                <li><a href="../index15.html">ホーム</a></li>
                 <li><a href="about.html">研究会について</a></li>
-                <li><a href="members.html">メンバー</a></li>
-                <li><a href="articles.html">コラム</a></li>
-                <li><a href="news.html">お知らせ</a></li>
-                <li class="nav-cta"><a href="../index14.html#contact">相談申込</a></li>
+                <li><a href="../news.html">お知らせ</a></li>
+                <li class="nav-cta"><a href="../index15.html#contact">相談申込</a></li>
             </ul>
         </nav>
     </header>
@@ -41,35 +39,31 @@
         </div>
     </section>
 
-    <!-- BREADCRUMB -->
-    <div class="container" style="padding-top:1.5rem">
-        <div class="breadcrumb">
-            <a href="./">ホーム</a><span>/</span>コラム
-        </div>
-    </div>
-
-    <!-- ARTICLES -->
-    <section class="section" style="padding-top:1rem">
-        <div class="container">
-            <!-- Category filter -->
-            <div class="filter-bar" id="categoryFilter">
-                <button class="filter-btn active" data-category="">すべて</button>
+    <!-- UNDER CONSTRUCTION -->
+    <section class="section">
+        <div class="container" style="text-align:center; padding: 4rem 0 6rem;">
+            <div style="font-size:4rem; color:var(--kgu-gold); margin-bottom:1.5rem;">
+                <i class="fas fa-hard-hat"></i>
             </div>
-            <!-- Article cards -->
-            <div class="card-grid" id="articleGrid">
-                <div class="loading"><i class="fas fa-spinner fa-spin"></i> 記事を読み込み中...</div>
-            </div>
-            <!-- Pagination -->
-            <div class="pagination" id="pagination"></div>
+            <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1rem; color:var(--text-main);">
+                コンテンツ準備中
+            </h2>
+            <p style="font-size:0.95rem; color:var(--text-light); line-height:1.8; max-width:500px; margin:0 auto 2rem;">
+                コラム・記事ページは現在準備中です。<br>
+                公開までもうしばらくお待ちください。
+            </p>
+            <a href="../index15.html" class="btn btn-outline">
+                <i class="fas fa-arrow-left" style="margin-right:0.5rem"></i>相談予約ページに戻る
+            </a>
         </div>
     </section>
 
     <!-- CTA -->
     <section class="cta-banner">
         <div class="container reveal">
-            <h2 class="section-title">経営のお悩み、ご相談ください</h2>
-            <p class="section-subtitle">記事の内容に関するご質問もお気軽にどうぞ</p>
-            <a href="../index14.html#contact" class="btn btn-gold">相談を申し込む</a>
+            <h2 class="section-title">無料経営相談のお申し込み</h2>
+            <p class="section-subtitle">オンライン・対面どちらも対応可能です</p>
+            <a href="../index15.html#contact" class="btn btn-gold">相談を申し込む</a>
         </div>
     </section>
 
@@ -82,12 +76,10 @@
                     <p>経営戦略研究科（IBA）研究フォーラム｜中小企業経営診断研究会</p>
                 </div>
                 <div class="footer-links">
-                    <a href="./">ホーム</a>
+                    <a href="../index15.html">ホーム</a>
                     <a href="about.html">研究会について</a>
-                    <a href="members.html">メンバー</a>
-                    <a href="articles.html">コラム</a>
-                    <a href="news.html">お知らせ</a>
-                    <a href="../index14.html#contact">相談申込</a>
+                    <a href="../news.html">お知らせ</a>
+                    <a href="../index15.html#contact">相談申込</a>
                 </div>
             </div>
             <div class="footer-copy">&copy; Kwansei Gakuin University. All Rights Reserved.</div>
@@ -95,101 +87,5 @@
     </footer>
 
     <script src="js/main.js"></script>
-    <script>
-        const PAGE_SIZE = 9;
-        let currentCategory = '';
-        let currentPage = 0;
-        let totalArticles = 0;
-
-        async function loadCategories() {
-            const data = await fetchAPI('article-categories');
-            const bar = document.getElementById('categoryFilter');
-            if (data.success && data.categories && data.categories.length > 0) {
-                data.categories.forEach(cat => {
-                    const btn = document.createElement('button');
-                    btn.className = 'filter-btn';
-                    btn.dataset.category = cat.name;
-                    btn.textContent = cat.name + ' (' + cat.count + ')';
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        currentCategory = cat.name;
-                        currentPage = 0;
-                        loadArticles();
-                    });
-                    bar.appendChild(btn);
-                });
-            }
-        }
-
-        async function loadArticles() {
-            const grid = document.getElementById('articleGrid');
-            grid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> 読み込み中...</div>';
-
-            const params = { limit: String(PAGE_SIZE), offset: String(currentPage * PAGE_SIZE) };
-            if (currentCategory) params.category = currentCategory;
-
-            const data = await fetchAPI('articles', params);
-
-            if (data.success && data.articles && data.articles.length > 0) {
-                totalArticles = data.total;
-                grid.innerHTML = data.articles.map((a, i) => `
-                    <a href="article.html?id=${a.id}" class="card reveal delay-${(i % 3) + 1}">
-                        <div class="card-img" style="background:linear-gradient(135deg, var(--kgu-blue) 0%, #1a4a8a 100%);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:3rem">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <div class="card-body">
-                            <div class="card-tag">${escapeHTML(a.category || '')}</div>
-                            <div class="card-title">${escapeHTML(a.title)}</div>
-                            <div class="card-text">${escapeHTML(truncate(a.summary || '', 100))}</div>
-                            <div class="card-meta">
-                                <span><i class="far fa-calendar"></i> ${a.publishDate || ''}</span>
-                                ${a.author ? '<span><i class="far fa-user"></i> ' + escapeHTML(a.author) + '</span>' : ''}
-                            </div>
-                        </div>
-                    </a>
-                `).join('');
-                renderPagination();
-                initScrollReveal();
-            } else {
-                grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:3rem">記事がまだありません</p>';
-                document.getElementById('pagination').innerHTML = '';
-            }
-        }
-
-        function renderPagination() {
-            const totalPages = Math.ceil(totalArticles / PAGE_SIZE);
-            const pagination = document.getElementById('pagination');
-            if (totalPages <= 1) { pagination.innerHTML = ''; return; }
-
-            let html = '';
-            for (let i = 0; i < totalPages; i++) {
-                if (i === currentPage) {
-                    html += '<span class="current">' + (i + 1) + '</span>';
-                } else {
-                    html += '<a href="#" onclick="goToPage(' + i + ');return false">' + (i + 1) + '</a>';
-                }
-            }
-            pagination.innerHTML = html;
-        }
-
-        function goToPage(page) {
-            currentPage = page;
-            loadArticles();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // "All" filter button
-        document.querySelector('.filter-btn[data-category=""]').addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('.filter-btn[data-category=""]').classList.add('active');
-            currentCategory = '';
-            currentPage = 0;
-            loadArticles();
-        });
-
-        loadCategories();
-        loadArticles();
-    </script>
 </body>
 </html>

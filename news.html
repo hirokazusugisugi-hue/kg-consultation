@@ -2,10 +2,304 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0;url=site/news.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>お知らせ | 関西学院大学 中小企業経営診断研究会</title>
+    <meta name="description" content="関西学院大学 中小企業経営診断研究会からのお知らせ一覧です。">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&family=Cinzel:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --kgu-blue: #0F2350;
+            --kgu-blue-deep: #080e24;
+            --kgu-gold: #C5A15A;
+            --kgu-gold-light: #e0c878;
+            --text-main: #1a1a1a;
+            --text-light: #666;
+            --text-muted: #999;
+            --white: #ffffff;
+            --off-white: #fafafa;
+            --bg-light: #f5f5f7;
+            --border-light: rgba(0,0,0,0.06);
+            --font-serif: 'Noto Serif JP', serif;
+            --font-sans: 'Noto Sans JP', sans-serif;
+            --font-motto: 'Cinzel', serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            background: var(--white);
+            line-height: 1.8;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+            padding: 0 clamp(1.5rem, 5vw, 4rem);
+            display: flex; align-items: center; justify-content: space-between;
+            height: 70px;
+        }
+        .header-logo {
+            display: flex; align-items: center; gap: 0.8rem;
+            text-decoration: none; color: var(--kgu-blue);
+        }
+        .header-logo-img { height: 32px; }
+        .logo-sub {
+            font-family: var(--font-serif);
+            font-size: 0.75rem; font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+        .header-back {
+            display: flex; align-items: center; gap: 0.5rem;
+            text-decoration: none; color: var(--kgu-blue);
+            font-size: 0.85rem; font-weight: 500;
+            transition: opacity 0.3s;
+        }
+        .header-back:hover { opacity: 0.7; }
+
+        /* ── PAGE HERO ── */
+        .page-hero {
+            background: linear-gradient(135deg, var(--kgu-blue) 0%, var(--kgu-blue-deep) 100%);
+            color: var(--white);
+            padding: 8rem 0 4rem;
+            text-align: center;
+        }
+        .page-hero .section-label {
+            font-family: var(--font-motto);
+            font-size: 0.7rem; font-weight: 500;
+            letter-spacing: 0.3em;
+            color: var(--kgu-gold);
+            margin-bottom: 1rem;
+        }
+        .page-hero .section-title {
+            font-family: var(--font-serif);
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        /* ── CONTAINER ── */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); }
+        .container-narrow { max-width: 800px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); }
+
+        /* ── BREADCRUMB ── */
+        .breadcrumb {
+            font-size: 0.8rem; color: var(--text-muted);
+            padding: 1.5rem 0 0;
+        }
+        .breadcrumb a { color: var(--kgu-blue); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { margin: 0 0.5rem; }
+
+        /* ── NEWS LIST ── */
+        .news-list {
+            list-style: none;
+            padding: 2rem 0 4rem;
+        }
+        .news-item {
+            display: flex; gap: 1.5rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-light);
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .news-item.visible {
+            opacity: 1; transform: translateY(0);
+        }
+        .news-date {
+            font-size: 0.8rem; color: var(--text-muted);
+            font-weight: 500; white-space: nowrap;
+            min-width: 6rem; flex-shrink: 0;
+            padding-top: 0.1rem;
+        }
+        .news-content {
+            font-size: 0.95rem; line-height: 1.8;
+        }
+        .news-empty {
+            padding: 3rem; text-align: center;
+            color: var(--text-muted); font-size: 0.95rem;
+        }
+        .loading {
+            padding: 3rem; text-align: center;
+            color: var(--text-muted); font-size: 0.9rem;
+        }
+
+        /* ── CTA BANNER ── */
+        .cta-banner {
+            background: linear-gradient(135deg, var(--kgu-blue) 0%, var(--kgu-blue-deep) 100%);
+            color: var(--white);
+            text-align: center;
+            padding: 4rem 0;
+        }
+        .cta-banner .section-title {
+            font-family: var(--font-serif);
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+        }
+        .cta-banner .section-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 2rem;
+        }
+        .btn-gold {
+            display: inline-block;
+            background: var(--kgu-gold);
+            color: var(--white);
+            padding: 1rem 3rem;
+            border-radius: 100px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+        .btn-gold:hover {
+            background: var(--kgu-gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(197,161,90,0.3);
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            background: var(--kgu-blue-deep);
+            color: rgba(255,255,255,0.6);
+            padding: 3rem 0 2rem;
+            font-size: 0.8rem;
+        }
+        .footer-inner {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            flex-wrap: wrap; gap: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .footer-logo-img { height: 28px; margin-bottom: 0.5rem; filter: brightness(0) invert(1); }
+        .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.3s; }
+        .footer-links a:hover { color: var(--kgu-gold); }
+        .footer-copy { text-align: center; padding-top: 1.5rem; font-size: 0.75rem; }
+
+        /* ── MOBILE ── */
+        @media (max-width: 768px) {
+            .news-item { flex-direction: column; gap: 0.3rem; }
+            .news-date { min-width: auto; }
+            .footer-inner { flex-direction: column; align-items: center; text-align: center; }
+            .footer-links { justify-content: center; }
+        }
+    </style>
 </head>
 <body>
-    <p>リダイレクト中... <a href="site/news.html">こちらをクリック</a></p>
+
+    <!-- HEADER -->
+    <header class="header">
+        <a href="index15.html" class="header-logo">
+            <img src="images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="header-logo-img">
+            <span class="logo-sub">中小企業経営診断研究会</span>
+        </a>
+        <a href="index15.html" class="header-back">
+            <i class="fas fa-arrow-left"></i> 相談予約ページに戻る
+        </a>
+    </header>
+
+    <!-- PAGE HERO -->
+    <section class="page-hero">
+        <div class="container">
+            <p class="section-label">NEWS</p>
+            <h1 class="section-title">お知らせ</h1>
+        </div>
+    </section>
+
+    <!-- BREADCRUMB -->
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index15.html">相談予約</a><span>/</span>お知らせ
+        </div>
+    </div>
+
+    <!-- NEWS LIST -->
+    <section style="padding-top:0.5rem">
+        <div class="container-narrow">
+            <ul class="news-list" id="newsList">
+                <li class="loading"><i class="fas fa-spinner fa-spin"></i> お知らせを読み込み中...</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-banner">
+        <div class="container">
+            <h2 class="section-title">無料経営相談のお申し込み</h2>
+            <p class="section-subtitle">オンライン・対面どちらも対応可能です</p>
+            <a href="index15.html#contact" class="btn-gold">相談を申し込む</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <img src="images/logo.svg" alt="KWANSEI GAKUIN UNIVERSITY" class="footer-logo-img">
+                    <p>経営戦略研究科（IBA）研究フォーラム｜中小企業経営診断研究会</p>
+                </div>
+                <div class="footer-links">
+                    <a href="index15.html">相談予約</a>
+                    <a href="news.html">お知らせ</a>
+                    <a href="index15.html#contact">相談申込</a>
+                </div>
+            </div>
+            <div class="footer-copy">&copy; Kwansei Gakuin University. All Rights Reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        var API_URL = 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec';
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function loadNews() {
+            fetch(API_URL + '?action=news')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var list = document.getElementById('newsList');
+                    if (data.success && data.news && data.news.length > 0) {
+                        list.innerHTML = data.news.map(function(n) {
+                            return '<li class="news-item">' +
+                                '<span class="news-date">' + escapeHTML(n.date) + '</span>' +
+                                '<span class="news-content">' + escapeHTML(n.content) + '</span>' +
+                                '</li>';
+                        }).join('');
+                        // Scroll reveal animation
+                        setTimeout(function() {
+                            var items = document.querySelectorAll('.news-item');
+                            items.forEach(function(el, i) {
+                                setTimeout(function() { el.classList.add('visible'); }, i * 100);
+                            });
+                        }, 100);
+                    } else {
+                        list.innerHTML = '<li class="news-empty">現在お知らせはありません</li>';
+                    }
+                })
+                .catch(function() {
+                    document.getElementById('newsList').innerHTML =
+                        '<li class="news-empty">お知らせの読み込みに失敗しました</li>';
+                });
+        }
+
+        loadNews();
+    </script>
 </body>
 </html>
