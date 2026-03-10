@@ -66,7 +66,7 @@ const CONFIG = {
     // Google DriveにアップロードしたPDFのファイルID
     PDF_FILE_ID: '1X_q73Mgns_MKhku_b16x6oysnVs3dnP9',
     // PDF直接URL（GitHub raw）
-    PDF_URL: 'https://raw.githubusercontent.com/hirokazusugisugi-hue/kg-consultation/main/consent_updated.pdf'
+    PDF_URL: 'https://iba-consulting.jp/consent_updated.pdf'
   },
 
   // 当日受付コード
@@ -111,7 +111,7 @@ const CONFIG = {
     // 署名済みNDA保存先DriveフォルダID（未設定時はルート）
     DRIVE_FOLDER_ID: '',
     // NDA PDFテンプレートURL
-    PDF_URL: 'https://raw.githubusercontent.com/hirokazusugisugi-hue/kg-consultation/main/observer_nda.pdf'
+    PDF_URL: 'https://iba-consulting.jp/observer_nda.pdf'
   },
 
   // アンケート自動送信設定
@@ -172,7 +172,7 @@ const CONFIG = {
     ENABLED: true,             // ポータルの有効/無効
     SESSION_HOURS: 6,          // セッション有効期間
     TOKEN_EXPIRY_MIN: 30,      // マジックリンク有効期限（分）
-    SITE_URL: 'https://hirokazusugisugi-hue.github.io/kg-consultation/site/portal.html'
+    SITE_URL: 'https://iba-consulting.jp/site/portal.html'
   },
 
   // 返信先メールアドレス

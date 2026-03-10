@@ -6,7 +6,7 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec';
 
 // LP URL（相談申込フォームへの導線）
-const LP_URL = 'https://hirokazusugisugi-hue.github.io/kg-consultation/index14.html';
+const LP_URL = 'https://iba-consulting.jp/index15.html';
 
 /**
  * GAS APIからデータを取得

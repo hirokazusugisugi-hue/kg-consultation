@@ -1,0 +1,42 @@
+name: Deploy to Sakura Server (SSH)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy with rsync
+        run: |
+          rsync -avz --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'node_modules' \
+            --exclude 'gas' \
+            --exclude 'stock_backtest' \
+            --exclude 'eval-app' \
+            --exclude 'cloud_functions' \
+            --exclude '*.py' \
+            --exclude '*.md' \
+            --exclude 'package.json' \
+            --exclude 'package-lock.json' \
+            --exclude '.gitignore' \
+            --exclude '.clasp*' \
+            --exclude 'test_*.html' \
+            --exclude 'open_news_admin.html' \
+            --exclude 'CLAUDE.md' \
+            ./ \
+            ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USERNAME }}/www/iba-consulting.jp/
