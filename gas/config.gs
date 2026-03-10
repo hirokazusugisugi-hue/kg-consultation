@@ -141,7 +141,7 @@ const CONFIG = {
   TRANSCRIPT: {
     CLOUD_FUNCTION_URL: '',     // zoom_to_transcript Cloud Function URL
     CLOUD_FUNCTION_SECRET: '',  // 共有シークレット（ScriptPropertiesに TRANSCRIPT_CF_SECRET として設定推奨）
-    ENABLED: false              // 文字起こし自動実行の有効/無効
+    ENABLED: true               // 文字起こし自動実行の有効/無効
   },
 
   // 報告書自動作成設定（Phase 3）
