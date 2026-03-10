@@ -1277,7 +1277,6 @@
       </div>
       <ol class="toc-list">
         <li><a href="#sec1"><span class="toc-num">1</span> システム構成</a></li>
-        <li><a href="#sec2"><span class="toc-num">2</span> ファイル構成</a></li>
         <li><a href="#sec3"><span class="toc-num">3</span> 相談者の予約フロー</a></li>
         <li><a href="#sec4"><span class="toc-num">4</span> メンバー日程調整フロー</a></li>
         <li><a href="#sec5"><span class="toc-num">5</span> スコア計算ロジック</a></li>
@@ -1290,7 +1289,6 @@
         <li><a href="#sec12"><span class="toc-num">12</span> 会場管理システム</a></li>
         <li><a href="#sec13"><span class="toc-num">13</span> 文字起こし・報告書自動作成パイプライン</a></li>
         <li><a href="#sec14"><span class="toc-num">14</span> スタッフポータル</a></li>
-        <li><a href="#sec15"><span class="toc-num">15</span> PRサイト</a></li>
       </ol>
     </nav>
 
@@ -1312,7 +1310,7 @@
           <div class="arch-box lp">
             <i class="fa-solid fa-globe arch-box-icon"></i>
             <div class="arch-box-label">LP</div>
-            <div class="arch-box-sub">index14.html<br>相談者向け予約画面</div>
+            <div class="arch-box-sub">index15.html<br>相談者向け予約画面</div>
           </div>
 
           <div class="arch-arrow">
@@ -1433,72 +1431,11 @@
           <i class="fa-solid fa-cloud-arrow-up comp-icon" style="color: #059669;"></i>
           <div><strong>Google Drive自動保存</strong> &mdash; 申込概要・アンケート回答・診断報告書をGoogle Driveの専用フォルダに自動保存。フォルダIDはスクリプトプロパティで管理。<code>config.gs</code>の<code>getDriveFolder()</code>ヘルパーで統一的にアクセス。</div>
         </li>
+        <li>
+          <i class="fa-solid fa-server comp-icon" style="color: #6366f1;"></i>
+          <div><strong>Webホスティング（さくらレンタルサーバー）</strong> &mdash; LP・マニュアル・スタッフポータル等のWebコンテンツは、さくらレンタルサーバー（<code>iba-consulting.jp</code>）でホスティング。GitHubリポジトリの<code>main</code>ブランチへのpush時に、GitHub ActionsがSSH（rsync）で自動デプロイ。GASコード（<code>gas/</code>）やテスト用ファイルはデプロイ対象から除外。</div>
+        </li>
       </ul>
-    </section>
-
-    <!-- ===== Section 2: ファイル構成 ===== -->
-    <section class="section" id="sec2">
-      <div class="section-header">
-        <span class="section-number">2</span>
-        <h2 class="section-title">ファイル構成</h2>
-        <i class="fa-solid fa-folder-tree section-icon"></i>
-      </div>
-
-      <div class="file-tree"><span class="dir">claude-code-demo/</span>
-├── <span class="highlight">index14.html</span>          <span class="comment"># LP（ランディングページ）</span>
-├── <span class="file">nda_preview.html</span>      <span class="comment"># 相談同意書プレビュー</span>
-├── <span class="file">consent_form.pdf</span>      <span class="comment"># 相談同意書PDF</span>
-├── <span class="file">open_news_admin.html</span>  <span class="comment"># お知らせ管理リンクページ</span>
-├── <span class="dir">images/</span>               <span class="comment"># 画像・音声ファイル</span>
-├── <span class="dir">docs/</span>                 <span class="comment"># ドキュメント</span>
-│   ├── <span class="file">guide_consultee.html</span>    <span class="comment"># 相談者向けガイド</span>
-│   ├── <span class="file">manual_admin.html</span>       <span class="comment"># 管理者マニュアル</span>
-│   ├── <span class="file">manual_staff.html</span>       <span class="comment"># 担当者マニュアル</span>
-│   ├── <span class="file">manual_observer.html</span>    <span class="comment"># オブザーバーマニュアル</span>
-│   ├── <span class="highlight">system_overview.html</span>    <span class="comment"># 本ドキュメント</span>
-│   └── <span class="file">form_polling_v2_requirements.md</span>  <span class="comment"># 要件定義</span>
-└── <span class="dir">gas/</span>                  <span class="comment"># Google Apps Script</span>
-    ├── <span class="file">config.gs</span>         <span class="comment"># 設定（スプレッドシートID、メール、API設定）</span>
-    ├── <span class="highlight">main.gs</span>           <span class="comment"># メインルーティング（doGet/doPost）</span>
-    ├── <span class="file">schedule.gs</span>       <span class="comment"># 日程生成・取得API</span>
-    ├── <span class="file">form_polling.gs</span>   <span class="comment"># メンバー向けGoogleフォーム自動化</span>
-    ├── <span class="file">members.gs</span>        <span class="comment"># メンバーマスタ管理・スコア計算</span>
-    ├── <span class="file">nda.gs</span>            <span class="comment"># 相談者同意書ページ生成・同意処理</span>
-    ├── <span class="file">news.gs</span>           <span class="comment"># お知らせ管理（CRUD+管理画面）</span>
-    ├── <span class="file">spreadsheet.gs</span>    <span class="comment"># スプレッドシート操作</span>
-    ├── <span class="file">notification.gs</span>   <span class="comment"># LINE・メール通知</span>
-    ├── <span class="highlight">survey.gs</span>         <span class="comment"># アンケートシステム（自動送信・回答保存）</span>
-    ├── <span class="highlight">observer.gs</span>       <span class="comment"># オブザーバー専用ページ（NDA署名）</span>
-    ├── <span class="file">templates.gs</span>      <span class="comment"># メール・HTMLテンプレート</span>
-    ├── <span class="file">triggers.gs</span>       <span class="comment"># 時限トリガー設定</span>
-    ├── <span class="highlight">zoom.gs</span>           <span class="comment"># Zoom API連携（ミーティング自動作成・削除・録画リンク取得・YouTube非公開アップロード）</span>
-    ├── <span class="highlight">leader.gs</span>         <span class="comment"># リーダー自動選定（専門性スコア・履歴管理）</span>
-    ├── <span class="highlight">report.gs</span>         <span class="comment"># レポート配信（依頼・アップロード・自動配信）</span>
-    ├── <span class="highlight">summary_sync.gs</span>   <span class="comment"># サマリーシート同期</span>
-    ├── <span class="highlight">completion.gs</span>     <span class="comment"># 相談完了確認</span>
-    ├── <span class="highlight">venue.gs</span>          <span class="comment"># 会場管理（CRUD+管理画面+空き状況）</span>
-    ├── <span class="highlight">articles.gs</span>       <span class="comment"># コラム記事管理（CRUD+管理画面）</span>
-    ├── <span class="highlight">transcript.gs</span>     <span class="comment"># 文字起こしパイプライン管理</span>
-    ├── <span class="highlight">diagnosis.gs</span>      <span class="comment"># AI経営診断（スコアリング・結果管理）</span>
-    ├── <span class="highlight">auth.gs</span>           <span class="comment"># ポータル認証（マジックリンク・セッション・ロール）</span>
-    └── <span class="highlight">portal.gs</span>         <span class="comment"># ポータルAPI（シフト・プロフィール・ニュース投稿）</span>
-├── <span class="dir">cloud_functions/</span>   <span class="comment"># Cloud Functions (Python 3.11)</span>
-│   ├── <span class="dir">zoom_to_youtube/</span>      <span class="comment"># Zoom録画→YouTube非公開アップロード</span>
-│   ├── <span class="dir">zoom_to_transcript/</span>   <span class="comment"># Zoom録画→Speech-to-Text文字起こし</span>
-│   ├── <span class="dir">transcript_to_report/</span> <span class="comment"># 文字起こし→Claude AI→報告書ドラフト</span>
-│   ├── <span class="dir">report_to_notion/</span>     <span class="comment"># 報告書→PDF→Notion連携</span>
-│   └── <span class="dir">ai_diagnosis/</span>         <span class="comment"># AI経営診断（6軸スコアリング）</span>
-└── <span class="dir">site/</span>              <span class="comment"># PRサイト (GitHub Pages)</span>
-    ├── <span class="file">index.html</span>        <span class="comment"># トップページ</span>
-    ├── <span class="file">about.html</span>        <span class="comment"># 研究会について</span>
-    ├── <span class="file">members.html</span>      <span class="comment"># メンバー一覧</span>
-    ├── <span class="file">articles.html</span>     <span class="comment"># コラム一覧</span>
-    ├── <span class="file">news.html</span>         <span class="comment"># お知らせ一覧</span>
-    ├── <span class="file">contact.html</span>      <span class="comment"># 無料相談導線</span>
-    ├── <span class="file">diagnosis.html</span>    <span class="comment"># AI診断ダッシュボード</span>
-    ├── <span class="file">portal.html</span>       <span class="comment"># スタッフポータルSPA</span>
-    ├── <span class="dir">css/</span><span class="file">style.css</span>     <span class="comment"># デザインシステム</span>
-    └── <span class="dir">js/</span><span class="file">main.js</span>, <span class="file">portal.js</span>  <span class="comment"># 共通JS・ポータルSPA</span></div>
     </section>
 
     <!-- ===== Section 3: 相談者の予約フロー ===== -->
@@ -2434,36 +2371,6 @@
       </ul>
     </section>
 
-    <!-- ===== Section 16: PRサイト ===== -->
-    <section class="section" id="sec16">
-      <div class="section-header">
-        <span class="section-number">15</span>
-        <h2 class="section-title">PRサイト</h2>
-        <i class="fa-solid fa-globe section-icon"></i>
-      </div>
-
-      <p class="section-desc">GitHub Pages上の対外向けPRサイト。GAS APIからデータ取得し、静的ページとして表示します。</p>
-
-      <ul class="component-list">
-        <li>
-          <i class="fa-solid fa-palette comp-icon" style="color: #2563eb;"></i>
-          <div><strong>デザインシステム</strong> &mdash; <code>--kgu-blue: #0F2350</code>、<code>--kgu-gold: #C5A15A</code>。Noto Sans JP / Noto Serif JP。index14.htmlのCSS変数を継承。</div>
-        </li>
-        <li>
-          <i class="fa-solid fa-file-code comp-icon" style="color: var(--navy);"></i>
-          <div><strong>articles.gs</strong> &mdash; コラム記事のCRUD。記事管理シート（12列）。管理画面HTML生成。Markdown本文対応。</div>
-        </li>
-        <li>
-          <i class="fa-solid fa-code comp-icon" style="color: #059669;"></i>
-          <div><strong>js/main.js</strong> &mdash; 共通JS。fetchAPI()（GAS API呼び出し）、escapeHTML()、スクロールアニメーション、モバイルナビ。</div>
-        </li>
-        <li>
-          <i class="fa-solid fa-sitemap comp-icon" style="color: #d97706;"></i>
-          <div><strong>サイト構成</strong> &mdash; index.html（トップ）、about.html、members.html、articles.html、article.html、news.html、contact.html、diagnosis.html、diagnosis-result.html、portal.html。</div>
-        </li>
-      </ul>
-    </section>
-
   </div>
 
   <!-- ===== Footer ===== -->
@@ -2471,7 +2378,7 @@
     <div class="footer-divider"></div>
     <p>無料経営相談予約システム &mdash; システム全体構成図</p>
     <p>関西学院大学 無料経営相談分科会</p>
-    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 5.0 &mdash; 2026-03-05 更新（会場管理・文字起こし・ポータル・PRサイト追加）</p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #999;">Version 5.1 &mdash; 2026-03-11 更新（会場管理・文字起こし・ポータル追加 / ファイル構成・PRサイト整理）</p>
   </footer>
 
 </body>

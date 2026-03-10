@@ -573,7 +573,7 @@
       <li><a href="#sec8">アンケートシステム</a></li>
       <li><a href="#sec9">オブザーバー専用ページ</a></li>
       <li><a href="#sec10">トリガーの確認・管理</a></li>
-      <li><a href="#sec11">GASコードの更新手順</a></li>
+      <li><a href="#sec11">コードの更新・デプロイ手順</a></li>
       <li><a href="#sec12">トラブルシューティング</a></li>
       <li><a href="#sec13">設定変更（config.gs）</a></li>
       <li><a href="#sec14">リーダー自動選定</a></li>
@@ -1239,8 +1239,10 @@
     <div><strong>トリガーが消えた場合:</strong> GASエディタで <code>setupAllTriggers()</code> 関数を実行してください。これにより全トリガーが再設定されます。</div>
   </div>
 
-  <!-- ===== 11. GASコードの更新手順 ===== -->
-  <h2 id="sec11"><i class="fas fa-code"></i> 11. GASコードの更新手順</h2>
+  <!-- ===== 11. コードの更新・デプロイ手順 ===== -->
+  <h2 id="sec11"><i class="fas fa-code"></i> 11. コードの更新・デプロイ手順</h2>
+
+  <h3><i class="fas fa-arrow-right"></i> 11.1 GASコードの更新</h3>
 
   <ol class="step-list">
     <li>ローカル環境でコードを修正します</li>
@@ -1255,6 +1257,34 @@
   <div class="info-box success">
     <i class="fas fa-circle-check"></i>
     <div>デプロイを更新しても <strong>URLは変わりません</strong>。LP側の変更は不要です。</div>
+  </div>
+
+  <h3><i class="fas fa-arrow-right"></i> 11.2 Webサイト（LP・マニュアル等）の更新</h3>
+
+  <p>LP（index15.html）、マニュアル（docs/）、PRサイト（site/）等のWebコンテンツは、<strong>GitHub Actions</strong>によりさくらレンタルサーバーへ自動デプロイされます。</p>
+
+  <ol class="step-list">
+    <li>ローカル環境でHTML/CSS/JS等を修正します</li>
+    <li>変更をコミットしてGitHubにプッシュします
+      <pre><code>git add &lt;変更ファイル&gt;
+git commit -m "変更内容の説明"
+git push origin main</code></pre>
+    </li>
+    <li>GitHub Actions が自動でさくらサーバーにデプロイします（通常1〜2分で完了）</li>
+    <li>GitHub リポジトリの <strong>Actions</strong> タブで緑のチェックマーク（<i class="fas fa-check-circle" style="color:var(--success)"></i>）を確認します</li>
+    <li><span class="url-cell">https://iba-consulting.jp/</span> にアクセスして反映を確認します</li>
+  </ol>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div>
+      <strong>デプロイの仕組み:</strong> <code>main</code> ブランチへのpushをトリガーに、GitHub ActionsがSSH（rsync）でさくらレンタルサーバーにファイルを同期します。GASコード（<code>gas/</code>）やテスト用ファイルは除外されます。
+    </div>
+  </div>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div>デプロイが失敗（赤い<i class="fas fa-times-circle" style="color:var(--danger)"></i>）の場合は、Actions タブでエラーログを確認してください。SSH鍵やサーバー接続の問題が主な原因です。</div>
   </div>
 
   <!-- ===== 12. トラブルシューティング ===== -->
@@ -1440,7 +1470,7 @@
 
   <div class="info-box warning">
     <i class="fas fa-triangle-exclamation"></i>
-    <div><code>config.gs</code> を変更した場合は、必ず <a href="#sec11">11. GASコードの更新手順</a> に従ってデプロイを更新してください。</div>
+    <div><code>config.gs</code> を変更した場合は、必ず <a href="#sec11">11. コードの更新・デプロイ手順</a> に従ってデプロイを更新してください。</div>
   </div>
 
   <!-- ===== 14. リーダー自動選定 ===== -->
