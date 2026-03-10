@@ -2692,6 +2692,14 @@
                             </div>
                         </div>
                     </div>
+                    <div class="member-card">
+                        <div class="member-avatar"><i class="fas fa-user"></i></div>
+                        <div class="member-name">仲川 幾夫</div>
+                        <div class="member-tags">
+                            <span class="member-tag cert">中小企業診断士</span>
+                            <span class="member-tag cert">MBA</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -3286,6 +3294,12 @@
             const year = 2026;
             const today = new Date();
             const maxDate = new Date(today.getFullYear(), today.getMonth() + 2, today.getDate());
+
+            // 特別日程（通常ルール外の対面枠）
+            const specialDates = {
+                '2026-03-18': { method: '対面', times: ['19:30'] }
+            };
+
             for (let month = 2; month <= 5; month++) {
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 for (let day = 1; day <= daysInMonth; day++) {
@@ -3293,6 +3307,15 @@
                     if (d > maxDate) continue; // 2ヶ月先まで
                     const dow = d.getDay();
                     const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                    // 特別日程チェック
+                    if (specialDates[dateKey]) {
+                        const sp = specialDates[dateKey];
+                        if (sp.method === 'オンライン' && currentMethod === 'visit') continue;
+                        if (sp.method === '対面' && currentMethod === 'zoom') continue;
+                        availableSchedule[dateKey] = sp.times.map(t => ({ time: t }));
+                        continue;
+                    }
 
                     // 土日: 第1・第3のみ → 14:00, 16:00, 18:00
                     if (dow === 0 || dow === 6) {
