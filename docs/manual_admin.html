@@ -1763,9 +1763,9 @@
 
   <p>Zoom録画から文字起こしと報告書ドラフトを自動生成するパイプラインです。3つのCloud Functionで構成されます。</p>
 
-  <div class="info-box warning">
-    <i class="fas fa-triangle-exclamation"></i>
-    <div>この機能を利用するには <code>config.gs</code> で <code>TRANSCRIPT.ENABLED = true</code> と <code>AUTO_REPORT.ENABLED = true</code> を設定し、Cloud Functionsをデプロイする必要があります。</div>
+  <div class="info-box note">
+    <i class="fas fa-circle-check"></i>
+    <div><code>TRANSCRIPT.ENABLED = true</code> 設定済み、Cloud Function（zoom-to-transcript）デプロイ済みです。報告書自動作成（AUTO_REPORT）とNotion連携は現在無効です。</div>
   </div>
 
   <h3><i class="fas fa-arrow-right"></i> 19.1 処理フロー</h3>
@@ -1824,11 +1824,28 @@
   <h3><i class="fas fa-server"></i> 19.4 Cloud Functions</h3>
   <div class="table-wrapper">
     <table>
-      <thead><tr><th>関数名</th><th>用途</th><th>必要なAPI</th></tr></thead>
+      <thead><tr><th>関数名</th><th>用途</th><th>必要なAPI</th><th>状態</th></tr></thead>
       <tbody>
-        <tr><td><code>zoom_to_transcript</code></td><td>MP4→音声→文字起こし</td><td>Google Cloud Speech-to-Text v2</td></tr>
-        <tr><td><code>transcript_to_report</code></td><td>文字起こし→報告書ドラフト</td><td>Anthropic Claude API, Google Docs API</td></tr>
-        <tr><td><code>report_to_notion</code></td><td>Docs→PDF→Notion連携</td><td>Google Drive API, Notion API</td></tr>
+        <tr><td><code>zoom-to-transcript</code></td><td>MP4→音声→文字起こし</td><td>Google Cloud Speech-to-Text v2</td><td><strong>デプロイ済み</strong></td></tr>
+        <tr><td><code>transcript_to_report</code></td><td>文字起こし→報告書ドラフト</td><td>Anthropic Claude API, Google Docs API</td><td>未使用（ENABLED=false）</td></tr>
+        <tr><td><code>report_to_notion</code></td><td>Docs→PDF→Notion連携</td><td>Google Drive API, Notion API</td><td>未使用（ENABLED=false）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>zoom-to-transcript 構成</h4>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>項目</th><th>値</th></tr></thead>
+      <tbody>
+        <tr><td><strong>関数名</strong></td><td><code>zoom-to-transcript</code></td></tr>
+        <tr><td><strong>リージョン</strong></td><td><code>asia-northeast1</code>（東京）</td></tr>
+        <tr><td><strong>ランタイム</strong></td><td>Python 3.11（2nd gen）</td></tr>
+        <tr><td><strong>メモリ</strong></td><td>1024MB</td></tr>
+        <tr><td><strong>タイムアウト</strong></td><td>540秒</td></tr>
+        <tr><td><strong>URL</strong></td><td><span class="url-cell">https://asia-northeast1-kg-consultation.cloudfunctions.net/zoom-to-transcript</span></td></tr>
+        <tr><td><strong>GCSバケット</strong></td><td><code>kg-consultation-transcript-temp</code>（音声一時保存、1日自動削除）</td></tr>
+        <tr><td><strong>シークレット</strong></td><td>Secret Manager経由（SHARED_SECRET = transcript-shared-secret）</td></tr>
       </tbody>
     </table>
   </div>
