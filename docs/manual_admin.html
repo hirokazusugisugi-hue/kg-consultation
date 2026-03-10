@@ -668,11 +668,6 @@
           <td>対外的なPR・ブランディング用サイト</td>
         </tr>
         <tr>
-          <td><strong>AI経営診断</strong></td>
-          <td><span class="url-cell">https://iba-consulting.jp/site/diagnosis.html</span></td>
-          <td>AI診断ダッシュボード・結果閲覧</td>
-        </tr>
-        <tr>
           <td><strong>スタッフポータル</strong></td>
           <td><span class="url-cell">https://iba-consulting.jp/site/portal.html</span></td>
           <td>スタッフ向けログインポータル</td>
@@ -1837,45 +1832,6 @@
       </tbody>
     </table>
   </div>
-
-  <!-- ===== 20. AI経営診断 ===== -->
-  <h2 id="sec20"><i class="fas fa-brain"></i> 20. AI経営診断</h2>
-
-  <p>経営相談の情報をAIが分析し、6つの評価軸で企業の経営状態をスコアリングするシステムです。</p>
-
-  <div class="info-box warning">
-    <i class="fas fa-triangle-exclamation"></i>
-    <div>この機能を利用するには <code>config.gs</code> で <code>DIAGNOSIS.ENABLED = true</code> を設定し、AI診断用Cloud Functionをデプロイする必要があります。</div>
-  </div>
-
-  <h3><i class="fas fa-chart-radar"></i> 20.1 6軸評価</h3>
-  <div class="table-wrapper">
-    <table>
-      <thead><tr><th>評価軸</th><th>内部キー</th><th>スコア範囲</th></tr></thead>
-      <tbody>
-        <tr><td>経営戦略</td><td><code>strategy</code></td><td>1-5</td></tr>
-        <tr><td>財務</td><td><code>finance</code></td><td>1-5</td></tr>
-        <tr><td>組織・人材</td><td><code>organization</code></td><td>1-5</td></tr>
-        <tr><td>マーケティング</td><td><code>marketing</code></td><td>1-5</td></tr>
-        <tr><td>業務プロセス</td><td><code>operations</code></td><td>1-5</td></tr>
-        <tr><td>IT・DX</td><td><code>digital</code></td><td>1-5</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p>総合スコアは0〜100点で算出されます。レーダーチャートで視覚的に確認可能です。</p>
-
-  <h3><i class="fas fa-play-circle"></i> 20.2 診断の実行</h3>
-  <ul>
-    <li><strong>相談ベース:</strong> <span class="url-cell">?action=run-diagnosis&amp;row=行番号</span> — 予約管理シートの案件から自動実行</li>
-    <li><strong>直接入力:</strong> <span class="url-cell">?action=run-direct-diagnosis</span> — テキスト情報を直接入力して診断</li>
-  </ul>
-
-  <h3><i class="fas fa-chart-bar"></i> 20.3 結果閲覧</h3>
-  <ul>
-    <li><strong>診断ダッシュボード:</strong> <a href="https://iba-consulting.jp/site/diagnosis.html">PRサイト diagnosis.html</a></li>
-    <li><strong>個別結果:</strong> <a href="https://iba-consulting.jp/site/diagnosis-result.html?id=xxx">diagnosis-result.html?id=xxx</a></li>
-    <li><strong>API:</strong> <span class="url-cell">?action=diagnosis-results</span>, <span class="url-cell">?action=diagnosis-stats</span></li>
-  </ul>
 
   <!-- ===== 21. スタッフポータル ===== -->
   <h2 id="sec21"><i class="fas fa-user-shield"></i> 21. スタッフポータル</h2>
