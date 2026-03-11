@@ -270,6 +270,80 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 会場確保依頼メール手動送信（管理用）
+    if (action === 'send-venue-request') {
+      var svAppId = e.parameter.id;
+      var svMembers = e.parameter.members;
+      if (!svAppId || !svMembers) {
+        return ContentService.createTextOutput(JSON.stringify({
+          success: false, message: 'id, membersパラメータが必要です'
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      var svSheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(CONFIG.SHEET_NAME);
+      var svData = svSheet.getDataRange().getValues();
+      var svRow = -1;
+      for (var si = 1; si < svData.length; si++) {
+        if (String(svData[si][COLUMNS.ID]) === svAppId) { svRow = si; break; }
+      }
+      if (svRow === -1) {
+        return ContentService.createTextOutput(JSON.stringify({
+          success: false, message: '申込ID ' + svAppId + ' が見つかりません'
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      // P列（担当者）を更新
+      svSheet.getRange(svRow + 1, COLUMNS.STAFF + 1).setValue(svMembers);
+      var r = svData[svRow];
+      var svConsentDate = r[COLUMNS.NDA_DATE];
+      if (svConsentDate instanceof Date) {
+        svConsentDate = Utilities.formatDate(svConsentDate, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+      }
+      var svSubject = '【無料経営相談・仮予約確定】' + r[COLUMNS.NAME] + '様 - ' + svAppId;
+      var svBody = '相談同意書への同意が完了しました（対面相談）。\n' +
+        '会場の予約をお願いいたします。\n\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+        '■ 申込情報\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+        '申込ID：' + svAppId + '\n' +
+        'お名前：' + r[COLUMNS.NAME] + '\n' +
+        '貴社名：' + r[COLUMNS.COMPANY] + '\n' +
+        '業種：' + (r[COLUMNS.INDUSTRY] || '未入力') + '\n' +
+        '相談方法：' + r[COLUMNS.METHOD] + '\n' +
+        'テーマ：' + (r[COLUMNS.THEME] || '未入力') + '\n' +
+        '希望日時：' + r[COLUMNS.DATE1] + '\n' +
+        '同意日時：' + svConsentDate + '\n\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+        '■ 対応事項：会場の予約\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+        '以下の手順で会場を予約し、予約を確定してください。\n\n' +
+        '手順：\n' +
+        '1. スタッフポータルにログイン\n' +
+        '   ' + CONFIG.PORTAL.SITE_URL + '\n' +
+        '2.「案件」ページを開く\n' +
+        '3. 該当案件の「会場未設定」をタップ\n' +
+        '4. 会場を選択して「確定」をタップ\n\n' +
+        '確定すると相談者に予約確定メールが自動送信されます。\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+      var svNames = svMembers.split(',').map(function(n) { return n.trim(); });
+      svBody += '■ 担当メンバー（' + svNames.length + '名）\n';
+      svNames.forEach(function(n) { svBody += '・' + n + '\n'; });
+      svBody += '\n※ リーダーは秋月 仁志さんにお願いする予定です。\n' +
+        '　正式なリーダー指定は後日リマインドメールにてご連絡いたします。\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+      var svSentTo = [];
+      svNames.forEach(function(memberName) {
+        var m = getMemberByName(memberName);
+        if (m && m.email) {
+          GmailApp.sendEmail(m.email, svSubject, svBody, { name: CONFIG.SENDER_NAME });
+          svSentTo.push(memberName + ' (' + m.email + ')');
+        }
+      });
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: '会場確保依頼メールを送信しました',
+        sentTo: svSentTo
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 場所列マイグレーション（管理用）
     if (action === 'migrate-location') {
       var migrateResult = migrateAddLocationColumn();
