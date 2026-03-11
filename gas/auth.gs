@@ -79,7 +79,7 @@ function requestPortalLogin(email) {
   var loginUrl = CONFIG.CONSENT.WEB_APP_URL + '?action=portal-verify&token=' + token;
 
   // メール送信
-  var subject = '【ログイン】スタッフポータル - 関西学院大学 中小企業経営診断研究会無料経営相談分科会';
+  var subject = '【ログイン】スタッフポータル - 関西学院大学 中小企業経営診断研究会';
   var body = member.name + ' 様\n\n' +
     'スタッフポータルへのログインリクエストを受け付けました。\n' +
     '以下のリンクをクリックしてログインしてください。\n\n' +

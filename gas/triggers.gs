@@ -860,9 +860,9 @@ function buildStaffNotificationEmail_(data) {
     '\n' +
     (data.companyUrl ? '※事前に企業URLを確認し、リサーチをお願いします。\n\n' : '') +
     'よろしくお願いいたします。\n' +
-    '中小企業経営診断研究会無料経営相談分科会';
+    '中小企業経営診断研究会';
 
-  return { subject: subject, body: body, senderName: '中小企業経営診断研究会無料経営相談分科会' };
+  return { subject: subject, body: body, senderName: '中小企業経営診断研究会' };
 }
 
 /**

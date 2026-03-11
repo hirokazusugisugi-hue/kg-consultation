@@ -71,13 +71,13 @@ function generateNdaPage(e) {
   // 既に同意済みの場合
   if (data.ndaStatus === '済') {
     return HtmlService.createHtmlOutput(getConsentAlreadyAgreedPageHtml(data))
-      .setTitle('同意済 - 関西学院大学 中小企業経営診断研究会無料経営相談分科会')
+      .setTitle('同意済 - 関西学院大学 中小企業経営診断研究会')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
   const html = getConsentPageHtml(data, token);
   return HtmlService.createHtmlOutput(html)
-    .setTitle('相談同意書のご確認 - 関西学院大学 中小企業経営診断研究会無料経営相談分科会')
+    .setTitle('相談同意書のご確認 - 関西学院大学 中小企業経営診断研究会')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

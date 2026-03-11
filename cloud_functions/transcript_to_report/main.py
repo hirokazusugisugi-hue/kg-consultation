@@ -36,7 +36,7 @@ CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-20250514")
 GOOGLE_DOCS_FOLDER_ID = os.environ.get("GOOGLE_DOCS_FOLDER_ID", "")
 
 # レポート生成プロンプト
-REPORT_SYSTEM_PROMPT = """あなたは中小企業経営の専門家であり、関西学院大学 中小企業経営診断研究会無料経営相談分科会の診断報告書を作成するアシスタントです。
+REPORT_SYSTEM_PROMPT = """あなたは中小企業経営の専門家であり、関西学院大学 中小企業経営診断研究会の診断報告書を作成するアシスタントです。
 
 経営相談の文字起こしテキストから、以下の構造で診断報告書のドラフトを作成してください。
 
