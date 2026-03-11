@@ -201,7 +201,7 @@ function processNdaConsent(e) {
       // ===== 対面相談：会場確保待ちフロー =====
       console.log('相談者同意[対面]: 会場確保待ちフロー開始');
 
-      // 管理者に通知（会場確保依頼）
+      // 管理者・担当者・参加メンバーに通知（会場確保依頼）
       notifyConsentAgreed(data, signature);
 
       // 相談者に同意完了確認メール送信（会場確保待ち案内）
@@ -256,52 +256,86 @@ function notifyConsentEmailFailure_(data, error) {
  * @param {string} signature - 電子署名（氏名）
  */
 /**
- * 対面相談：同意完了 → 管理者に会場確保依頼通知
+ * 対面相談：同意完了 → 管理者・担当者・参加メンバーに会場確保依頼通知
  */
 function notifyConsentAgreed(data, signature) {
-  const subject = `【同意完了・会場確保依頼】${data.name}様 - ${data.id}`;
-  const body = `同意書への同意が完了しました（対面相談）。
+  var nowStr = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-■ 同意情報
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-申込ID：${data.id}
-お名前：${data.name}
-貴社名：${data.company}
-相談方法：${data.method}
-希望日時：${data.date1}${data.date2 ? '\n第二希望：' + data.date2 : ''}
-電子署名：${signature}
-同意日時：${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
+  var subject = '【同意完了・会場確保依頼】' + data.name + '様 - ' + data.id;
+  var body = '相談同意書への同意が完了しました（対面相談）。\n' +
+    '会場の予約をお願いいたします。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 申込情報\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '申込ID：' + data.id + '\n' +
+    'お名前：' + data.name + '\n' +
+    '貴社名：' + data.company + '\n' +
+    '業種：' + (data.industry || '未入力') + '\n' +
+    '相談方法：' + data.method + '\n' +
+    'テーマ：' + (data.theme || '未入力') + '\n' +
+    '希望日時：' + data.date1 + (data.date2 ? '\n第二希望：' + data.date2 : '') + '\n' +
+    (data.companyUrl ? '企業URL：' + data.companyUrl + '\n' : '') +
+    '電子署名：' + signature + '\n' +
+    '同意日時：' + nowStr + '\n' +
+    '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 対応事項：会場の予約\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '以下の手順で会場を予約し、予約を確定してください。\n\n' +
+    '手順：\n' +
+    '1. スタッフポータルにログイン\n' +
+    '   ' + CONFIG.PORTAL.SITE_URL + '\n' +
+    '2.「案件」ページを開く\n' +
+    '3. 該当案件の「会場未設定」をタップ\n' +
+    '4. 会場を選択して「確定」をタップ\n\n' +
+    '確定すると相談者に予約確定メールが自動送信されます。\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
 
-【対応事項】会場の予約をお願いします。
+  var lineMessage = '📋 同意完了（対面・会場確保依頼）\n\n' +
+    '申込ID: ' + data.id + '\n' +
+    'お名前: ' + data.name + '様\n' +
+    '貴社名: ' + data.company + '\n' +
+    '方法: ' + data.method + '\n' +
+    'テーマ: ' + (data.theme || '-') + '\n' +
+    '希望日時: ' + data.date1 + '\n' +
+    (data.companyUrl ? '企業URL: ' + data.companyUrl + '\n' : '') +
+    '同意日時: ' + nowStr + '\n\n' +
+    '→ 会場の予約をお願いします。\n' +
+    '→ ポータル「案件」から会場を選択して確定してください。\n' +
+    '→ ' + CONFIG.PORTAL.SITE_URL;
 
-手順：
-1. スタッフポータルにログイン
-   ${CONFIG.PORTAL.SITE_URL}
-2.「案件」ページを開く
-3. 該当案件の「会場未設定」をタップ
-4. 会場を選択して「確定」をタップ
-
-確定すると相談者に予約確定メールが自動送信されます。
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
-
-  CONFIG.ADMIN_EMAILS.forEach(email => {
+  // 管理者に通知
+  CONFIG.ADMIN_EMAILS.forEach(function(email) {
     GmailApp.sendEmail(email, subject, body, { name: CONFIG.SENDER_NAME });
   });
+  var sentEmails = {};
+  CONFIG.ADMIN_EMAILS.forEach(function(email) { sentEmails[email] = true; });
 
-  const lineMessage = `📋 同意完了（対面・会場確保依頼）
+  // 担当者（P列）に通知
+  if (data.staff) {
+    sendStaffNotifications(data.staff, lineMessage, subject, body);
+    var staffNames = data.staff.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+    staffNames.forEach(function(name) {
+      var m = getMemberByName(name);
+      if (m && m.email) sentEmails[m.email] = true;
+    });
+  }
 
-申込ID: ${data.id}
-お名前: ${data.name}様
-貴社名: ${data.company}
-方法: ${data.method}
-希望日時: ${data.date1}
-同意日時: ${Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')}
+  // 日程設定シートの参加メンバー全員にも通知（重複除外）
+  var memberList = getScheduleMembersForDate_(data.date1 || data.confirmedDate);
+  if (memberList && memberList.length > 0) {
+    memberList.forEach(function(cm) {
+      var m = getMemberByName(cm.name);
+      if (m && m.email && !sentEmails[m.email]) {
+        GmailApp.sendEmail(m.email, subject, body, { name: CONFIG.SENDER_NAME });
+        if (m.lineId) sendLineMessage(m.lineId, lineMessage);
+        sentEmails[m.email] = true;
+        console.log('同意完了通知（参加メンバー）: ' + cm.name + ' (' + m.email + ')');
+      }
+    });
+  }
 
-→ 会場の予約をお願いします。
-→ ポータル「案件」から会場を選択して確定してください。`;
-
-  sendLineMessage(CONFIG.LINE.GROUP_ID, lineMessage);
+  console.log('同意完了・会場確保依頼通知: 送信先 ' + Object.keys(sentEmails).length + '名');
 }
 
 /**
