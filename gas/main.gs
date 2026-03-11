@@ -259,6 +259,17 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 24時間未同意自動解放トリガー設定（管理用）
+    if (action === 'setup-expired-trigger') {
+      setupExpiredBookingTrigger();
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          message: '24時間未同意自動解放トリガーを設定しました'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 場所列マイグレーション（管理用）
     if (action === 'migrate-location') {
       var migrateResult = migrateAddLocationColumn();
