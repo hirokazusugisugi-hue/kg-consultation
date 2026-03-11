@@ -1417,7 +1417,7 @@
         </li>
         <li>
           <i class="fa-solid fa-crown comp-icon" style="color: #d97706;"></i>
-          <div><strong>リーダー自動選定</strong> &mdash; 相談完了時に参加メンバー（1期/2期診断士）から自動でリーダーを選定。得意業種・テーママッチ（最大+7pt）と履歴ペナルティ（-2pt/回）で公平に選定。結果はY列とリーダー履歴シートに記録。<code>leader.gs</code>で実装。</div>
+          <div><strong>リーダー自動選定</strong> &mdash; 対面相談は確定時、Zoom相談は3日前リマインド時に参加メンバー（1期/2期診断士）から自動でリーダーを選定。得意業種・テーママッチ（最大+7pt）と履歴ペナルティ（-2pt/回）で公平に選定。完了時にリーダーが当日不参加の場合は再選定。結果はY列とリーダー履歴シートに記録。<code>leader.gs</code>で実装。</div>
         </li>
         <li>
           <i class="fa-solid fa-file-alt comp-icon" style="color: #059669;"></i>
@@ -2127,14 +2127,16 @@
         <i class="fa-solid fa-crown section-icon"></i>
       </div>
 
-      <p class="section-desc">相談完了後のリーダー自動選定と、診断報告書の配信フローです。</p>
+      <p class="section-desc">予約確定時/3日前リマインド時のリーダー自動選定と、診断報告書の配信フローです。</p>
 
       <h3 style="margin-top: 1.5rem; color: var(--navy);"><i class="fa-solid fa-user-tie"></i> リーダー自動選定フロー</h3>
 
+      <div style="margin-bottom: 0.8rem; font-size: 0.9rem; color: var(--text-secondary);"><strong>対面相談:</strong> 確定時に選定 ／ <strong>Zoom相談:</strong> 3日前リマインド時に選定</div>
+
       <div class="flow">
         <div class="flow-step">
-          <i class="fa-solid fa-flag-checkered flow-step-icon"></i>
-          <div class="flow-step-text"><strong>ステータス→完了</strong></div>
+          <i class="fa-solid fa-check-circle flow-step-icon"></i>
+          <div class="flow-step-text"><strong>確定 or 3日前</strong><br><small>対面=確定時, Zoom=3日前</small></div>
         </div>
         <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
         <div class="flow-step">
@@ -2149,9 +2151,11 @@
         <div class="flow-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
         <div class="flow-step">
           <i class="fa-solid fa-crown flow-step-icon"></i>
-          <div class="flow-step-text"><strong>リーダー確定</strong><br><small>Y列＋履歴シート記録</small></div>
+          <div class="flow-step-text"><strong>リーダー確定</strong><br><small>Y列＋履歴シート「予定」記録</small></div>
         </div>
       </div>
+
+      <div style="margin-top: 0.8rem; font-size: 0.9rem; color: var(--text-secondary);">完了時: リーダーが当日不参加なら再選定、参加なら履歴を「完了」に更新</div>
 
       <h3 style="margin-top: 2rem; color: var(--navy);"><i class="fa-solid fa-file-alt"></i> レポート配信フロー</h3>
 

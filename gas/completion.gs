@@ -202,7 +202,7 @@ function submitCompletionConfirm(formData) {
       // ステータスを「完了」に更新
       sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.COMPLETED);
 
-      // リーダー自動選定＆履歴更新
+      // リーダー履歴更新（予定→完了）＆欠席時フォールバック再選定
       try {
         autoSelectLeaderOnComplete(rowIndex);
       } catch (leaderError) {

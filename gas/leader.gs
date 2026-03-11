@@ -1,6 +1,6 @@
 /**
  * リーダー選定システム
- * 相談完了後、当日参加メンバーから最適なリーダーを自動選定
+ * 予約確定時/3日前リマインド時に参加メンバーから最適なリーダーを自動選定
  */
 
 /**
@@ -284,29 +284,97 @@ function updateLeaderHistoryStatus(appId, newStatus, newLeader) {
 function autoSelectLeaderOnComplete(rowIndex) {
   var data = getRowData(rowIndex);
 
-  // 既にリーダーが設定されている場合 → 履歴を「完了」に更新のみ
+  // 既にリーダーが設定されている場合
   if (data.leader) {
-    var updated = updateLeaderHistoryStatus(data.id, '完了');
-    if (!updated) {
-      // 履歴に「予定」行がない場合（手動設定など）は新規追加
-      var memberNames = getParticipatingMembers(data.confirmedDate) || '';
-      recordLeaderAssignment(data, data.leader, memberNames, 0, '手動設定', '完了');
+    // 当日参加メンバーにリーダーが含まれているか確認
+    var memberNames = getParticipatingMembers(data.confirmedDate) || '';
+    var memberList = memberNames.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+    var leaderPresent = memberList.indexOf(data.leader) >= 0;
+
+    if (!leaderPresent && memberNames) {
+      // リーダーが当日不参加 → 再選定
+      console.log('リーダー「' + data.leader + '」が当日参加メンバーに不在 → 再選定');
+      var result = selectLeader(data, memberNames);
+      if (result) {
+        var sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
+          .getSheetByName(CONFIG.SHEET_NAME);
+        sheet.getRange(rowIndex, COLUMNS.LEADER + 1).setValue(result.leaderName);
+        updateLeaderHistoryStatus(data.id, '完了', result.leaderName);
+        console.log('リーダー再選定完了: ' + data.leader + ' → ' + result.leaderName);
+      } else {
+        // 再選定候補なし → 既存リーダーのまま完了
+        updateLeaderHistoryStatus(data.id, '完了');
+        console.log('再選定候補なし → 既存リーダーのまま完了: ' + data.leader);
+      }
+    } else {
+      // リーダーが当日参加 → 履歴を「完了」に更新のみ
+      var updated = updateLeaderHistoryStatus(data.id, '完了');
+      if (!updated) {
+        recordLeaderAssignment(data, data.leader, memberNames, 0, '手動設定', '完了');
+      }
+      console.log('リーダー既設定 → 履歴を完了に更新: ' + data.leader);
     }
-    console.log('リーダー既設定 → 履歴を完了に更新: ' + data.leader);
     return;
   }
 
-  // 日程設定シートから参加メンバーを取得
+  // リーダー未設定 → 最終フォールバック選定
   var memberNames = getParticipatingMembers(data.confirmedDate);
   if (!memberNames) {
     console.log('参加メンバーが取得できないためリーダー選定スキップ');
     return;
   }
 
-  // リーダー選定
   var result = selectLeader(data, memberNames);
   if (!result) {
     console.log('リーダー候補なし');
+    return;
+  }
+
+  var sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
+    .getSheetByName(CONFIG.SHEET_NAME);
+  sheet.getRange(rowIndex, COLUMNS.LEADER + 1).setValue(result.leaderName);
+
+  var updated = updateLeaderHistoryStatus(data.id, '完了', result.leaderName);
+  if (!updated) {
+    recordLeaderAssignment(data, result.leaderName, memberNames, result.score, result.reason, '完了');
+  }
+
+  console.log('リーダー自動選定完了（フォールバック）: ' + result.leaderName + ' (行: ' + rowIndex + ')');
+}
+
+/**
+ * 予約確定時の自動リーダー選定（対面相談用）
+ * 対面相談の確定時に呼ばれる。Zoom相談はスキップ（3日前リマインドで選定）。
+ * @param {number} rowIndex - 予約管理シートの行番号（1-based）
+ */
+function autoSelectLeaderOnConfirm(rowIndex) {
+  var data = getRowData(rowIndex);
+
+  // 既にリーダーが設定されている場合はスキップ（手動設定尊重）
+  if (data.leader) {
+    console.log('リーダー既設定のためスキップ（確定時）: ' + data.leader);
+    return;
+  }
+
+  // Zoom相談はスキップ（3日前リマインドで選定）
+  var method = data.method || '';
+  var isOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0 || method.indexOf('zoom') >= 0;
+  if (isOnline) {
+    console.log('Zoom相談のためリーダー選定スキップ（3日前リマインドで選定）');
+    return;
+  }
+
+  // 日程設定シートから参加メンバーを取得
+  var memberNames = getParticipatingMembers(data.confirmedDate);
+  if (!memberNames) {
+    console.log('参加メンバーが取得できないためリーダー選定スキップ（確定時）');
+    return;
+  }
+
+  // リーダー選定
+  var result = selectLeader(data, memberNames);
+  if (!result) {
+    console.log('リーダー候補なし（確定時）');
     return;
   }
 
@@ -315,13 +383,48 @@ function autoSelectLeaderOnComplete(rowIndex) {
     .getSheetByName(CONFIG.SHEET_NAME);
   sheet.getRange(rowIndex, COLUMNS.LEADER + 1).setValue(result.leaderName);
 
-  // 履歴の「予定」行を「完了」に更新、なければ新規追加
-  var updated = updateLeaderHistoryStatus(data.id, '完了', result.leaderName);
-  if (!updated) {
-    recordLeaderAssignment(data, result.leaderName, memberNames, result.score, result.reason, '完了');
+  // 履歴に「予定」で記録
+  recordLeaderAssignment(data, result.leaderName, memberNames, result.score, result.reason, '予定');
+
+  console.log('リーダー自動選定完了（確定時・対面）: ' + result.leaderName + ' (行: ' + rowIndex + ')');
+}
+
+/**
+ * 3日前リマインド時の自動リーダー選定（Zoomメイン + 対面フォールバック）
+ * @param {number} rowIndex - 予約管理シートの行番号（1-based）
+ */
+function autoSelectLeaderOnReminder(rowIndex) {
+  var data = getRowData(rowIndex);
+
+  // 既にリーダーが設定されている場合はスキップ
+  if (data.leader) {
+    console.log('リーダー既設定のためスキップ（3日前リマインド）: ' + data.leader);
+    return;
   }
 
-  console.log('リーダー自動選定完了: ' + result.leaderName + ' (行: ' + rowIndex + ')');
+  // 日程設定シートから参加メンバーを取得
+  var memberNames = getParticipatingMembers(data.confirmedDate);
+  if (!memberNames) {
+    console.log('参加メンバーが取得できないためリーダー選定スキップ（3日前リマインド）');
+    return;
+  }
+
+  // リーダー選定
+  var result = selectLeader(data, memberNames);
+  if (!result) {
+    console.log('リーダー候補なし（3日前リマインド）');
+    return;
+  }
+
+  // 予約管理シートのY列に記録
+  var sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
+    .getSheetByName(CONFIG.SHEET_NAME);
+  sheet.getRange(rowIndex, COLUMNS.LEADER + 1).setValue(result.leaderName);
+
+  // 履歴に「予定」で記録
+  recordLeaderAssignment(data, result.leaderName, memberNames, result.score, result.reason, '予定');
+
+  console.log('リーダー自動選定完了（3日前リマインド）: ' + result.leaderName + ' (行: ' + rowIndex + ')');
 }
 
 /**
