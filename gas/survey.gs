@@ -51,7 +51,7 @@ function generateSurveyPage(e) {
 
   var html = getSurveyPageHtml(tokenData);
   return HtmlService.createHtmlOutput(html)
-    .setTitle('相談後アンケート - 関西学院大学 中小企業経営診断研究会')
+    .setTitle('相談後アンケート - 関西学院大学 中小企業経営相談研究会')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
@@ -318,7 +318,7 @@ function sendSurveyEmails() {
 function sendSurveyEmail(email, name, company, appId, surveyUrl) {
   var subject = '【アンケートのお願い】無料経営相談のご感想をお聞かせください';
   var body = name + ' 様\n\n' +
-    '先日は、関西学院大学 中小企業経営診断研究会の無料経営相談をご利用いただき、\n' +
+    '先日は、関西学院大学 中小企業経営相談研究会の無料経営相談をご利用いただき、\n' +
     '誠にありがとうございました。\n\n' +
     '今後のサービス向上のため、簡単なアンケートにご協力をお願いいたします。\n' +
     '（所要時間：約3分）\n\n' +

@@ -13,7 +13,7 @@ function generateObserverPage(e) {
   var schedules = getUpcomingConsultations();
   var html = getObserverPageHtml(schedules);
   return HtmlService.createHtmlOutput(html)
-    .setTitle('オブザーバー専用ページ - 関西学院大学 中小企業経営診断研究会')
+    .setTitle('オブザーバー専用ページ - 関西学院大学 中小企業経営相談研究会')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

@@ -624,7 +624,7 @@ function doGet(e) {
         var subject = '【リマインド】秘密保持誓約書（NDA）のご提出について';
         var body = obsName + ' 様\n\n' +
           'お疲れ様です。\n' +
-          '関西学院大学 中小企業経営診断研究会です。\n\n' +
+          '関西学院大学 中小企業経営相談研究会です。\n\n' +
           '経営相談にオブザーバーとしてご参加いただくにあたり、\n' +
           '秘密保持誓約書（NDA）のご提出をお願いしております。\n\n' +
           'まだご提出がお済みでない場合は、以下のオブザーバー専用ページから\n' +
@@ -744,6 +744,48 @@ function doGet(e) {
       var artSetupResult = setupArticlesSheet();
       return ContentService
         .createTextOutput(JSON.stringify(artSetupResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 日程修復（管理用）
+    if (action === 'repair-schedule') {
+      var repairYear = parseInt(e.parameter.year) || 2026;
+      var repairMonth = parseInt(e.parameter.month) || 4;
+      var repairResult = reprocessFormResponsesForMonth(repairYear, repairMonth);
+      return ContentService
+        .createTextOutput(JSON.stringify(repairResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 3月18日対面枠追加（管理用）
+    if (action === 'add-march18') {
+      addMarch18InPerson();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: '3月18日対面枠追加完了' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // メンバー直接設定（管理用）
+    if (action === 'set-slot-members') {
+      var slotResult = setSlotMembers(e.parameter.date, e.parameter.time, e.parameter.members);
+      return ContentService
+        .createTextOutput(JSON.stringify(slotResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 3/18メンバー設定（管理用）
+    if (action === 'set-march18-members') {
+      var m18Result = setMarch18Members();
+      return ContentService
+        .createTextOutput(JSON.stringify(m18Result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 記事管理シート削除（管理用）
+    if (action === 'delete-articles-sheet') {
+      deleteArticlesSheet();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: '記事管理シート削除完了' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -956,6 +998,28 @@ function doGet(e) {
           .createTextOutput(JSON.stringify({ success: false, error: err.message }))
           .setMimeType(ContentService.MimeType.JSON);
       }
+    }
+
+    // キャンセルメール検知テスト（管理用）
+    if (action === 'check-cancel-emails') {
+      try {
+        checkCancellationEmails();
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: true, message: 'キャンセルメール検知を実行しました' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (e) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, error: e.message }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // キャンセルメール検知トリガーセットアップ（管理用）
+    if (action === 'setup-cancel-trigger') {
+      setupCancellationEmailTrigger();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: 'キャンセルメール検知トリガー（10分おき）をセットアップしました' }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
     // 録画チェックトリガーセットアップ（管理用）

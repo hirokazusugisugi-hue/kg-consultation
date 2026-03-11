@@ -184,7 +184,7 @@ function generateReportUploadPage(e) {
 
   var html = getReportUploadPageHtml(tokenData, consultData, token);
   return HtmlService.createHtmlOutput(html)
-    .setTitle('レポートアップロード - 関西学院大学 中小企業経営診断研究会')
+    .setTitle('レポートアップロード - 関西学院大学 中小企業経営相談研究会')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
@@ -192,163 +192,363 @@ function generateReportUploadPage(e) {
  * レポートアップロードページHTML
  */
 function getReportUploadPageHtml(tokenData, consultData, token) {
-  return '<!DOCTYPE html>' +
-'<html lang="ja">' +
-'<head>' +
-'  <meta charset="UTF-8">' +
-'  <meta name="viewport" content="width=device-width, initial-scale=1.0">' +
-'  <title>レポートアップロード</title>' +
-'  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">' +
-'  <style>' +
-'    * { box-sizing: border-box; margin: 0; padding: 0; }' +
-'    body { font-family: "Noto Sans JP", sans-serif; background: #f5f5f7; color: #1a1a1a; line-height: 1.8; }' +
-'    .header { background: #0F2350; color: #fff; padding: 2rem 0; text-align: center; }' +
-'    .header h1 { font-size: 1.3rem; font-weight: 700; }' +
-'    .header p { font-size: 0.85rem; opacity: 0.8; }' +
-'    .container { max-width: 700px; margin: 0 auto; padding: 2rem 1.5rem; }' +
-'    .card { background: #fff; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }' +
-'    .card h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #0F2350; }' +
-'    .info-grid { display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; font-size: 0.9rem; }' +
-'    .info-grid dt { font-weight: 600; color: #666; }' +
-'    .upload-area { border: 2px dashed #ccc; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; margin: 1rem 0; }' +
-'    .upload-area:hover { border-color: #0F2350; background: #f8f9ff; }' +
-'    .upload-area.has-file { border-color: #28a745; background: #f0fff4; }' +
-'    .upload-area input[type="file"] { display: none; }' +
-'    .file-info { font-size: 0.85rem; color: #28a745; margin-top: 0.5rem; }' +
-'    .file-limit { font-size: 0.8rem; color: #888; margin-top: 0.5rem; }' +
-'    .btn { width: 100%; padding: 1rem; background: #0F2350; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; }' +
-'    .btn:hover { opacity: 0.9; }' +
-'    .btn:disabled { background: #ccc; cursor: not-allowed; }' +
-'    .error-msg { color: #dc3545; font-size: 0.85rem; margin-top: 0.5rem; display: none; }' +
-'    .success-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }' +
-'    .success-overlay.active { display: flex; }' +
-'    .success-box { background: #fff; border-radius: 12px; padding: 3rem 2rem; text-align: center; max-width: 500px; margin: 1rem; }' +
-'    .success-icon { width: 60px; height: 60px; background: #d4edda; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: #28a745; }' +
-'  </style>' +
-'</head>' +
-'<body>' +
-'  <div class="header">' +
-'    <h1>診断報告書のアップロード</h1>' +
-'    <p>関西学院大学 中小企業経営診断研究会</p>' +
-'  </div>' +
-'  <div class="container">' +
-'    <div class="card">' +
-'      <h2>相談情報</h2>' +
-'      <dl class="info-grid">' +
-'        <dt>申込ID</dt><dd>' + consultData.id + '</dd>' +
-'        <dt>企業名</dt><dd>' + consultData.company + '</dd>' +
-'        <dt>業種</dt><dd>' + (consultData.industry || '') + '</dd>' +
-'        <dt>テーマ</dt><dd>' + (consultData.theme || '') + '</dd>' +
-'        <dt>リーダー</dt><dd>' + tokenData.leaderName + '</dd>' +
-'      </dl>' +
-'    </div>' +
-'    <div class="card">' +
-'      <h2>報告書アップロード</h2>' +
-'      <p style="font-size:0.9rem; color:#666; margin-bottom:1rem;">PDF または Word ファイルをアップロードしてください。</p>' +
-'      <div class="upload-area" id="uploadArea" onclick="document.getElementById(\'fileInput\').click()">' +
-'        <div id="uploadLabel">ファイルを選択またはドラッグ&ドロップ</div>' +
-'        <div class="file-info" id="fileInfo" style="display:none;"></div>' +
-'        <input type="file" id="fileInput" accept=".pdf,.doc,.docx" onchange="handleFileSelect(this)">' +
-'      </div>' +
-'      <div class="file-limit">対応形式: PDF, Word (.doc, .docx) / 上限: 5MB</div>' +
-'      <div id="errorMsg" class="error-msg"></div>' +
-'      <button class="btn" id="submitBtn" onclick="submitReport()" disabled>アップロードして送信</button>' +
-'    </div>' +
-'  </div>' +
-'  <div id="successOverlay" class="success-overlay">' +
-'    <div class="success-box">' +
-'      <div class="success-icon">&#10003;</div>' +
-'      <h3>アップロード完了</h3>' +
-'      <p style="margin-top:1rem; color:#666;">報告書が正常にアップロードされました。<br>相談者様へ自動的に配信されます。<br>このページを閉じていただいて結構です。</p>' +
-'    </div>' +
-'  </div>' +
-'  <script>' +
-'    var selectedFile = null;' +
-'    var maxSize = 5 * 1024 * 1024;' +
-'' +
-'    function handleFileSelect(input) {' +
-'      var file = input.files[0];' +
-'      if (!file) return;' +
-'      if (file.size > maxSize) {' +
-'        showError("ファイルサイズが5MBを超えています（" + (file.size / 1024 / 1024).toFixed(1) + "MB）");' +
-'        return;' +
-'      }' +
-'      var ext = file.name.split(".").pop().toLowerCase();' +
-'      if (["pdf", "doc", "docx"].indexOf(ext) < 0) {' +
-'        showError("対応していないファイル形式です");' +
-'        return;' +
-'      }' +
-'      selectedFile = file;' +
-'      document.getElementById("uploadArea").classList.add("has-file");' +
-'      document.getElementById("uploadLabel").textContent = file.name;' +
-'      document.getElementById("fileInfo").style.display = "block";' +
-'      document.getElementById("fileInfo").textContent = (file.size / 1024).toFixed(0) + " KB";' +
-'      document.getElementById("submitBtn").disabled = false;' +
-'      hideError();' +
-'    }' +
-'' +
-'    function showError(msg) {' +
-'      var el = document.getElementById("errorMsg");' +
-'      el.textContent = msg;' +
-'      el.style.display = "block";' +
-'    }' +
-'    function hideError() {' +
-'      document.getElementById("errorMsg").style.display = "none";' +
-'    }' +
-'' +
-'    function submitReport() {' +
-'      if (!selectedFile) return;' +
-'      var btn = document.getElementById("submitBtn");' +
-'      btn.disabled = true;' +
-'      btn.textContent = "アップロード中...";' +
-'' +
-'      var reader = new FileReader();' +
-'      reader.onload = function(e) {' +
-'        var base64 = e.target.result.split(",")[1];' +
-'        google.script.run' +
-'          .withSuccessHandler(function(result) {' +
-'            if (result.success) {' +
-'              document.getElementById("successOverlay").classList.add("active");' +
-'            } else {' +
-'              showError(result.message || "エラーが発生しました");' +
-'              btn.disabled = false;' +
-'              btn.textContent = "アップロードして送信";' +
-'            }' +
-'          })' +
-'          .withFailureHandler(function(err) {' +
-'            showError("エラー: " + err.message);' +
-'            btn.disabled = false;' +
-'            btn.textContent = "アップロードして送信";' +
-'          })' +
-'          .submitReportUpload({' +
-'            token: "' + token + '",' +
-'            fileName: selectedFile.name,' +
-'            mimeType: selectedFile.type,' +
-'            base64: base64' +
-'          });' +
-'      };' +
-'      reader.readAsDataURL(selectedFile);' +
-'    }' +
-'' +
-'    // ドラッグ&ドロップ' +
-'    var area = document.getElementById("uploadArea");' +
-'    area.addEventListener("dragover", function(e) { e.preventDefault(); area.style.borderColor = "#0F2350"; });' +
-'    area.addEventListener("dragleave", function() { area.style.borderColor = "#ccc"; });' +
-'    area.addEventListener("drop", function(e) {' +
-'      e.preventDefault();' +
-'      area.style.borderColor = "#ccc";' +
-'      if (e.dataTransfer.files.length > 0) {' +
-'        document.getElementById("fileInput").files = e.dataTransfer.files;' +
-'        handleFileSelect(document.getElementById("fileInput"));' +
-'      }' +
-'    });' +
-'  </script>' +
-'</body>' +
+  return '<!DOCTYPE html>\n' +
+'<html lang="ja">\n' +
+'<head>\n' +
+'<meta charset="UTF-8">\n' +
+'<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+'<title>レポートアップロード</title>\n' +
+'<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">\n' +
+'<style>\n' +
+'* { box-sizing: border-box; margin: 0; padding: 0; }\n' +
+'body { font-family: "Noto Sans JP", sans-serif; background: #f5f5f7; color: #1a1a1a; line-height: 1.8; }\n' +
+'.header { background: #0F2350; color: #fff; padding: 2rem 0; text-align: center; }\n' +
+'.header h1 { font-size: 1.3rem; font-weight: 700; }\n' +
+'.header p { font-size: 0.85rem; opacity: 0.8; }\n' +
+'.container { max-width: 700px; margin: 0 auto; padding: 2rem 1.5rem; }\n' +
+'.card { background: #fff; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }\n' +
+'.card h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #0F2350; }\n' +
+'.info-grid { display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; font-size: 0.9rem; }\n' +
+'.info-grid dt { font-weight: 600; color: #666; }\n' +
+'.size-notice { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: #856404; }\n' +
+'.size-notice strong { font-weight: 700; }\n' +
+'.file-label { display: block; border: 2px dashed #ccc; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; margin: 1rem 0; }\n' +
+'.file-label:hover { border-color: #0F2350; background: #f8f9ff; }\n' +
+'.file-label.has-file { border-color: #28a745; background: #f0fff4; }\n' +
+'#fileInput { display: none; }\n' +
+'.file-name { font-size: 0.95rem; font-weight: 500; }\n' +
+'.file-size { font-size: 0.85rem; color: #28a745; margin-top: 0.3rem; }\n' +
+'.btn-submit { width: 100%; padding: 1rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; color: #fff; }\n' +
+'.btn-gray { background: #ccc; cursor: not-allowed; }\n' +
+'.btn-blue { background: #0F2350; cursor: pointer; }\n' +
+'.btn-blue:hover { opacity: 0.9; }\n' +
+'.error-msg { color: #dc3545; font-size: 0.85rem; margin-top: 0.5rem; }\n' +
+'.progress-box { background: #f8f9ff; border: 1px solid #0F2350; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; text-align: center; }\n' +
+'.progress-bar-wrap { background: #e9ecef; border-radius: 4px; height: 8px; margin: 0.75rem 0; overflow: hidden; }\n' +
+'.progress-bar-fill { background: #0F2350; height: 100%; border-radius: 4px; transition: width 0.5s; width: 0%; }\n' +
+'.progress-stage { font-size: 0.85rem; color: #0F2350; font-weight: 500; }\n' +
+'.progress-note { font-size: 0.75rem; color: #888; margin-top: 0.5rem; }\n' +
+'@keyframes spin { to { transform: rotate(360deg); } }\n' +
+'.spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #ccc; border-top-color: #0F2350; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 0.5rem; }\n' +
+'.success-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }\n' +
+'.success-overlay.active { display: flex; }\n' +
+'.success-box { background: #fff; border-radius: 12px; padding: 3rem 2rem; text-align: center; max-width: 500px; margin: 1rem; }\n' +
+'.success-icon { width: 60px; height: 60px; background: #d4edda; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: #28a745; }\n' +
+'</style>\n' +
+'</head>\n' +
+'<body>\n' +
+'<div class="header">\n' +
+'  <h1>診断報告書のアップロード</h1>\n' +
+'  <p>関西学院大学 中小企業経営相談研究会</p>\n' +
+'</div>\n' +
+'<div class="container">\n' +
+'  <div class="card">\n' +
+'    <h2>相談情報</h2>\n' +
+'    <dl class="info-grid">\n' +
+'      <dt>申込ID</dt><dd>' + consultData.id + '</dd>\n' +
+'      <dt>企業名</dt><dd>' + consultData.company + '</dd>\n' +
+'      <dt>業種</dt><dd>' + (consultData.industry || '') + '</dd>\n' +
+'      <dt>テーマ</dt><dd>' + (consultData.theme || '') + '</dd>\n' +
+'      <dt>リーダー</dt><dd>' + tokenData.leaderName + '</dd>\n' +
+'    </dl>\n' +
+'  </div>\n' +
+'  <div class="card">\n' +
+'    <h2>報告書アップロード</h2>\n' +
+'    <div class="size-notice">\n' +
+'      <strong>対応形式:</strong> PDF, Word (.doc, .docx)<br>\n' +
+'      <strong>最大ファイルサイズ: 5MB</strong>（5MBを超える場合はファイルを圧縮するか、画像を縮小してください）\n' +
+'    </div>\n' +
+'    <form id="uploadForm">\n' +
+'      <input type="hidden" name="token" value="' + token + '">\n' +
+'      <label class="file-label" id="fileLabel" for="fileInput">\n' +
+'        <div id="fileLabelText">ここをタップしてファイルを選択</div>\n' +
+'        <div id="fileNameDisplay" class="file-name" style="display:none;"></div>\n' +
+'        <div id="fileSizeDisplay" class="file-size" style="display:none;"></div>\n' +
+'      </label>\n' +
+'      <input type="file" id="fileInput" name="reportFile" accept=".pdf,.doc,.docx">\n' +
+'    </form>\n' +
+'    <div id="progressBox" class="progress-box" style="display:none;">\n' +
+'      <div class="progress-stage"><span class="spinner"></span><span id="progressText">準備中...</span></div>\n' +
+'      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar"></div></div>\n' +
+'      <div class="progress-note" id="progressNote">このページを閉じないでください</div>\n' +
+'    </div>\n' +
+'    <div id="errorMsg" class="error-msg" style="display:none;"></div>\n' +
+'    <button type="button" class="btn-submit btn-gray" id="submitBtn" onclick="doSubmit()">アップロードして送信</button>\n' +
+'  </div>\n' +
+'</div>\n' +
+'<div id="successOverlay" class="success-overlay">\n' +
+'  <div class="success-box">\n' +
+'    <div class="success-icon">&#10003;</div>\n' +
+'    <h3>アップロード完了</h3>\n' +
+'    <p style="margin-top:1rem; color:#666;">報告書が正常にアップロードされました。<br>相談者様へ自動的に配信されます。<br>このページを閉じていただいて結構です。</p>\n' +
+'  </div>\n' +
+'</div>\n' +
+'<script>\n' +
+'var MAXSIZE = 5 * 1024 * 1024;\n' +
+'var uploading = false;\n' +
+'var fileReady = false;\n' +
+'var uploadTimer = null;\n' +
+'\n' +
+'// ポーリング: 500msごとにファイル選択状態を監視（イベントハンドラが動かない場合のフォールバック）\n' +
+'setInterval(function() {\n' +
+'  try {\n' +
+'    if (uploading) return;\n' +
+'    var fi = document.getElementById("fileInput");\n' +
+'    if (!fi) return;\n' +
+'    var hasFile = fi.files && fi.files.length > 0;\n' +
+'    if (hasFile && !fileReady) {\n' +
+'      fileReady = true;\n' +
+'      var f = fi.files[0];\n' +
+'      var label = document.getElementById("fileLabel");\n' +
+'      var nameEl = document.getElementById("fileNameDisplay");\n' +
+'      var sizeEl = document.getElementById("fileSizeDisplay");\n' +
+'      var textEl = document.getElementById("fileLabelText");\n' +
+'      var btn = document.getElementById("submitBtn");\n' +
+'      if (label) label.className = "file-label has-file";\n' +
+'      if (textEl) textEl.style.display = "none";\n' +
+'      if (nameEl) { nameEl.textContent = f.name; nameEl.style.display = "block"; }\n' +
+'      if (sizeEl) {\n' +
+'        var mb = f.size / 1024 / 1024;\n' +
+'        sizeEl.textContent = mb >= 1 ? mb.toFixed(1) + " MB" : Math.round(f.size / 1024) + " KB";\n' +
+'        sizeEl.style.display = "block";\n' +
+'      }\n' +
+'      if (btn) { btn.className = "btn-submit btn-blue"; }\n' +
+'    } else if (!hasFile && fileReady) {\n' +
+'      fileReady = false;\n' +
+'      var btn2 = document.getElementById("submitBtn");\n' +
+'      if (btn2) { btn2.className = "btn-submit btn-gray"; }\n' +
+'      var textEl2 = document.getElementById("fileLabelText");\n' +
+'      if (textEl2) textEl2.style.display = "block";\n' +
+'      var nameEl2 = document.getElementById("fileNameDisplay");\n' +
+'      if (nameEl2) nameEl2.style.display = "none";\n' +
+'      var sizeEl2 = document.getElementById("fileSizeDisplay");\n' +
+'      if (sizeEl2) sizeEl2.style.display = "none";\n' +
+'    }\n' +
+'  } catch(e) {}\n' +
+'}, 500);\n' +
+'\n' +
+'// 送信ボタンクリック（ポーリングで有効/無効が切り替わるので、ここでもバリデーション）\n' +
+'function doSubmit() {\n' +
+'  try {\n' +
+'    if (uploading) return;\n' +
+'    var fi = document.getElementById("fileInput");\n' +
+'    if (!fi || !fi.files || !fi.files[0]) {\n' +
+'      showErr("ファイルを選択してからボタンを押してください。");\n' +
+'      return;\n' +
+'    }\n' +
+'    var f = fi.files[0];\n' +
+'    if (f.size > MAXSIZE) {\n' +
+'      showErr("ファイルサイズが5MBを超えています（" + (f.size/1024/1024).toFixed(1) + "MB）。圧縮してから再度お試しください。");\n' +
+'      return;\n' +
+'    }\n' +
+'    var ext = f.name.split(".").pop().toLowerCase();\n' +
+'    if (ext !== "pdf" && ext !== "doc" && ext !== "docx") {\n' +
+'      showErr("対応していない形式です。PDF または Word を選択してください。");\n' +
+'      return;\n' +
+'    }\n' +
+'    uploading = true;\n' +
+'    var btn = document.getElementById("submitBtn");\n' +
+'    btn.className = "btn-submit btn-gray";\n' +
+'    btn.textContent = "処理中...";\n' +
+'    hideErr();\n' +
+'    showProgress("サーバーに送信中...", 30, "このページを閉じないでください");\n' +
+'\n' +
+'    var startTime = Date.now();\n' +
+'    uploadTimer = setInterval(function() {\n' +
+'      var sec = Math.floor((Date.now() - startTime) / 1000);\n' +
+'      if (sec >= 15 && sec < 60) showProgress("サーバーで処理中...", 60, "しばらくお待ちください（" + sec + "秒経過）");\n' +
+'      else if (sec >= 60) showProgress("処理に時間がかかっています...", 70, "もう少しお待ちください（" + sec + "秒経過）");\n' +
+'    }, 5000);\n' +
+'\n' +
+'    google.script.run\n' +
+'      .withSuccessHandler(function(r) {\n' +
+'        clearInterval(uploadTimer);\n' +
+'        if (r && r.success) {\n' +
+'          showProgress("完了!", 100, "");\n' +
+'          setTimeout(function() { document.getElementById("successOverlay").className = "success-overlay active"; }, 500);\n' +
+'        } else {\n' +
+'          showErr(r && r.message ? r.message : "エラーが発生しました。もう一度お試しください。");\n' +
+'          resetState();\n' +
+'        }\n' +
+'      })\n' +
+'      .withFailureHandler(function(e) {\n' +
+'        clearInterval(uploadTimer);\n' +
+'        showErr("エラー: " + (e && e.message ? e.message : "不明なエラー") + "。もう一度お試しください。");\n' +
+'        resetState();\n' +
+'      })\n' +
+'      .submitReportForm(document.getElementById("uploadForm"));\n' +
+'  } catch(ex) {\n' +
+'    showErr("エラーが発生しました: " + ex);\n' +
+'    resetState();\n' +
+'  }\n' +
+'}\n' +
+'\n' +
+'function resetState() {\n' +
+'  uploading = false;\n' +
+'  fileReady = false;\n' +
+'  var btn = document.getElementById("submitBtn");\n' +
+'  btn.className = "btn-submit btn-gray";\n' +
+'  btn.textContent = "アップロードして送信";\n' +
+'  document.getElementById("progressBox").style.display = "none";\n' +
+'}\n' +
+'\n' +
+'function showProgress(text, pct, note) {\n' +
+'  document.getElementById("progressBox").style.display = "block";\n' +
+'  document.getElementById("progressText").textContent = text;\n' +
+'  document.getElementById("progressBar").style.width = pct + "%";\n' +
+'  if (note) document.getElementById("progressNote").textContent = note;\n' +
+'}\n' +
+'\n' +
+'function showErr(m) { var e = document.getElementById("errorMsg"); e.textContent = m; e.style.display = "block"; }\n' +
+'function hideErr() { document.getElementById("errorMsg").style.display = "none"; }\n' +
+'</script>\n' +
+'</body>\n' +
 '</html>';
 }
 
 /**
- * レポートファイルのアップロード処理
+ * フォーム経由のレポートアップロード処理（Form Element方式）
+ * google.script.run.submitReportForm(formElement) で呼ばれる
+ * @param {Object} formData - { token: string, reportFile: Blob }
+ * @returns {Object} { success, message }
+ */
+function submitReportForm(formData) {
+  var steps = [];
+  try {
+    // Step 1: トークン検証
+    var token = formData.token;
+    var tokenData = validateReportToken(token);
+    if (!tokenData) {
+      return { success: false, message: '無効なリンクです。メール内のリンクから再度アクセスしてください。' };
+    }
+    steps.push('token_ok');
+
+    // Step 2: Blob取得
+    var fileBlob = formData.reportFile;
+    if (!fileBlob) {
+      return { success: false, message: 'ファイルが選択されていません。ページをリロードして再度お試しください。' };
+    }
+    steps.push('blob_ok');
+
+    // Step 3: ファイル情報取得（defensiveに）
+    var originalName = 'report.pdf';
+    try { originalName = fileBlob.getName() || 'report.pdf'; } catch(e) { steps.push('getName_err'); }
+
+    var mimeType = 'application/pdf';
+    try { mimeType = fileBlob.getContentType() || 'application/pdf'; } catch(e) { steps.push('getContentType_err'); }
+
+    // MIMEタイプ補正
+    if (!mimeType || mimeType === 'application/octet-stream') {
+      var ext = originalName.split('.').pop().toLowerCase();
+      var mimeMap = { 'pdf': 'application/pdf', 'doc': 'application/msword', 'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
+      mimeType = mimeMap[ext] || 'application/octet-stream';
+    }
+    steps.push('fileinfo_ok:' + originalName);
+
+    // Step 4: Driveフォルダ取得
+    var folder;
+    try {
+      folder = getDriveFolder('DRIVE_FOLDER_REPORT', CONFIG.REPORT.DRIVE_FOLDER_ID);
+      steps.push('folder_ok');
+    } catch (folderErr) {
+      // フォールバック: ルートフォルダ
+      folder = DriveApp.getRootFolder();
+      steps.push('folder_fallback');
+    }
+
+    // Step 5: ファイル保存
+    var fileName = tokenData.applicationId + '_report_' + originalName;
+    var file;
+    try {
+      fileBlob.setName(fileName);
+    } catch(e) {
+      // setNameが使えない場合、newBlobで作り直す
+      var bytes = fileBlob.getBytes();
+      fileBlob = Utilities.newBlob(bytes, mimeType, fileName);
+      steps.push('blob_recreated');
+    }
+
+    try {
+      file = folder.createFile(fileBlob);
+      steps.push('file_created');
+    } catch (createErr) {
+      console.error('createFile error:', createErr);
+      return { success: false, message: 'ファイルの保存に失敗しました（step:' + steps.join(',') + ' err:' + createErr.toString() + '）' };
+    }
+
+    // Step 6: 共有設定（失敗しても続行）
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      steps.push('sharing_ok');
+    } catch (shareErr) {
+      console.log('setSharing skipped:', shareErr);
+      steps.push('sharing_skipped');
+    }
+
+    var fileId = file.getId();
+    var fileUrl = file.getUrl();
+    steps.push('url_ok');
+
+    // Step 7: レポート管理シートを更新
+    try {
+      var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+      var reportSheet = ss.getSheetByName(CONFIG.REPORT_SHEET_NAME);
+      if (reportSheet) {
+        var reportData = reportSheet.getDataRange().getValues();
+        for (var i = 1; i < reportData.length; i++) {
+          if (reportData[i][REPORT_COLUMNS.APP_ID] === tokenData.applicationId) {
+            var row = i + 1;
+            reportSheet.getRange(row, REPORT_COLUMNS.UPLOAD_DATE + 1).setValue(new Date());
+            reportSheet.getRange(row, REPORT_COLUMNS.FILE_ID + 1).setValue(fileId);
+            reportSheet.getRange(row, REPORT_COLUMNS.FILE_URL + 1).setValue(fileUrl);
+            reportSheet.getRange(row, REPORT_COLUMNS.STATUS + 1).setValue(REPORT_STATUS.UPLOADED);
+            break;
+          }
+        }
+      }
+
+      // 予約管理シートのZ列を更新
+      var mainSheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+      var mainData = mainSheet.getDataRange().getValues();
+      for (var j = 1; j < mainData.length; j++) {
+        if (mainData[j][COLUMNS.ID] === tokenData.applicationId) {
+          mainSheet.getRange(j + 1, COLUMNS.REPORT_STATUS + 1).setValue(REPORT_STATUS.UPLOADED);
+          break;
+        }
+      }
+      steps.push('sheets_ok');
+    } catch (sheetErr) {
+      console.error('Sheet update error:', sheetErr);
+      steps.push('sheets_err');
+      // シート更新失敗してもファイルは保存済みなので続行
+    }
+
+    // Step 8: 相談者にレポート配信
+    try {
+      deliverReportToConsultee(tokenData.applicationId, fileUrl);
+      steps.push('email_ok');
+    } catch (emailErr) {
+      console.error('Email delivery error:', emailErr);
+      steps.push('email_err');
+      // メール失敗してもアップロード自体は成功
+    }
+
+    // Step 9: トークンを無効化
+    try {
+      PropertiesService.getScriptProperties().deleteProperty('report_token_' + token);
+    } catch(e) {}
+
+    console.log('レポートアップロード完了（Form方式）: ' + tokenData.applicationId + ' steps:' + steps.join(','));
+    return { success: true, message: 'アップロード完了' };
+
+  } catch (error) {
+    console.error('レポートアップロードエラー:', error, 'steps:', steps.join(','));
+    return { success: false, message: 'エラーが発生しました（step:' + steps.join(',') + ' err:' + error.toString() + '）' };
+  }
+}
+
+/**
+ * レポートファイルのアップロード処理（旧Base64方式・後方互換用）
  * @param {Object} formData - { token, fileName, mimeType, base64 }
  * @returns {Object} { success, message }
  */
@@ -356,19 +556,32 @@ function submitReportUpload(formData) {
   try {
     var tokenData = validateReportToken(formData.token);
     if (!tokenData) {
-      return { success: false, message: '無効なトークンです' };
+      return { success: false, message: '無効なリンクです。メール内のリンクから再度アクセスしてください。' };
+    }
+
+    // MIMEタイプのフォールバック
+    var mimeType = formData.mimeType;
+    if (!mimeType || mimeType === 'application/octet-stream') {
+      var ext = (formData.fileName || '').split('.').pop().toLowerCase();
+      var mimeMap = { 'pdf': 'application/pdf', 'doc': 'application/msword', 'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
+      mimeType = mimeMap[ext] || 'application/octet-stream';
     }
 
     // Base64デコードしてDriveに保存
-    var blob = Utilities.newBlob(
-      Utilities.base64Decode(formData.base64),
-      formData.mimeType,
-      formData.fileName
-    );
+    var decoded;
+    try {
+      decoded = Utilities.base64Decode(formData.base64);
+    } catch (decodeErr) {
+      console.error('Base64デコードエラー:', decodeErr);
+      return { success: false, message: 'ファイルの処理に失敗しました。ファイルが破損していないか確認してください。' };
+    }
+
+    var blob = Utilities.newBlob(decoded, mimeType, formData.fileName);
 
     // サイズチェック
+    var fileSizeMB = (blob.getBytes().length / 1024 / 1024).toFixed(1);
     if (blob.getBytes().length > CONFIG.REPORT.MAX_FILE_SIZE) {
-      return { success: false, message: 'ファイルサイズが5MBを超えています' };
+      return { success: false, message: 'ファイルサイズが5MBを超えています（' + fileSizeMB + 'MB）。圧縮してから再度お試しください。' };
     }
 
     // Driveに保存（ScriptProperties優先、CONFIG fallback）
@@ -418,8 +631,15 @@ function submitReportUpload(formData) {
     return { success: true, message: 'アップロード完了' };
 
   } catch (error) {
-    console.error('レポートアップロードエラー:', error);
-    return { success: false, message: 'エラーが発生しました: ' + error.toString() };
+    console.error('レポートアップロードエラー:', error, 'applicationId:', tokenData ? tokenData.applicationId : 'unknown');
+    var errMsg = error.toString();
+    if (errMsg.indexOf('Drive') >= 0 || errMsg.indexOf('folder') >= 0) {
+      return { success: false, message: 'ファイルの保存先にアクセスできませんでした。管理者にお問い合わせください。' };
+    }
+    if (errMsg.indexOf('quota') >= 0 || errMsg.indexOf('limit') >= 0) {
+      return { success: false, message: 'システムの処理上限に達しました。しばらく時間をおいてから再度お試しください。' };
+    }
+    return { success: false, message: 'エラーが発生しました。もう一度お試しください。（詳細: ' + errMsg + '）' };
   }
 }
 
@@ -645,4 +865,33 @@ function setupReportDeadlineTrigger() {
     .create();
 
   console.log('レポート期限チェックトリガーを設定しました（毎日10時）');
+}
+
+/**
+ * OAuth認可トリガー（GASエディタから1回実行して認可ダイアログを表示させる）
+ * DriveApp/GmailApp/SpreadsheetAppの全スコープを認可させるために、
+ * 各サービスのメソッドを1回ずつ呼ぶ。
+ */
+function authorizeDriveAccess() {
+  // DriveApp認可
+  var rootFolder = DriveApp.getRootFolder();
+  console.log('Drive認可OK: ルートフォルダ = ' + rootFolder.getName());
+
+  // テストファイル作成＆削除で createFile 権限を確認
+  var testBlob = Utilities.newBlob('auth test', 'text/plain', 'auth_test.txt');
+  var testFile = rootFolder.createFile(testBlob);
+  console.log('createFile認可OK: ' + testFile.getName());
+  testFile.setTrashed(true);
+  console.log('テストファイル削除済み');
+
+  // SpreadsheetApp認可
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  console.log('Spreadsheet認可OK: ' + ss.getName());
+
+  // GmailApp認可
+  var drafts = GmailApp.getDrafts();
+  console.log('Gmail認可OK: 下書き数 = ' + drafts.length);
+
+  console.log('=== 全認可完了 ===');
+  return '全認可完了。Web Appを再デプロイしてください。';
 }
