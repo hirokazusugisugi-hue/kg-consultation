@@ -62,7 +62,7 @@ const CONFIG = {
   // 同意書ページ設定
   CONSENT: {
     // GAS WebアプリのURL（デプロイ後に設定）
-    WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzFNuVt66Lza64FSM_Hfrcl1kH1fXbsNC2EI1-na9CijHQqpPqi54QqQx4mNBsJzhXmqg/exec',
+    WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec',
     // Google DriveにアップロードしたPDFのファイルID
     PDF_FILE_ID: '1X_q73Mgns_MKhku_b16x6oysnVs3dnP9',
     // PDF直接URL（GitHub raw）
