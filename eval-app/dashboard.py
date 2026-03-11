@@ -354,6 +354,17 @@ def page_evaluate():
 
             st.success(f"評価完了！結果を保存しました: {filename}")
 
+            # Google Sheets自動保存
+            try:
+                from modules.sheets_writer import get_sheets_writer
+                writer = get_sheets_writer()
+                if writer:
+                    with st.spinner("Google Sheetsに保存中..."):
+                        writer.save_result(result, transcript, filename)
+                    st.success("Google Sheetsにも保存しました")
+            except Exception as sheets_err:
+                st.warning(f"Google Sheets保存はスキップされました: {sheets_err}")
+
             # 結果表示
             st.divider()
             render_result_detail(result)
@@ -466,6 +477,8 @@ def page_settings():
         "ANTHROPIC_API_KEY": bool(os.environ.get("ANTHROPIC_API_KEY")),
         "EVALUATION_CF_URL": bool(os.environ.get("EVALUATION_CF_URL")),
         "EVALUATION_CF_SECRET": bool(os.environ.get("EVALUATION_CF_SECRET")),
+        "GOOGLE_SHEETS_CREDENTIALS_PATH": bool(os.environ.get("GOOGLE_SHEETS_CREDENTIALS_PATH")),
+        "EVAL_SPREADSHEET_ID": bool(os.environ.get("EVAL_SPREADSHEET_ID")),
     }
 
     for key, ok in checks.items():
@@ -473,6 +486,33 @@ def page_settings():
             st.success(f"{key}: 設定済み")
         else:
             st.warning(f"{key}: 未設定")
+
+    # Google Sheets連携
+    st.subheader("Google Sheets連携")
+    sheets_creds = os.environ.get("GOOGLE_SHEETS_CREDENTIALS_PATH", "")
+    if not sheets_creds:
+        st.warning("GOOGLE_SHEETS_CREDENTIALS_PATH: 未設定（Google Sheets連携は無効）")
+    else:
+        try:
+            from modules.sheets_writer import get_sheets_writer
+            writer = get_sheets_writer()
+            if writer:
+                status = writer.check_connection()
+                if status["connected"]:
+                    st.success(f"Google Sheets: 接続済み")
+                    st.info(
+                        f"スプレッドシート: {status['spreadsheet_title']}\n\n"
+                        f"シート数: {status['sheet_count']}（{', '.join(status['sheet_names'])}）\n\n"
+                        f"[スプレッドシートを開く]({status['spreadsheet_url']})"
+                    )
+                else:
+                    st.error(f"Google Sheets: 接続エラー - {status.get('error', '不明')}")
+            else:
+                st.warning("Google Sheets: 認証ファイルが見つかりません")
+        except ImportError:
+            st.warning("gspread / google-auth が未インストール（`pip install gspread google-auth`）")
+        except Exception as e:
+            st.error(f"Google Sheets: エラー - {e}")
 
     # プロンプトファイルチェック
     st.subheader("プロンプトファイル")
@@ -527,7 +567,11 @@ def page_settings():
         "EVALUATION_CF_URL=https://xxx.cloudfunctions.net/consultation_evaluation\n"
         "EVALUATION_CF_SECRET=your-shared-secret\n\n"
         "# 音声文字起こし（large-v3 or medium）\n"
-        "WHISPER_MODEL=large-v3\n",
+        "WHISPER_MODEL=large-v3\n\n"
+        "# Google Sheets自動保存（研究用データ蓄積）\n"
+        "GOOGLE_SHEETS_CREDENTIALS_PATH=credentials/service_account.json\n"
+        "EVAL_SPREADSHEET_ID=\n"
+        "EVAL_SPREADSHEET_SHARE_EMAIL=\n",
         language="bash",
     )
 

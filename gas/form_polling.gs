@@ -1305,12 +1305,22 @@ function generateSummarySheet() {
 
     // === データ行 ===
     slots.forEach(function(slot) {
+      // 判定列: 予約済み=「済」、それ以外=bookable値（○/×）
+      var judgment;
+      if (slot.booking === '予約済み') {
+        judgment = '済';
+      } else if (slot.available === '×') {
+        judgment = '×';
+      } else {
+        judgment = slot.bookable;
+      }
+
       var row = [
         slot.dateLabel,
         slot.time,
         slot.method === 'オンライン' ? 'Zoom' : slot.method === '両方' ? '対面/Zoom' : slot.method,
         slot.booking || '空き',
-        slot.booking === '予約済み' ? '×' : slot.bookable
+        judgment
       ];
 
       var participantCount = 0;
@@ -1342,14 +1352,16 @@ function generateSummarySheet() {
       var bookingCell = sheet.getRange(currentRow, 4);
       if (slot.booking === '予約済み') {
         bookingCell.setBackground('#cce5ff').setFontWeight('bold');
+      } else if (slot.booking === 'クローズ') {
+        bookingCell.setBackground('#f8d7da');
       }
 
-      // 判定の色（予約済みも×扱い）
+      // 判定の色
       var bookableCell = sheet.getRange(currentRow, 5);
       bookableCell.setHorizontalAlignment('center');
       if (slot.booking === '予約済み') {
-        bookableCell.setBackground('#cce5ff');
-      } else if (slot.bookable === '○') {
+        bookableCell.setBackground('#cce5ff').setFontWeight('bold');
+      } else if (judgment === '○') {
         bookableCell.setBackground('#d4edda');
       } else {
         bookableCell.setBackground('#f8d7da');
@@ -1586,4 +1598,264 @@ function getPollingStatus() {
   });
 
   return result;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// フォーム回答の再適用（修復用）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * 指定月のフォーム回答をすべて再適用し、日程設定シートを修復
+ * 1. 全メンバーをデフォルト登録（オプトアウト方式のベース状態）
+ * 2. 保存済みフォーム（1回目/2回目）の全回答を再処理
+ * 3. スコア・予約可能判定を再計算
+ * 4. 回答集計シートを再生成
+ *
+ * @param {number} year - 対象年
+ * @param {number} month - 対象月（1-12）
+ * @returns {Object} 処理結果
+ */
+function reprocessFormResponsesForMonth(year, month) {
+  var results = [];
+  results.push('=== ' + year + '年' + month + '月 フォーム回答再適用 ===');
+
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+  if (!sheet) {
+    return { success: false, message: '日程設定シートが見つかりません', log: results };
+  }
+
+  // Zoom固定メンバー一覧
+  var schedMembers = getScheduleMembers();
+  var zoomOnlyNames = schedMembers
+    .filter(function(m) { return m.notes && m.notes.indexOf('Zoom参加のみ') !== -1; })
+    .map(function(m) { return m.name; });
+
+  // Step 1: 全メンバーをデフォルト登録
+  results.push('Step 1: 全メンバーデフォルト登録...');
+  registerAllMembersForMonth(year, month);
+  results.push('  ' + schedMembers.length + '名を全枠に登録（Zoom固定: ' + zoomOnlyNames.join(', ') + '）');
+
+  // Step 2: 保存済みフォームIDを取得
+  var props = PropertiesService.getScriptProperties().getProperties();
+  var formKeys = [];
+  Object.keys(props).forEach(function(key) {
+    // polling_form_YYYY_M or polling_confirm_form_YYYY_M
+    if ((key === 'polling_form_' + year + '_' + month) ||
+        (key === 'polling_confirm_form_' + year + '_' + month)) {
+      formKeys.push(key);
+    }
+  });
+
+  results.push('Step 2: 保存済みフォーム検索: ' + formKeys.length + '件');
+
+  // Step 3: 各フォームの回答を再処理
+  var totalProcessed = 0;
+  formKeys.sort().forEach(function(key) {
+    try {
+      var formInfo = JSON.parse(props[key]);
+      var isOptOut = key.indexOf('polling_form_') === 0 && key.indexOf('confirm') === -1;
+      var roundLabel = isOptOut ? '1回目(オプトアウト)' : '2回目(確認)';
+
+      results.push('');
+      results.push('--- ' + roundLabel + ' (formId: ' + formInfo.formId + ') ---');
+
+      var form = FormApp.openById(formInfo.formId);
+      var responses = form.getResponses();
+      results.push('  回答数: ' + responses.length);
+
+      // フォームの質問タイトル一覧（日付ラベル→時間スロットのマッピング）
+      var checkboxItems = form.getItems(FormApp.ItemType.CHECKBOX);
+      var formDateLabels = {};
+      checkboxItems.forEach(function(item) {
+        formDateLabels[item.getTitle()] = true;
+      });
+
+      responses.forEach(function(resp) {
+        var email = resp.getRespondentEmail();
+        var member = getMemberByEmail(email);
+
+        if (!member) {
+          results.push('  [SKIP] メンバー不明: ' + email);
+          return;
+        }
+
+        var memberName = member.name;
+        var isZoomOnly = zoomOnlyNames.indexOf(memberName) !== -1;
+
+        if (isOptOut) {
+          // 1回目: オプトアウト処理
+          // チェックされた時間 = 不参加
+          var unavailable = {};
+          resp.getItemResponses().forEach(function(ir) {
+            var title = ir.getItem().getTitle();
+            var value = ir.getResponse();
+            if (value && value.length > 0) {
+              unavailable[title] = value;
+            }
+          });
+
+          // 再読み込み（前の回答処理で変更されているため）
+          var data = sheet.getDataRange().getValues();
+          var changedCount = 0;
+
+          for (var i = 1; i < data.length; i++) {
+            var dateVal = data[i][SCHEDULE_COLUMNS.DATE];
+            if (!dateVal) continue;
+
+            var date = dateVal instanceof Date ? dateVal : new Date(dateVal);
+            if (date.getFullYear() !== year || (date.getMonth() + 1) !== month) continue;
+
+            var dow = date.getDay();
+            var dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            var dateLabel = (date.getMonth() + 1) + '/' + date.getDate() + '(' + dayNames[dow] + ')';
+            if (dow === 5) {
+              var nthWeek = getNthDayOfWeek(date.getFullYear(), date.getMonth(), date.getDate(), dow);
+              dateLabel += ' [第' + nthWeek + '金曜・Zoomのみ]';
+            }
+
+            if (!formDateLabels[dateLabel]) continue;
+
+            var timeStr;
+            var time = data[i][SCHEDULE_COLUMNS.TIME];
+            if (time instanceof Date) {
+              timeStr = Utilities.formatDate(time, 'Asia/Tokyo', 'HH:mm');
+            } else {
+              timeStr = String(time);
+            }
+
+            // 不参加指定された時間枠からメンバーを削除
+            if (unavailable[dateLabel] && unavailable[dateLabel].indexOf(timeStr) !== -1) {
+              var currentMembers = data[i][SCHEDULE_COLUMNS.MEMBERS]
+                ? data[i][SCHEDULE_COLUMNS.MEMBERS].toString() : '';
+
+              if (currentMembers.indexOf(memberName) !== -1) {
+                var memberList = currentMembers.split(',').map(function(n) { return n.trim(); });
+                var filtered = memberList.filter(function(n) { return n !== memberName && n !== ''; });
+                var newValue = filtered.join(', ');
+                sheet.getRange(i + 1, SCHEDULE_COLUMNS.MEMBERS + 1).setValue(newValue);
+                data[i][SCHEDULE_COLUMNS.MEMBERS] = newValue;
+                changedCount++;
+              }
+            }
+          }
+
+          results.push('  [OPT-OUT] ' + memberName + ': ' + Object.keys(unavailable).length + '日不可, ' + changedCount + '枠削除');
+          totalProcessed++;
+
+        } else {
+          // 2回目: 確認+追加処理
+          var itemResponses = resp.getItemResponses();
+          if (itemResponses.length === 0) return;
+
+          var confirmAnswer = itemResponses[0].getResponse();
+          if (confirmAnswer === '現在の内容でOK（変更なし）') {
+            results.push('  [CONFIRM] ' + memberName + ': 変更なし');
+            totalProcessed++;
+            return;
+          }
+
+          // 追加参加日
+          var additions = {};
+          for (var r = 1; r < itemResponses.length; r++) {
+            var title = itemResponses[r].getItem().getTitle();
+            var value = itemResponses[r].getResponse();
+            if (value && value.length > 0) {
+              additions[title] = value;
+            }
+          }
+
+          var data = sheet.getDataRange().getValues();
+          var addedCount = 0;
+
+          for (var i = 1; i < data.length; i++) {
+            var dateVal = data[i][SCHEDULE_COLUMNS.DATE];
+            if (!dateVal) continue;
+
+            var date = dateVal instanceof Date ? dateVal : new Date(dateVal);
+            if (date.getFullYear() !== year || (date.getMonth() + 1) !== month) continue;
+
+            var dow = date.getDay();
+            var dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            var dateLabel = (date.getMonth() + 1) + '/' + date.getDate() + '(' + dayNames[dow] + ')';
+            if (dow === 5) {
+              var nthWeek = getNthDayOfWeek(date.getFullYear(), date.getMonth(), date.getDate(), dow);
+              dateLabel += ' [第' + nthWeek + '金曜・Zoomのみ]';
+            }
+
+            if (!additions[dateLabel]) continue;
+
+            var timeStr;
+            var time = data[i][SCHEDULE_COLUMNS.TIME];
+            if (time instanceof Date) {
+              timeStr = Utilities.formatDate(time, 'Asia/Tokyo', 'HH:mm');
+            } else {
+              timeStr = String(time);
+            }
+
+            if (additions[dateLabel].indexOf(timeStr) === -1) continue;
+
+            var currentMembers = data[i][SCHEDULE_COLUMNS.MEMBERS]
+              ? data[i][SCHEDULE_COLUMNS.MEMBERS].toString() : '';
+
+            if (currentMembers.indexOf(memberName) === -1) {
+              var newValue = currentMembers ? currentMembers + ', ' + memberName : memberName;
+              sheet.getRange(i + 1, SCHEDULE_COLUMNS.MEMBERS + 1).setValue(newValue);
+              data[i][SCHEDULE_COLUMNS.MEMBERS] = newValue;
+              addedCount++;
+            }
+          }
+
+          results.push('  [ADD] ' + memberName + ': ' + addedCount + '枠追加');
+          totalProcessed++;
+        }
+      });
+
+    } catch (e) {
+      results.push('  [ERROR] ' + key + ': ' + e.message);
+    }
+  });
+
+  // Step 4: 全行のスコア再計算
+  results.push('');
+  results.push('Step 3: スコア再計算...');
+  var data = sheet.getDataRange().getValues();
+  var recalcCount = 0;
+  for (var i = 1; i < data.length; i++) {
+    var dateVal = data[i][SCHEDULE_COLUMNS.DATE];
+    if (!dateVal) continue;
+    var date = dateVal instanceof Date ? dateVal : new Date(dateVal);
+    if (date.getFullYear() !== year || (date.getMonth() + 1) !== month) continue;
+    recalculateScheduleScoreForRow(i + 1, sheet);
+    recalcCount++;
+  }
+  results.push('  ' + recalcCount + '行のスコアを再計算');
+
+  // Step 5: 回答集計シート再生成
+  results.push('');
+  results.push('Step 4: 回答集計シート再生成...');
+  generateSummarySheet();
+  results.push('  完了');
+
+  var summary = totalProcessed + '名のフォーム回答を再適用, ' + recalcCount + '行スコア再計算, 回答集計シート再生成';
+  results.push('');
+  results.push('=== 完了: ' + summary + ' ===');
+
+  console.log(results.join('\n'));
+  return { success: true, message: summary, log: results };
+}
+
+/**
+ * 4月の日程を修復（GASエディタから実行）
+ * フォーム回答を再適用 → スコア再計算 → 回答集計シート再生成
+ */
+function repairAprilSchedule() {
+  return reprocessFormResponsesForMonth(2026, 4);
+}
+
+/**
+ * 3月の日程を修復（GASエディタから実行）
+ */
+function repairMarchSchedule() {
+  return reprocessFormResponsesForMonth(2026, 3);
 }

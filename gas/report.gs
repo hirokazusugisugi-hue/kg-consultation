@@ -184,7 +184,7 @@ function generateReportUploadPage(e) {
 
   var html = getReportUploadPageHtml(tokenData, consultData, token);
   return HtmlService.createHtmlOutput(html)
-    .setTitle('レポートアップロード - 関西学院大学 中小企業経営相談研究会')
+    .setTitle('レポートアップロード - 関西学院大学 中小企業経営診断研究会無料経営相談分科会')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
@@ -239,7 +239,7 @@ function getReportUploadPageHtml(tokenData, consultData, token) {
 '<body>\n' +
 '<div class="header">\n' +
 '  <h1>診断報告書のアップロード</h1>\n' +
-'  <p>関西学院大学 中小企業経営相談研究会</p>\n' +
+'  <p>関西学院大学 中小企業経営診断研究会無料経営相談分科会</p>\n' +
 '</div>\n' +
 '<div class="container">\n' +
 '  <div class="card">\n' +

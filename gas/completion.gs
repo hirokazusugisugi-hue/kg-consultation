@@ -281,7 +281,7 @@ function generateCompletionConfirmPage(e) {
 
   var html = getCompletionConfirmPageHtml(tokenData, rowData, token);
   return HtmlService.createHtmlOutput(html)
-    .setTitle('相談完了確認 - 関西学院大学 中小企業経営相談研究会')
+    .setTitle('相談完了確認 - 関西学院大学 中小企業経営診断研究会無料経営相談分科会')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

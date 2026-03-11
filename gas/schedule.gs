@@ -483,3 +483,145 @@ function generateNextMonthSchedule() {
 
   console.log(`${year}年${month}月の日程を${data.length}件追加しました`);
 }
+
+/**
+ * 特別日程を追加（通常ルール外の日程）
+ * @param {string} dateStr - 日付（yyyy/MM/dd形式）
+ * @param {string} method - '対面' / 'オンライン' / '両方'
+ * @param {Array} times - 時間帯の配列 例: ['14:00', '16:00', '18:00']
+ * @param {string} notes - 備考
+ */
+function addSpecialDate(dateStr, method, times, notes) {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+  if (!sheet) {
+    console.log('日程設定シートが見つかりません');
+    return;
+  }
+
+  // 既に同日・同時間の枠がないか確認
+  var data = sheet.getDataRange().getValues();
+  var existingTimes = [];
+  for (var i = 1; i < data.length; i++) {
+    var rowDate = data[i][SCHEDULE_COLUMNS.DATE];
+    if (rowDate instanceof Date) {
+      rowDate = Utilities.formatDate(rowDate, 'Asia/Tokyo', 'yyyy/MM/dd');
+    }
+    if (String(rowDate) === dateStr) {
+      var t = data[i][SCHEDULE_COLUMNS.TIME];
+      existingTimes.push(t instanceof Date ? Utilities.formatDate(t, 'Asia/Tokyo', 'HH:mm') : String(t));
+    }
+  }
+
+  var newRows = [];
+  times.forEach(function(time) {
+    if (existingTimes.indexOf(time) === -1) {
+      newRows.push([dateStr, time, '○', method, '', '空き', notes || '特別日程', '', 0, 'FALSE', '×']);
+    }
+  });
+
+  if (newRows.length === 0) {
+    console.log(dateStr + ' の枠は既に存在します');
+    return;
+  }
+
+  var lastRow = sheet.getLastRow();
+  sheet.getRange(lastRow + 1, 1, newRows.length, newRows[0].length).setValues(newRows);
+  console.log(dateStr + ' に ' + newRows.length + '枠追加しました（' + method + '）');
+}
+
+/**
+ * 2026/03/18（水）対面相談枠を追加（19:30のみ）
+ */
+function addMarch18InPerson() {
+  // 既存の3/18枠を削除してから19:30のみ追加
+  removeDateSlots('2026/03/18');
+  addSpecialDate('2026/03/18', '対面', ['19:30'], '特別日程（対面）');
+  recalculateScheduleScores();
+  console.log('3月18日（水）対面相談枠 19:30 の追加が完了しました');
+}
+
+/**
+ * 指定日時のメンバーを直接設定
+ * @param {string} dateStr - 日付（yyyy/MM/dd形式）
+ * @param {string} timeStr - 時間（HH:mm形式）
+ * @param {string} membersStr - カンマ区切りのメンバーフルネーム
+ */
+function setSlotMembers(dateStr, timeStr, membersStr) {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+  if (!sheet) return { success: false, message: '日程設定シートなし' };
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    var rowDate = data[i][SCHEDULE_COLUMNS.DATE];
+    if (rowDate instanceof Date) {
+      rowDate = Utilities.formatDate(rowDate, 'Asia/Tokyo', 'yyyy/MM/dd');
+    }
+    var rowTime = data[i][SCHEDULE_COLUMNS.TIME];
+    if (rowTime instanceof Date) {
+      rowTime = Utilities.formatDate(rowTime, 'Asia/Tokyo', 'HH:mm');
+    }
+    if (String(rowDate) === dateStr && String(rowTime) === timeStr) {
+      sheet.getRange(i + 1, SCHEDULE_COLUMNS.MEMBERS + 1).setValue(membersStr);
+      recalculateScheduleScoreForRow(i + 1, sheet);
+      var newScore = sheet.getRange(i + 1, SCHEDULE_COLUMNS.SCORE + 1).getValue();
+      var newBookable = sheet.getRange(i + 1, SCHEDULE_COLUMNS.BOOKABLE + 1).getValue();
+      console.log(dateStr + ' ' + timeStr + ': メンバー設定完了 → スコア=' + newScore + ' 判定=' + newBookable);
+      return { success: true, date: dateStr, time: timeStr, members: membersStr, score: newScore, bookable: newBookable };
+    }
+  }
+  return { success: false, message: dateStr + ' ' + timeStr + ' の行が見つかりません' };
+}
+
+/**
+ * 3/18 19:30 のメンバーを設定
+ */
+function setMarch18Members() {
+  return setSlotMembers('2026/03/18', '19:30',
+    '杉山 宏和, 川崎 真規, 小椋 孝博, 秋月 仁志, 高乘 麻美');
+}
+
+/**
+ * 指定日の全枠を削除
+ * @param {string} dateStr - 日付（yyyy/MM/dd形式）
+ */
+function removeDateSlots(dateStr) {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  var rowsToDelete = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var rowDate = data[i][SCHEDULE_COLUMNS.DATE];
+    if (rowDate instanceof Date) {
+      rowDate = Utilities.formatDate(rowDate, 'Asia/Tokyo', 'yyyy/MM/dd');
+    }
+    if (String(rowDate) === dateStr) {
+      rowsToDelete.push(i + 1);
+    }
+  }
+
+  // 逆順で削除
+  for (var j = rowsToDelete.length - 1; j >= 0; j--) {
+    sheet.deleteRow(rowsToDelete[j]);
+  }
+  console.log(dateStr + ': ' + rowsToDelete.length + '行削除');
+}
+
+/**
+ * 記事管理シートを削除
+ * GASエディタから実行してください
+ */
+function deleteArticlesSheet() {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(ARTICLE_SHEET_NAME);
+  if (sheet) {
+    ss.deleteSheet(sheet);
+    console.log('記事管理シートを削除しました');
+  } else {
+    console.log('記事管理シートは存在しません');
+  }
+}

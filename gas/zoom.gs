@@ -571,13 +571,14 @@ function uploadToYouTube(mp4File, rowData, rowIndex, zoomToken) {
   sheet.getRange(rowIndex, COLUMNS.YOUTUBE_URL + 1).setValue(result.youtube_url);
   console.log('YouTube URL saved: row=' + rowIndex + ', videoId=' + result.video_id);
 
-  // 管理者にYouTube Studio共有リンク付きメール通知
+  // 管理者にYouTube共有依頼メール（リーダー情報付き）
   notifyYouTubeUploadToAdmin(rowData, result.youtube_url, result.video_id, result.studio_url);
 }
 
 /**
  * 管理者にYouTubeアップロード完了通知を送信
- * YouTube Studioの共有ページ直リンク + リーダー情報を含む
+ * YouTube Studioの共有ページ直リンク + リーダー・管理者メールアドレスを含む
+ * 管理者はStudioでリーダーと管理者のメールを登録し「通知」にチェックして共有
  * @param {Object} rowData - 予約データ
  * @param {string} youtubeUrl - YouTube動画URL
  * @param {string} videoId - YouTube動画ID
@@ -592,11 +593,13 @@ function notifyYouTubeUploadToAdmin(rowData, youtubeUrl, videoId, studioUrl) {
     }
   }
 
-  var subject = '【YouTube録画】' + (rowData.company || rowData.name || '') + '様 - リーダーへの共有をお願いします';
+  var adminEmailList = CONFIG.ADMIN_EMAILS.join(', ');
+
+  var subject = '【YouTube録画・共有依頼】' + (rowData.company || rowData.name || '') + '様';
 
   var body = '管理者 様\n\n' +
     '経営相談の録画がYouTubeに非公開アップロードされました。\n' +
-    'リーダーへの共有をお願いいたします。\n\n' +
+    '以下の手順でリーダーと管理者に共有してください。\n\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
     '■ 相談概要\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
@@ -606,20 +609,24 @@ function notifyYouTubeUploadToAdmin(rowData, youtubeUrl, videoId, studioUrl) {
     'テーマ　：' + (rowData.theme || '') + '\n' +
     'リーダー：' + (rowData.leader || '未設定') + '\n\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-    '■ YouTube共有手順\n' +
+    '■ YouTube共有手順（所要時間：約30秒）\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
     '1. 以下のYouTube Studioリンクをクリック:\n' +
     '   ' + (studioUrl || 'https://studio.youtube.com/video/' + videoId + '/sharing') + '\n\n' +
-    '2. 「共有」→ メールアドレスを入力:\n' +
+    '2. 「共有」→ 以下のメールアドレスを入力:\n\n' +
+    '   ▼ リーダー:\n' +
     '   ' + (leaderEmail || '（リーダーのメールアドレスが見つかりません）') + '\n\n' +
-    '3. 「送信」で共有完了\n\n' +
+    '   ▼ 管理者:\n' +
+    '   ' + adminEmailList + '\n\n' +
+    '3. 「通知」にチェックを入れる ← 共有相手にメール通知が届きます\n\n' +
+    '4. 「送信」で共有完了\n\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-    '■ 動画リンク\n' +
+    '■ 動画情報\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
     'YouTube URL: ' + youtubeUrl + '\n' +
     'Video ID: ' + videoId + '\n\n' +
-    '※ この動画は「非公開」設定です。共有されたユーザーのみ視聴可能です。\n' +
-    '※ YouTubeの自動字幕（文字起こし）が利用可能です。\n\n' +
+    '※ この動画は「非公開」設定です。上記で共有されたユーザーのみ視聴可能です。\n' +
+    '※ 共有後、YouTubeの自動字幕（文字起こし）が利用可能になります。\n\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
     CONFIG.ORG.NAME + '\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';

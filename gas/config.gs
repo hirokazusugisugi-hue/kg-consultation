@@ -180,7 +180,7 @@ const CONFIG = {
 
   // 組織情報
   ORG: {
-    NAME: '関西学院大学 中小企業経営相談研究会',
+    NAME: '関西学院大学 中小企業経営診断研究会無料経営相談分科会',
     EMAIL: 'kgibaconsultant@gmail.com',
     URL: 'https://iba-consulting.jp'
   }

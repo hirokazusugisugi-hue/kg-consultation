@@ -512,6 +512,7 @@ function setupAllTriggers() {
   setupCancellationEmailTrigger();
   setupCompletionTrigger();
   setupRecordingCheckTrigger();
+  setupExpiredBookingTrigger();
   console.log('すべてのトリガーを設定しました');
 }
 
@@ -859,9 +860,9 @@ function buildStaffNotificationEmail_(data) {
     '\n' +
     (data.companyUrl ? '※事前に企業URLを確認し、リサーチをお願いします。\n\n' : '') +
     'よろしくお願いいたします。\n' +
-    '中小企業経営相談研究会 無料経営相談分科会';
+    '中小企業経営診断研究会無料経営相談分科会';
 
-  return { subject: subject, body: body, senderName: '中小企業経営相談研究会 無料経営相談分科会' };
+  return { subject: subject, body: body, senderName: '中小企業経営診断研究会無料経営相談分科会' };
 }
 
 /**
@@ -883,4 +884,173 @@ function buildStaffNotificationLine_(data) {
     'テーマ: ' + (data.theme || '-') + '\n' +
     (data.companyUrl ? '企業URL: ' + data.companyUrl + '\n' : '') +
     'リーダー: ' + (data.leader || '未定');
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 24時間未同意の予約枠自動解放
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * 仮予約から24時間以上経過し同意書未同意の予約を自動キャンセル
+ * 1時間ごとのトリガーで実行
+ */
+function releaseExpiredPendingBookings() {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  var now = new Date();
+  var cancelledCount = 0;
+
+  for (var i = 1; i < data.length; i++) {
+    var status = data[i][COLUMNS.STATUS];
+    if (status !== STATUS.PENDING) continue;
+
+    // 当日受付は対象外
+    var walkInFlag = data[i][COLUMNS.WALK_IN_FLAG];
+    if (walkInFlag === true || walkInFlag === 'TRUE' || walkInFlag === 'true') continue;
+
+    // A列（タイムスタンプ）から24時間超過を判定
+    var timestamp = data[i][COLUMNS.TIMESTAMP];
+    if (!timestamp) continue;
+
+    var tsDate = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    var elapsed = now.getTime() - tsDate.getTime();
+    var twentyFourHours = 24 * 60 * 60 * 1000;
+
+    if (elapsed < twentyFourHours) continue;
+
+    var rowIndex = i + 1;
+    var rowData = getRowData(rowIndex);
+
+    // K列（date1）から日付・時間を抽出して予約枠を解放
+    var date1 = data[i][COLUMNS.DATE1];
+    if (date1) {
+      var dateTimeStr = convertJapaneseDateToSlashWithTime(String(date1));
+      if (dateTimeStr) {
+        var parsed = parseConfirmedDateTime(dateTimeStr);
+        if (parsed.date) {
+          var freed = markAsAvailable(parsed.date, parsed.time);
+          console.log('自動解放: ' + parsed.date + ' ' + (parsed.time || '') + ' → ' + (freed ? '空き' : '該当なし'));
+        }
+      }
+    }
+
+    // O列をキャンセルに変更
+    sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.CANCELLED);
+
+    // T列（備考）に自動キャンセル理由を記録
+    var existingNotes = data[i][COLUMNS.NOTES] || '';
+    var cancelNote = '自動キャンセル: 24時間以内に同意書未同意';
+    var newNotes = existingNotes ? existingNotes + '\n' + cancelNote : cancelNote;
+    sheet.getRange(rowIndex, COLUMNS.NOTES + 1).setValue(newNotes);
+
+    // 相談者にキャンセル通知
+    notifyExpiredBookingToApplicant_(rowData);
+
+    // 管理者にキャンセル通知
+    notifyExpiredBookingToAdmin_(rowData);
+
+    cancelledCount++;
+    console.log('自動キャンセル: ' + rowData.id + ' (' + rowData.name + '様)');
+  }
+
+  if (cancelledCount > 0) {
+    console.log('自動キャンセル完了: ' + cancelledCount + '件');
+  }
+}
+
+/**
+ * 24時間超過による自動キャンセル通知（相談者向け）
+ * @param {Object} rowData - getRowData形式のデータ
+ */
+function notifyExpiredBookingToApplicant_(rowData) {
+  if (!rowData.email) return;
+
+  var subject = '【予約キャンセルのお知らせ】無料経営相談';
+  var body = rowData.name + ' 様\n\n' +
+    'お世話になっております。\n' +
+    CONFIG.ORG.NAME + 'です。\n\n' +
+    'お申込みいただきました無料経営相談（申込ID: ' + rowData.id + '）につきまして、\n' +
+    '24時間以内に相談同意書へのご同意が確認できなかったため、\n' +
+    '予約を自動キャンセルとさせていただきました。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ キャンセルとなったお申込み\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '申込ID　：' + rowData.id + '\n' +
+    'お名前　：' + rowData.name + ' 様\n' +
+    '貴社名　：' + (rowData.company || '') + '\n' +
+    '希望日時：' + (rowData.date1 || '') + '\n' +
+    '相談方法：' + (rowData.method || '') + '\n\n' +
+    '再度お申込みをご希望の場合は、下記ページよりお手続きください。\n\n' +
+    CONFIG.ORG.URL + '\n\n' +
+    'ご不明な点がございましたら、お気軽にお問い合わせください。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    CONFIG.ORG.NAME + '\n' +
+    'Email: ' + CONFIG.ORG.EMAIL + '\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+
+  try {
+    GmailApp.sendEmail(rowData.email, subject, body, {
+      name: CONFIG.SENDER_NAME,
+      replyTo: CONFIG.REPLY_TO
+    });
+    console.log('自動キャンセル通知（相談者）: ' + rowData.email);
+  } catch (e) {
+    console.error('自動キャンセル通知メール送信エラー（相談者）:', e);
+  }
+}
+
+/**
+ * 24時間超過による自動キャンセル通知（管理者向け）
+ * @param {Object} rowData - getRowData形式のデータ
+ */
+function notifyExpiredBookingToAdmin_(rowData) {
+  var subject = '【自動キャンセル】' + (rowData.name || '') + '様 - 24時間同意書未同意';
+  var body = '以下の仮予約が24時間以内に同意書の同意が確認できなかったため、\n' +
+    '自動キャンセルされました。予約枠は「空き」に戻しています。\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '■ 自動キャンセル情報\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '申込ID　　：' + rowData.id + '\n' +
+    'お名前　　：' + (rowData.name || '') + ' 様\n' +
+    '貴社名　　：' + (rowData.company || '') + '\n' +
+    'メール　　：' + (rowData.email || '') + '\n' +
+    '電話番号　：' + (rowData.phone || '') + '\n' +
+    '希望日時　：' + (rowData.date1 || '') + '\n' +
+    '相談方法　：' + (rowData.method || '') + '\n' +
+    '相談テーマ：' + (rowData.theme || '') + '\n' +
+    '申込日時　：' + (rowData.timestamp || '') + '\n\n' +
+    '※相談者には再申込の案内メールを送信済みです。\n';
+
+  try {
+    CONFIG.ADMIN_EMAILS.forEach(function(email) {
+      GmailApp.sendEmail(email, subject, body, {
+        name: CONFIG.SENDER_NAME
+      });
+    });
+    console.log('自動キャンセル通知（管理者）: 送信完了');
+  } catch (e) {
+    console.error('自動キャンセル通知メール送信エラー（管理者）:', e);
+  }
+}
+
+/**
+ * 24時間未同意チェックトリガーのセットアップ（1時間おき）
+ */
+function setupExpiredBookingTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'releaseExpiredPendingBookings') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  ScriptApp.newTrigger('releaseExpiredPendingBookings')
+    .timeBased()
+    .everyHours(1)
+    .create();
+
+  console.log('24時間未同意チェックトリガーをセットアップしました（1時間おき）');
 }
