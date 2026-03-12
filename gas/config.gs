@@ -22,7 +22,7 @@ const CONFIG = {
   ],
 
   // 送信元表示名
-  SENDER_NAME: '関西学院大学 無料経営相談分科会',
+  SENDER_NAME: '関西学院大学 中小企業経営診断研究会',
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // LINE Messaging API 設定
