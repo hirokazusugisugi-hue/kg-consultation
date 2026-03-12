@@ -785,6 +785,7 @@
 
   <h4><i class="fas fa-arrow-right"></i> ステータスの流れ</h4>
 
+  <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px;"><strong>通常予約：</strong></p>
   <div class="status-flow">
     <span class="status-badge provisional">仮予約</span>
     <i class="fas fa-arrow-right status-arrow"></i>
@@ -797,6 +798,15 @@
     <span class="status-badge done">完了</span>
     <span style="margin: 0 4px; color: var(--text-light);">/</span>
     <span class="status-badge cancel">キャンセル</span>
+  </div>
+  <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px; margin-top: 8px;"><strong>当日予約（備考欄9999）：</strong></p>
+  <div class="status-flow">
+    <span class="status-badge confirmed">確定</span>
+    <span style="margin: 0 8px; font-size: 0.8rem; color: var(--text-light);">（初期値）</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span style="font-size: 0.85rem;">同意完了で即確定（会場確保メールなし）</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge done">完了</span>
   </div>
 
   <!-- 4.2 メンバーマスタシート -->
@@ -1026,7 +1036,7 @@
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div><strong>Zoomの場合</strong>は相談同意書への同意完了時に自動確定され、Zoomミーティングも自動作成されます。管理者による手動操作は不要です。自動作成に失敗した場合のみR列にURLを手動入力してください。<br><strong>対面の場合</strong>は同意完了時に相談者へ会場確保待ち案内メールが自動送信されます。管理者は会場確保後、ステータスを「確定」に変更してください。</div>
+    <div><strong>Zoomの場合</strong>は相談同意書への同意完了時に自動確定され、Zoomミーティングも自動作成されます。管理者による手動操作は不要です。自動作成に失敗した場合のみR列にURLを手動入力してください。<br><strong>当日予約（備考欄9999）の場合</strong>は相談同意書への同意完了で即確定されます。会場確保メールのやり取りは不要です。<br><strong>対面（通常予約）の場合</strong>は同意完了時に相談者へ会場確保待ち案内メールが自動送信されます。管理者は会場確保後、ステータスを「確定」に変更してください。</div>
   </div>
 
   <div class="info-box success">
@@ -1039,7 +1049,10 @@
 
   <ul>
     <li>備考欄にコード <code>9999</code> が含まれている場合、<strong>当日受付</strong> として処理されます</li>
-    <li>W列に <code>TRUE</code> が自動記録されます</li>
+    <li>X列（当日受付フラグ）に <code>TRUE</code> が自動記録されます</li>
+    <li>初期ステータスが <span class="status-badge confirmed">確定</span> で登録されます（通常予約の「仮予約」とは異なります）</li>
+    <li>相談同意書への同意完了後、<strong>会場確保メールのやり取りなし</strong>で即確定となります</li>
+    <li>24時間未同意の自動キャンセル対象外です</li>
   </ul>
 
   <div class="info-box note">

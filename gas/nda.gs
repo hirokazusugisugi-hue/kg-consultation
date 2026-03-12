@@ -197,6 +197,53 @@ function processNdaConsent(e) {
       console.log('相談者同意[Zoom]: 自動確定完了 ' + data.email);
       return { success: true, message: '同意が完了し、予約が確定しました' };
 
+    } else if (data.walkInFlag === 'TRUE' || data.walkInFlag === true) {
+      // ===== 当日予約：同意のみで確定フロー（会場確保メールなし） =====
+      console.log('相談者同意[当日予約]: 同意のみで確定（会場確保メールなし）');
+
+      const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
+        .getSheetByName(CONFIG.SHEET_NAME);
+
+      // ステータスを「確定」に設定
+      sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.CONFIRMED);
+      console.log('相談者同意[当日予約]: ステータス→確定');
+
+      // データ再取得
+      data = getRowData(rowIndex);
+
+      // 日程設定シートの予約状況を「予約済み」に更新
+      var parsed = parseConfirmedDateTime(data.confirmedDate);
+      if (parsed && parsed.date) {
+        markAsBooked(parsed.date, parsed.time);
+      }
+
+      // 相談者に同意完了＋確定メール送信
+      try {
+        sendWalkInConsentConfirmedEmail(data);
+        console.log('相談者同意[当日予約]: 確定メール送信完了 → ' + data.email);
+      } catch (mailErr) {
+        console.error('相談者同意[当日予約]: 確定メール送信失敗:', mailErr);
+        notifyConsentEmailFailure_(data, mailErr);
+      }
+
+      // 管理者に通知（当日予約・同意完了で自動確定）
+      notifyWalkInConsentConfirmed(data, signature);
+
+      // 担当者への確定通知
+      var staffTarget = data.leader || data.staff;
+      if (staffTarget) {
+        var emailResult = buildStaffNotificationEmail_(data);
+        sendStaffNotifications(
+          staffTarget,
+          '✅ 当日予約・同意完了で自動確定\n\n申込ID: ' + data.id + '\nお名前: ' + data.name + '様\n貴社名: ' + data.company + '\n日時: ' + data.confirmedDate,
+          emailResult.subject,
+          emailResult.body
+        );
+      }
+
+      console.log('相談者同意[当日予約]: 自動確定完了 ' + data.email);
+      return { success: true, message: '同意が完了し、予約が確定しました' };
+
     } else {
       // ===== 対面相談：会場確保待ちフロー =====
       console.log('相談者同意[対面]: 会場確保待ちフロー開始');
@@ -645,4 +692,99 @@ URL: ${CONFIG.ORG.URL}
   } catch (e) {
     console.error('同意完了＋自動確定メール送信エラー:', e);
   }
+}
+
+/**
+ * 当日予約：同意完了＋自動確定メール送信（会場確保メールなし）
+ */
+function sendWalkInConsentConfirmedEmail(data) {
+  try {
+    const subject = `【予約確定】無料経営相談のご予約が確定しました - ${data.id}`;
+    const body = `${data.name} 様
+
+相談同意書への同意を受領いたしました。ありがとうございます。
+当日受付のため、ご予約が確定しましたのでお知らせいたします。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ ご予約内容
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.id}
+お名前：${data.name}
+貴社名：${data.company || '（個人）'}
+日時：${data.confirmedDate || data.date1}
+相談方法：${data.method}
+${data.staff ? '担当：' + data.staff : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【当日の流れ】
+1. 現状のヒアリング（15分程度）
+   - お話を伺います
+
+2. 課題の整理・ディスカッション（30〜45分）
+   - 課題を整理し、解決の方向性を一緒に考えます
+
+3. 今後のアクション整理（15分程度）
+   - 次のステップを明確にします
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ ご準備いただくもの
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+・関連資料（決算書、事業計画書等）があればご準備ください
+  ※必須ではありません
+
+ご不明な点がございましたら、お気軽にお問い合わせください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${CONFIG.ORG.NAME}
+Email: ${CONFIG.ORG.EMAIL}
+URL: ${CONFIG.ORG.URL}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    GmailApp.sendEmail(data.email, subject, body, {
+      name: CONFIG.SENDER_NAME,
+      replyTo: CONFIG.REPLY_TO
+    });
+    console.log(`同意完了＋自動確定メール（当日予約）を ${data.email} に送信しました`);
+  } catch (e) {
+    console.error('同意完了＋自動確定メール（当日予約）送信エラー:', e);
+  }
+}
+
+/**
+ * 当日予約：同意完了 → 管理者に自動確定通知
+ */
+function notifyWalkInConsentConfirmed(data, signature) {
+  const nowStr = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+  const subject = `【自動確定・当日予約】${data.name}様 - ${data.id}`;
+  const body = `当日予約のため、相談同意書の同意完了をもって自動確定しました。
+※会場確保のやり取りは不要です。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 確定情報
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+申込ID：${data.id}
+お名前：${data.name}
+貴社名：${data.company}
+日時：${data.confirmedDate || data.date1}
+相談方法：${data.method}
+担当：${data.staff || '（未割当）'}
+電子署名：${signature}
+同意日時：${nowStr}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+  CONFIG.ADMIN_EMAILS.forEach(email => {
+    GmailApp.sendEmail(email, subject, body, { name: CONFIG.SENDER_NAME });
+  });
+
+  const lineMessage = `✅ 当日予約・自動確定
+
+申込ID: ${data.id}
+お名前: ${data.name}様
+貴社名: ${data.company}
+日時: ${data.confirmedDate || data.date1}
+同意日時: ${nowStr}
+
+※当日予約のため会場確保メールなしで確定`;
+
+  sendLineMessage(CONFIG.LINE.GROUP_ID, lineMessage);
 }

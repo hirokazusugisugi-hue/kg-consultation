@@ -621,9 +621,10 @@
         <span class="badge">自動</span>
       </div>
       <ul>
-        <li>相談者が相談同意書への同意を完了 &rarr; 相談方法により処理が分岐</li>
+        <li>相談者が相談同意書への同意を完了 &rarr; 相談方法・当日予約フラグにより処理が分岐</li>
         <li><strong>Zoom：</strong>自動で <span class="status-badge confirmed">確定</span> に更新 &rarr; 同意完了＋確定メールが相談者に自動送信</li>
-        <li><strong>対面：</strong><span class="status-badge nda">同意済</span> に更新 &rarr; 相談者に会場確保待ち案内メール + 管理者に会場確保依頼の通知</li>
+        <li><strong>当日予約（9999）：</strong>同意完了で即 <span class="status-badge confirmed">確定</span> &rarr; 会場確保メールのやり取りなしで確定メールが自動送信</li>
+        <li><strong>対面（通常）：</strong><span class="status-badge nda">同意済</span> に更新 &rarr; 相談者に会場確保待ち案内メール + 管理者に会場確保依頼の通知</li>
       </ul>
     </div>
 
@@ -637,6 +638,7 @@
         <li>スタッフポータルの「案件」から「会場未設定」をタップし、会場を選択して確定</li>
         <li>ステータスを <span class="status-badge confirmed">確定</span> に変更 &rarr; 確定メールが相談者に自動送信</li>
         <li>※Zoomの場合はStep 2で自動確定済みのためこのステップは不要</li>
+        <li>※当日予約（備考欄9999）の場合も同意完了で即確定のためこのステップは不要</li>
       </ul>
     </div>
 
@@ -751,6 +753,7 @@
 
   <h4><i class="fas fa-arrow-right"></i> ステータスの流れ</h4>
 
+  <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px;"><strong>通常予約：</strong></p>
   <div class="status-flow">
     <span class="status-badge provisional">仮予約</span>
     <i class="fas fa-arrow-right status-arrow"></i>
@@ -763,6 +766,15 @@
     <span class="status-badge done">完了</span>
     <span style="margin: 0 4px; color: var(--text-light);">/</span>
     <span class="status-badge cancel">キャンセル</span>
+  </div>
+  <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px; margin-top: 8px;"><strong>当日予約（備考欄9999）：</strong></p>
+  <div class="status-flow">
+    <span class="status-badge confirmed">確定</span>
+    <span style="margin: 0 8px; font-size: 0.8rem; color: var(--text-light);">（初期値）</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span style="font-size: 0.85rem;">同意完了で即確定（会場確保メールなし）</span>
+    <i class="fas fa-arrow-right status-arrow"></i>
+    <span class="status-badge done">完了</span>
   </div>
 
   <h3><i class="fas fa-pen-to-square"></i> 担当者が操作する列</h3>
