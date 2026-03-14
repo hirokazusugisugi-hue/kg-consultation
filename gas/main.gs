@@ -9,6 +9,14 @@
  */
 function doPost(e) {
   try {
+    // JSON POSTリクエスト（文字起こしコールバック等）
+    if (e.postData && e.postData.type === 'application/json') {
+      var jsonBody = JSON.parse(e.postData.contents);
+      if (jsonBody.action === 'transcribe-callback') {
+        return handleTranscribeCallback(jsonBody);
+      }
+    }
+
     // フォームデータ取得
     const data = parseFormData(e);
 
@@ -50,9 +58,6 @@ function doPost(e) {
 
     // 申込概要をDriveに自動保存
     saveApplicationSummaryToDrive(data, applicationId);
-
-    // LINE通知
-    sendLineNotification(data);
 
     // Notion連携（有効な場合）
     if (CONFIG.NOTION.ENABLED) {
@@ -1459,6 +1464,8 @@ function doGet(e) {
           .setMimeType(ContentService.MimeType.JSON);
       }
       var caseData = getMyCases(caseSession);
+      // 音声APIトークンを認証済みユーザーにのみ返す
+      caseData.audioApiToken = PropertiesService.getScriptProperties().getProperty('AUDIO_API_TOKEN') || CONFIG.AUDIO.API_TOKEN;
       return ContentService
         .createTextOutput(JSON.stringify(caseData))
         .setMimeType(ContentService.MimeType.JSON);
@@ -1561,6 +1568,148 @@ function doGet(e) {
       return ContentService
         .createTextOutput(JSON.stringify(memData))
         .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ポータル: 音声アップロード・文字起こし
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // 音声URL保存
+    if (action === 'portal-save-audio-url') {
+      var audioSession = requireAuth(e);
+      if (!audioSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (!hasRole(audioSession.role, 'member')) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '権限がありません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var audioRow = parseInt(e.parameter.row);
+      var audioUrl = e.parameter.audioUrl || '';
+      if (!audioRow || audioRow < 2 || !audioUrl) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row と audioUrl は必須です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+      var sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+      sheet.getRange(audioRow, COLUMNS.AUDIO_URL + 1).setValue(audioUrl);
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: '音声URLを保存しました' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 音声URL削除
+    if (action === 'portal-delete-audio') {
+      var delAudioSession = requireAuth(e);
+      if (!delAudioSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (!hasRole(delAudioSession.role, 'member')) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '権限がありません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var delRow = parseInt(e.parameter.row);
+      if (!delRow || delRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row は必須です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var ss2 = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+      var sheet2 = ss2.getSheetByName(CONFIG.SHEET_NAME);
+      sheet2.getRange(delRow, COLUMNS.AUDIO_URL + 1).setValue('');
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: '音声URLを削除しました' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 文字起こしリクエスト
+    if (action === 'portal-request-transcribe') {
+      var trSession = requireAuth(e);
+      if (!trSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (!hasRole(trSession.role, 'member')) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '権限がありません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var trRow = parseInt(e.parameter.row);
+      if (!trRow || trRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row は必須です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      // スプレッドシートから音声URLを取得
+      var trSs = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+      var trSheet = trSs.getSheetByName(CONFIG.SHEET_NAME);
+      var trData = trSheet.getRange(trRow, 1, 1, trSheet.getLastColumn()).getValues()[0];
+      var trAudioUrl = trData[COLUMNS.AUDIO_URL] || '';
+      if (!trAudioUrl) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '音声ファイルが登録されていません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      // audioUrlからファイルパスを抽出（download.php?file=YYYYMM/xxx.mp3 → YYYYMM/xxx.mp3）
+      var audioFileMatch = trAudioUrl.match(/[?&]file=([^&]+)/);
+      var audioFilePath = audioFileMatch ? decodeURIComponent(audioFileMatch[1]) : '';
+      if (!audioFilePath) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '音声ファイルパスの解析に失敗しました' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      // ステータスを「処理中」に更新
+      trSheet.getRange(trRow, COLUMNS.TRANSCRIPT_STATUS + 1).setValue(TRANSCRIPT_STATUS.PROCESSING);
+      // さくらPHPのtrigger_transcribe.phpを呼出
+      var triggerUrl = CONFIG.AUDIO.TRIGGER_URL;
+      var apiToken = PropertiesService.getScriptProperties().getProperty('AUDIO_API_TOKEN') || CONFIG.AUDIO.API_TOKEN;
+      var webhookUrl = CONFIG.CONSENT.WEB_APP_URL + '?action=transcribe-callback';
+      try {
+        var triggerRes = UrlFetchApp.fetch(triggerUrl, {
+          method: 'post',
+          contentType: 'application/json',
+          payload: JSON.stringify({
+            token: apiToken,
+            audioFile: audioFilePath,
+            row: trRow,
+            webhookUrl: webhookUrl
+          }),
+          muteHttpExceptions: true
+        });
+        var triggerJson = JSON.parse(triggerRes.getContentText());
+        if (!triggerJson.success) {
+          trSheet.getRange(trRow, COLUMNS.TRANSCRIPT_STATUS + 1).setValue(TRANSCRIPT_STATUS.ERROR);
+          return ContentService
+            .createTextOutput(JSON.stringify({ success: false, message: '文字起こしの開始に失敗: ' + (triggerJson.message || '') }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      } catch (trErr) {
+        trSheet.getRange(trRow, COLUMNS.TRANSCRIPT_STATUS + 1).setValue(TRANSCRIPT_STATUS.ERROR);
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '文字起こしサーバーへの接続に失敗: ' + trErr.toString() }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: '文字起こし処理を開始しました' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 文字起こしコールバック（さくらPythonから呼ばれる — GETの場合）
+    if (action === 'transcribe-callback') {
+      return handleTranscribeCallback({
+        token: e.parameter.token || '',
+        row: e.parameter.row || '',
+        transcript: e.parameter.transcript || '',
+        status: e.parameter.status || 'completed'
+      });
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1841,6 +1990,11 @@ function resolveConfirmedDateTime(rowIndex, sheet) {
   var date1 = sheet.getRange(rowIndex, COLUMNS.DATE1 + 1).getValue();
   if (!date1) return null;
 
+  // K列がDate型に自動変換されている場合は直接フォーマット
+  if (date1 instanceof Date) {
+    return Utilities.formatDate(date1, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+  }
+
   var dateStr = String(date1);
   var result = convertJapaneseDateToSlashWithTime(dateStr);
 
@@ -1990,5 +2144,88 @@ function saveApplicationSummaryToDrive(data, applicationId) {
   } catch (e) {
     console.error('申込概要保存エラー:', e);
   }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 音声文字起こしコールバック処理
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * 文字起こし結果のコールバック処理（POST/GET共用）
+ * @param {Object} params - { token, row, transcript, status }
+ * @returns {TextOutput} JSON レスポンス
+ */
+function handleTranscribeCallback(params) {
+  var cbToken = params.token || '';
+  var cbApiToken = PropertiesService.getScriptProperties().getProperty('AUDIO_API_TOKEN') || CONFIG.AUDIO.API_TOKEN;
+  if (cbToken !== cbApiToken) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, message: '認証エラー' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var cbRow = parseInt(params.row);
+  var cbTranscript = params.transcript || '';
+  var cbStatus = params.status || 'completed';
+
+  if (!cbRow || cbRow < 2) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, message: 'row は必須です' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var cbSs = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var cbSheet = cbSs.getSheetByName(CONFIG.SHEET_NAME);
+
+  if (cbStatus === 'error') {
+    cbSheet.getRange(cbRow, COLUMNS.TRANSCRIPT_STATUS + 1).setValue(TRANSCRIPT_STATUS.ERROR);
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true, message: 'エラーステータスを記録しました' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Googleドキュメントに文字起こし結果を保存
+  var cbData = cbSheet.getRange(cbRow, 1, 1, cbSheet.getLastColumn()).getValues()[0];
+  var cbCompany = cbData[COLUMNS.COMPANY] || '不明';
+  var cbDate = cbData[COLUMNS.CONFIRMED_DATE] instanceof Date
+    ? Utilities.formatDate(cbData[COLUMNS.CONFIRMED_DATE], 'Asia/Tokyo', 'yyyy-MM-dd')
+    : String(cbData[COLUMNS.CONFIRMED_DATE] || '');
+
+  var docTitle = '文字起こし_' + cbCompany + '_' + cbDate;
+  var doc = DocumentApp.create(docTitle);
+  var docBody = doc.getBody();
+  docBody.appendParagraph('相談文字起こし記録').setHeading(DocumentApp.ParagraphHeading.HEADING1);
+  docBody.appendParagraph('企業名: ' + cbCompany);
+  docBody.appendParagraph('相談日: ' + cbDate);
+  docBody.appendParagraph('作成日: ' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm'));
+  docBody.appendParagraph('').appendHorizontalRule();
+  docBody.appendParagraph('文字起こし内容').setHeading(DocumentApp.ParagraphHeading.HEADING2);
+
+  // テキストを段落ごとに追加
+  var paragraphs = cbTranscript.split('\n');
+  for (var pi = 0; pi < paragraphs.length; pi++) {
+    docBody.appendParagraph(paragraphs[pi]);
+  }
+  doc.saveAndClose();
+
+  // フォルダに移動（設定があれば）
+  var trFolderId = PropertiesService.getScriptProperties().getProperty('TRANSCRIPT_FOLDER_ID') || CONFIG.AUDIO.TRANSCRIPT_FOLDER_ID;
+  if (trFolderId) {
+    try {
+      var folder = DriveApp.getFolderById(trFolderId);
+      folder.addFile(DriveApp.getFileById(doc.getId()));
+      DriveApp.getRootFolder().removeFile(DriveApp.getFileById(doc.getId()));
+    } catch (mvErr) {
+      console.log('フォルダ移動に失敗: ' + mvErr);
+    }
+  }
+
+  // スプレッドシート更新
+  cbSheet.getRange(cbRow, COLUMNS.TRANSCRIPT_FILE_ID + 1).setValue(doc.getId());
+  cbSheet.getRange(cbRow, COLUMNS.TRANSCRIPT_STATUS + 1).setValue(TRANSCRIPT_STATUS.COMPLETED);
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: true, message: '文字起こし結果を保存しました', docId: doc.getId() }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 

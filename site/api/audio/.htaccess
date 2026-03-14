@@ -1,0 +1,30 @@
+# 音声ファイルディレクトリへの直接アクセスを禁止
+# download.php 経由でのみアクセス可能にする
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # files/ ディレクトリへの直接アクセスを禁止
+    RewriteRule ^files/ - [F,L]
+</IfModule>
+
+# files/ ディレクトリ内のファイル一覧を禁止
+Options -Indexes
+
+# PHPファイルへのアクセスは許可（upload.php, download.php, trigger_transcribe.php）
+<FilesMatch "\.(php)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# .py ファイルへの直接アクセスを禁止
+<FilesMatch "\.(py)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# config.php への直接アクセスを禁止
+<Files "config.php">
+    Order Deny,Allow
+    Deny from all
+</Files>

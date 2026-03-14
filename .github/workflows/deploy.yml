@@ -19,6 +19,12 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Create server directories
+        run: |
+          ssh ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} \
+            "mkdir -p /home/${{ secrets.SERVER_USERNAME }}/www/iba-consulting.jp/site/api/audio/files && \
+             mkdir -p /home/${{ secrets.SERVER_USERNAME }}/www/iba-consulting.jp/site/api/audio/logs"
+
       - name: Deploy with rsync
         run: |
           rsync -avz --delete \
@@ -29,7 +35,6 @@ jobs:
             --exclude 'stock_backtest' \
             --exclude 'eval-app' \
             --exclude 'cloud_functions' \
-            --exclude '*.py' \
             --exclude '*.md' \
             --exclude 'package.json' \
             --exclude 'package-lock.json' \
@@ -38,5 +43,9 @@ jobs:
             --exclude 'test_*.html' \
             --exclude 'open_news_admin.html' \
             --exclude 'CLAUDE.md' \
+            --exclude 'site/api/audio/files/' \
+            --exclude 'site/api/audio/logs/' \
+            --exclude 'calculator.py' \
+            --exclude 'todo_app.py' \
             ./ \
             ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USERNAME }}/www/iba-consulting.jp/

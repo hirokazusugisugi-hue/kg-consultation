@@ -296,7 +296,6 @@ function getMemberByEmail(email) {
         type: data[i][MEMBER_COLUMNS.TYPE],
         email: data[i][MEMBER_COLUMNS.EMAIL],
         phone: data[i][MEMBER_COLUMNS.PHONE],
-        lineId: data[i][MEMBER_COLUMNS.LINE_ID],
         specialties: data[i][MEMBER_COLUMNS.SPECIALTIES],
         themes: data[i][MEMBER_COLUMNS.THEMES],
         active: data[i][MEMBER_COLUMNS.ACTIVE],
@@ -565,7 +564,9 @@ function getMyCases(session) {
       location: data[i][COLUMNS.LOCATION] || '',
       leader: leader,
       reportStatus: data[i][COLUMNS.REPORT_STATUS] || '',
-      transcriptStatus: data[i][COLUMNS.TRANSCRIPT_STATUS] || ''
+      transcriptStatus: data[i][COLUMNS.TRANSCRIPT_STATUS] || '',
+      transcriptFileId: data[i][COLUMNS.TRANSCRIPT_FILE_ID] || '',
+      audioUrl: data[i][COLUMNS.AUDIO_URL] || ''
     });
   }
 

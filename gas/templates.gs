@@ -301,37 +301,6 @@ Email: ${CONFIG.ORG.EMAIL}
 }
 
 /**
- * 担当者向けLINEリマインドメッセージ（拡張版）
- * @param {Object} data - 予約データ（rowData）
- * @param {string} daysBeforeLabel - "1週間前" or "3日前"
- * @param {Array<Object>} memberList - 参加メンバー情報の配列 [{name, term, type}]
- */
-function getStaffReminderLine(data, daysBeforeLabel, memberList) {
-  const memberNames = memberList ? memberList.map(function(m) { return m.name; }).join(', ') : (data.staff || '');
-  const isOnline = data.method === 'オンライン' || data.method === 'オンライン（Zoom）';
-  const venue = isOnline ? 'Zoom' : (data.location || '未定');
-
-  return `📋 【${daysBeforeLabel}】担当相談リマインド
-
-日時: ${data.confirmedDate}
-会場: ${venue}${isOnline && data.zoomUrl ? '\nZoom: ' + data.zoomUrl : ''}
-相談者: ${data.name}様（${data.company}）
-電話: ${data.phone || '未登録'}
-テーマ: ${data.theme}
-${data.companyUrl ? '企業URL: ' + data.companyUrl : ''}
-リーダー: ${data.leader || '未選定'}
-担当メンバー: ${memberNames}
-
-📖 担当者マニュアル:
-https://iba-consulting.jp/docs/manual_staff.html
-
-📝 オブザーバー専用ページ:
-${CONFIG.CONSENT.WEB_APP_URL}?action=observer
-
-事前準備をお願いします。`;
-}
-
-/**
  * 担当者向けメールリマインド（拡張版）
  * @param {Object} data - 予約データ（rowData）
  * @param {string} daysBeforeLabel - "1週間前" or "3日前"
@@ -814,7 +783,6 @@ function getSurveyPageHtml(tokenData) {
         <label><input type="checkbox" name="q1" value="知人・友人の紹介"> 知人・友人の紹介</label>
         <label><input type="checkbox" name="q1" value="SNS" id="q1Sns"> SNS</label>
         <div class="sns-sub" id="snsSub">
-          <label><input type="radio" name="q1sns" value="LINE"> LINE</label>
           <label><input type="radio" name="q1sns" value="Twitter/X"> Twitter/X</label>
           <label><input type="radio" name="q1sns" value="Facebook"> Facebook</label>
           <label><input type="radio" name="q1sns" value="Instagram"> Instagram</label>

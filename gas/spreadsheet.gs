@@ -26,7 +26,7 @@ function saveToSpreadsheet(data, isWalkIn) {
     data.industry,            // H: 業種
     data.theme,               // I: 相談テーマ
     data.content,             // J: 相談内容
-    data.date1 + (data.time ? ' ' + data.time : ''),  // K: 希望日時1（時間帯付き）
+    data.date1 + (data.time && data.time !== '未選択' ? ' ' + data.time : ''),  // K: 希望日時1（時間帯付き）
     data.date2,               // L: 希望日時2
     data.method,              // M: 相談方法
     '',                       // N: 場所

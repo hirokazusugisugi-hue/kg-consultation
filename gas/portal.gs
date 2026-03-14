@@ -306,6 +306,22 @@ function setVenueAndConfirm(session, params) {
     }
   }
 
+  // リーダー自動選定（メール送信前に実行し、リーダー名をメールに反映）
+  if (!rowData.leader) {
+    try {
+      autoSelectLeaderOnConfirm(row);
+      // 選定結果を反映するためrowDataを再取得
+      rowData = getRowData(row);
+      rowData.location = venue;
+    } catch (leaderErr) {
+      console.error('リーダー選定エラー（ポータル確定時）:', leaderErr);
+    }
+  } else {
+    // リーダー履歴に「予定」として記録
+    var schedMembers = getParticipatingMembers(rowData.confirmedDate) || '';
+    recordLeaderAssignment(rowData, rowData.leader, schedMembers, 0, '手動設定', '予定');
+  }
+
   // 相談者に確定メール送信
   try {
     sendConfirmedEmail(rowData);
@@ -355,19 +371,6 @@ function setVenueAndConfirm(session, params) {
     }
   } catch (staffErr) {
     console.error('担当者通知エラー:', staffErr);
-  }
-
-  // リーダー自動選定
-  if (!rowData.leader) {
-    try {
-      autoSelectLeaderOnConfirm(row);
-    } catch (leaderErr) {
-      console.error('リーダー選定エラー（ポータル確定時）:', leaderErr);
-    }
-  } else {
-    // リーダー履歴に「予定」として記録
-    var schedMembers = getParticipatingMembers(rowData.confirmedDate) || '';
-    recordLeaderAssignment(rowData, rowData.leader, schedMembers, 0, '手動設定', '予定');
   }
 
   // 重複防止フラグをセット（onSheetEditトリガーでの二重送信防止）

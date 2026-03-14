@@ -24,17 +24,6 @@ const CONFIG = {
   // 送信元表示名
   SENDER_NAME: '関西学院大学 中小企業経営診断研究会',
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // LINE Messaging API 設定
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  LINE: {
-    // チャネルアクセストークン（LINE Developersで取得）
-    CHANNEL_ACCESS_TOKEN: 'ここにチャネルアクセストークンを入力',
-
-    // 通知先グループID または ユーザーID
-    GROUP_ID: 'ここにグループIDまたはユーザーIDを入力'
-  },
-
   // Zoom API 設定（Server-to-Server OAuth）
   // ※認証情報はGASエディタの「スクリプト プロパティ」に設定してください
   // ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET
@@ -175,6 +164,17 @@ const CONFIG = {
     SITE_URL: 'https://iba-consulting.jp/site/portal.html'
   },
 
+  // 音声アップロード・文字起こし設定
+  AUDIO: {
+    UPLOAD_URL: 'https://iba-consulting.jp/site/api/audio/upload.php',
+    DOWNLOAD_URL: 'https://iba-consulting.jp/site/api/audio/download.php',
+    TRIGGER_URL: 'https://iba-consulting.jp/site/api/audio/trigger_transcribe.php',
+    API_TOKEN: '',             // ScriptPropertiesに AUDIO_API_TOKEN として設定推奨
+    MAX_FILE_SIZE: 100 * 1024 * 1024,  // 100MB
+    ALLOWED_EXTENSIONS: ['mp3', 'm4a', 'wav', 'ogg', 'webm'],
+    TRANSCRIPT_FOLDER_ID: ''   // 文字起こしドキュメント保存先フォルダID
+  },
+
   // 返信先メールアドレス
   REPLY_TO: 'kgibaconsultant@gmail.com',
 
@@ -237,7 +237,8 @@ const COLUMNS = {
   TRANSCRIPT_STATUS: 29,    // AD: 文字起こし状態
   TRANSCRIPT_FILE_ID: 30,   // AE: 文字起こしファイルID（Drive）
   REPORT_DRAFT_ID: 31,      // AF: 報告書ドラフトID（Google Docs ID）
-  NOTION_PAGE_ID: 32        // AG: Notion Page ID
+  NOTION_PAGE_ID: 32,       // AG: Notion Page ID
+  AUDIO_URL: 33             // AH: 音声ファイルURL
 };
 
 /**
@@ -247,7 +248,7 @@ const LOCATION_OPTIONS_DEFAULT = [
   'アプローズタワー 14階',
   'アプローズタワー 10階',
   'ナレッジサロン',
-  '貸会議室（住友生命）'
+  '貸会議室'
 ];
 
 /**
@@ -301,7 +302,6 @@ const MEMBER_COLUMNS = {
   TYPE: 3,      // D: 区分
   EMAIL: 4,     // E: メール
   PHONE: 5,     // F: 電話番号
-  LINE_ID: 6,   // G: LINE ID
   NOTES: 7,         // H: 備考
   SPECIALTIES: 8,   // I: 得意業種
   THEMES: 9,        // J: 得意テーマ
@@ -470,3 +470,4 @@ const REPORT_COLUMNS = {
   DELIVERY_DATE: 10, // K: 配信日時
   STATUS: 11         // L: ステータス
 };
+

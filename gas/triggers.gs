@@ -184,6 +184,21 @@ function handleStatusChange(rowIndex, oldStatus, newStatus) {
       console.log(`日程設定シート同期: ${parsed.date} ${parsed.time || ''} → ${booked ? '予約済み' : '該当なし'}`);
     }
 
+    // リーダー自動選定（メール送信前に実行し、リーダー名をメールに反映）
+    if (!data.leader) {
+      try {
+        autoSelectLeaderOnConfirm(rowIndex);
+        // 選定結果を反映するためdataを再取得
+        data = getRowData(rowIndex);
+      } catch (leaderError) {
+        console.error('リーダー選定エラー（確定時）:', leaderError);
+      }
+    } else {
+      // リーダー履歴に「予定」として記録
+      var schedMembers = getParticipatingMembers(data.confirmedDate) || '';
+      recordLeaderAssignment(data, data.leader, schedMembers, 0, '手動設定', '予定');
+    }
+
     // 確定メールを送信
     sendConfirmedEmail(data);
     console.log(`確定メール送信完了: ${data.email}`);
@@ -230,21 +245,6 @@ function handleStatusChange(rowIndex, oldStatus, newStatus) {
         });
       });
       console.log('確定通知: 担当者・メンバー未設定のため管理者にフォールバック');
-    }
-
-    // リーダー履歴に「予定」として記録
-    if (data.leader) {
-      var schedMembers = getParticipatingMembers(data.confirmedDate) || '';
-      recordLeaderAssignment(data, data.leader, schedMembers, 0, '手動設定', '予定');
-    }
-
-    // リーダー自動選定（対面は確定時、Zoomは3日前リマインドで選定）
-    if (!data.leader) {
-      try {
-        autoSelectLeaderOnConfirm(rowIndex);
-      } catch (leaderError) {
-        console.error('リーダー選定エラー（確定時）:', leaderError);
-      }
     }
 
   }

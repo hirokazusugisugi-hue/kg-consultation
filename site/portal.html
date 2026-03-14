@@ -325,6 +325,22 @@
             font-weight: 700; cursor: pointer; font-family: var(--font-sans);
         }
         .venue-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .venue-room-input {
+            display: none; margin-bottom: 1rem; padding: 0 0.2rem;
+        }
+        .venue-room-input label {
+            display: block; font-size: 0.78rem; color: var(--text-muted);
+            margin-bottom: 0.3rem; font-weight: 600;
+        }
+        .venue-room-input input {
+            width: 100%; padding: 0.5rem 0.7rem; border: 1px solid var(--border-light);
+            border-radius: 6px; font-size: 0.85rem; font-family: var(--font-sans);
+            box-sizing: border-box;
+        }
+        .venue-room-input input:focus {
+            outline: none; border-color: var(--kgu-blue);
+            box-shadow: 0 0 0 2px rgba(15,35,80,0.1);
+        }
 
         /* ── NEWS POSTING ── */
         .news-form-group { margin-bottom: 1rem; }
@@ -364,6 +380,94 @@
             }
             .portal-nav-item.active { background: var(--kgu-gold-dim); }
             .portal-main { padding-left: 200px; }
+        }
+
+        /* ── AUDIO UPLOAD & TRANSCRIPTION ── */
+        .audio-section {
+            margin-top: 0.6rem; padding-top: 0.6rem;
+            border-top: 1px dashed var(--border-light);
+        }
+        .audio-controls {
+            display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;
+        }
+        .audio-play-btn {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 4px 12px; border-radius: 6px; border: none; cursor: pointer;
+            background: var(--kgu-blue); color: var(--white);
+            font-size: 0.75rem; font-weight: 700; font-family: var(--font-sans);
+            transition: all 0.2s;
+        }
+        .audio-play-btn:hover { background: var(--kgu-blue-light); }
+        .audio-delete-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border-light);
+            background: var(--white); color: var(--text-muted); cursor: pointer;
+            font-size: 0.7rem; transition: all 0.2s;
+        }
+        .audio-delete-btn:hover { color: #dc3545; border-color: #dc3545; }
+        .audio-upload-btn {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 4px 12px; border-radius: 6px; border: 1px dashed var(--kgu-blue);
+            background: rgba(15,35,80,0.04); color: var(--kgu-blue);
+            font-size: 0.75rem; font-weight: 600; cursor: pointer;
+            font-family: var(--font-sans); transition: all 0.2s;
+        }
+        .audio-upload-btn:hover { background: rgba(15,35,80,0.08); }
+        .audio-transcript-status {
+            display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .audio-status-badge {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 100px;
+        }
+        .audio-status-badge.completed { background: #d4edda; color: #155724; }
+        .audio-status-badge.processing { background: #fff3cd; color: #856404; }
+        .audio-status-badge.error { background: #f8d7da; color: #721c24; }
+        .audio-doc-link {
+            font-size: 0.75rem; color: var(--kgu-blue); text-decoration: none;
+            font-weight: 600;
+        }
+        .audio-doc-link:hover { text-decoration: underline; }
+        .audio-transcribe-btn {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 3px 10px; border-radius: 6px; border: 1px solid var(--kgu-blue);
+            background: var(--white); color: var(--kgu-blue);
+            font-size: 0.7rem; font-weight: 600; cursor: pointer;
+            font-family: var(--font-sans); transition: all 0.2s;
+        }
+        .audio-transcribe-btn:hover { background: rgba(15,35,80,0.04); }
+        .audio-transcribe-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Audio Dialog */
+        .audio-dialog { max-width: 420px; }
+        .audio-drop-zone {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 1.5rem; border: 2px dashed var(--border-light); border-radius: 10px;
+            margin-bottom: 1rem; text-align: center; transition: all 0.2s;
+            min-height: 120px;
+        }
+        .audio-drop-zone.dragover { border-color: var(--kgu-blue); background: rgba(15,35,80,0.04); }
+        .audio-drop-zone p { font-size: 0.8rem; color: var(--text-muted); margin: 0.3rem 0; }
+        .audio-file-label {
+            display: inline-block; padding: 6px 16px; border-radius: 6px;
+            background: var(--kgu-blue); color: var(--white);
+            font-size: 0.8rem; font-weight: 700; cursor: pointer;
+            font-family: var(--font-sans); transition: all 0.2s;
+        }
+        .audio-file-label:hover { background: var(--kgu-blue-light); }
+        .audio-hint { font-size: 0.7rem !important; color: var(--text-muted) !important; margin-top: 0.5rem !important; }
+        .audio-file-name {
+            font-size: 0.8rem; font-weight: 600; padding: 0.5rem; margin-bottom: 0.5rem;
+            background: var(--bg-light); border-radius: 6px;
+            word-break: break-all;
+        }
+        .audio-progress {
+            height: 6px; background: var(--bg-light); border-radius: 3px;
+            overflow: hidden; margin-bottom: 0.8rem;
+        }
+        .audio-progress-bar {
+            height: 100%; background: var(--kgu-blue); border-radius: 3px;
+            width: 0; transition: width 0.3s;
         }
     </style>
 </body>

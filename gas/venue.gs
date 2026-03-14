@@ -604,6 +604,25 @@ function generateVenueStatusPage(e) {
 function formatVenueInfoForEmail(venueName) {
   if (!venueName || venueName === 'その他') return venueName || '';
 
+  // ナレッジサロン
+  if (venueName === 'ナレッジサロン') {
+    return 'ナレッジサロン（グランフロント大阪 北館 7階）\n' +
+      '  住所：大阪市北区大深町3-1 グランフロント大阪 北館 7階\n' +
+      '  地図：https://maps.google.com/?q=ナレッジサロン+グランフロント大阪+北館+7階';
+  }
+
+  // 貸会議室
+  if (venueName === '貸会議室') {
+    return '貸会議室\n' +
+      '  ※詳細な場所については、後日こちらからご連絡させていただきます。';
+  }
+
+  // アプローズタワー（部屋番号込み）はそのまま表示
+  if (venueName.indexOf('アプローズタワー') === 0) {
+    return venueName;
+  }
+
+  // その他の会場は従来のマスタ参照ロジック
   var venue = getVenueByName(venueName);
   if (!venue) return venueName;
 

@@ -440,6 +440,7 @@ async function renderCases(container) {
                 (c.reportStatus ? '<span><i class="fas fa-file-alt"></i> ' + escapeHTML(c.reportStatus) + '</span>' : '') +
                 '</div>' +
                 (needsVenue ? '<button class="venue-unset-btn" onclick="openVenueDialog(' + c.row + ',\'' + escapeHTML(c.company || '').replace(/'/g, "\\'") + '\')"><i class="fas fa-map-marker-alt"></i> 会場未設定</button>' : '') +
+                buildAudioSection(c) +
                 '</div>';
         });
     }
@@ -449,8 +450,9 @@ async function renderCases(container) {
     html += '</div>';
     container.innerHTML = html;
 
-    // Store cases for filtering
+    // Store cases for filtering & update audio token
     window._portalCases = res;
+    if (res.audioApiToken) AUDIO_CONFIG.apiToken = res.audioApiToken;
 }
 
 function filterCases(status) {
@@ -462,7 +464,11 @@ function filterCases(status) {
     }
 }
 
-const VENUE_OPTIONS = ['アプローズタワー 14階', 'アプローズタワー 10階', 'ナレッジサロン', '貸会議室（住友生命）'];
+const VENUE_OPTIONS = ['アプローズタワー 14階', 'アプローズタワー 10階', 'ナレッジサロン', '貸会議室'];
+
+function isApproseVenue(v) {
+    return v.indexOf('アプローズタワー') === 0;
+}
 
 function openVenueDialog(row, company) {
     let html = '<div class="venue-overlay" id="venueOverlay" onclick="if(event.target===this)closeVenueDialog()">' +
@@ -471,14 +477,29 @@ function openVenueDialog(row, company) {
         '<p class="venue-company">' + escapeHTML(company) + '</p>' +
         '<div class="venue-options">';
     VENUE_OPTIONS.forEach((v, i) => {
-        html += '<label class="venue-option"><input type="radio" name="venueChoice" value="' + escapeHTML(v) + '"' + (i === 0 ? ' checked' : '') + '> ' + escapeHTML(v) + '</label>';
+        html += '<label class="venue-option"><input type="radio" name="venueChoice" value="' + escapeHTML(v) + '"' + (i === 0 ? ' checked' : '') + ' onchange="toggleRoomInput()"> ' + escapeHTML(v) + '</label>';
     });
     html += '</div>' +
+        '<div class="venue-room-input" id="venueRoomInput">' +
+        '<label for="roomNumber">部屋番号</label>' +
+        '<input type="text" id="roomNumber" placeholder="例: 1401">' +
+        '</div>' +
         '<div class="venue-actions">' +
         '<button class="venue-cancel-btn" onclick="closeVenueDialog()">キャンセル</button>' +
         '<button class="venue-confirm-btn" id="venueConfirmBtn" onclick="confirmVenue(' + row + ')">確定する</button>' +
         '</div></div></div>';
     document.body.insertAdjacentHTML('beforeend', html);
+    toggleRoomInput();
+}
+
+function toggleRoomInput() {
+    var selected = document.querySelector('input[name="venueChoice"]:checked');
+    var roomDiv = document.getElementById('venueRoomInput');
+    if (selected && isApproseVenue(selected.value)) {
+        roomDiv.style.display = 'block';
+    } else {
+        roomDiv.style.display = 'none';
+    }
 }
 
 function closeVenueDialog() {
@@ -489,10 +510,17 @@ function closeVenueDialog() {
 async function confirmVenue(row) {
     const selected = document.querySelector('input[name="venueChoice"]:checked');
     if (!selected) return;
+    var venue = selected.value;
+    if (isApproseVenue(venue)) {
+        var room = (document.getElementById('roomNumber').value || '').trim();
+        if (room) {
+            venue += ' ' + room + '号室';
+        }
+    }
     const btn = document.getElementById('venueConfirmBtn');
     btn.disabled = true;
     btn.textContent = '処理中...';
-    const res = await portalFetch('portal-set-venue', { row: String(row), venue: selected.value });
+    const res = await portalFetch('portal-set-venue', { row: String(row), venue: venue });
     closeVenueDialog();
     if (res.success) {
         alert(res.message);
@@ -536,6 +564,7 @@ function renderCasesFromData(res) {
                 (c.reportStatus ? '<span><i class="fas fa-file-alt"></i> ' + escapeHTML(c.reportStatus) + '</span>' : '') +
                 '</div>' +
                 (needsVenue ? '<button class="venue-unset-btn" onclick="openVenueDialog(' + c.row + ',\'' + escapeHTML(c.company || '').replace(/'/g, "\\'") + '\')"><i class="fas fa-map-marker-alt"></i> 会場未設定</button>' : '') +
+                buildAudioSection(c) +
                 '</div>';
         });
     }
@@ -688,6 +717,281 @@ async function submitProfileChange(e) {
     }
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:0.3rem"></i>変更を依頼する';
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Audio Upload & Transcription
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const AUDIO_CONFIG = {
+    uploadUrl: 'https://iba-consulting.jp/site/api/audio/upload.php',
+    apiToken: '',  // portal.htmlまたはconfig経由で設定
+    maxSize: 100 * 1024 * 1024,
+    allowedExts: ['mp3', 'm4a', 'wav', 'ogg', 'webm']
+};
+
+/**
+ * 案件カードの音声セクションHTML生成
+ */
+function buildAudioSection(c) {
+    // 確定 or 完了ステータスのみ表示
+    if (c.status !== '確定' && c.status !== '完了') return '';
+
+    let html = '<div class="audio-section">';
+
+    if (c.audioUrl) {
+        // 音声あり: 再生ボタン + 文字起こしUI
+        html += '<div class="audio-controls">';
+        html += '<button class="audio-play-btn" onclick="playAudio(\'' + escapeHTML(c.audioUrl) + '\', this)"><i class="fas fa-play"></i> 再生</button>';
+        html += '<button class="audio-delete-btn" onclick="deleteAudio(' + c.row + ', this)" title="音声を削除"><i class="fas fa-trash-alt"></i></button>';
+        html += '</div>';
+
+        // 文字起こし状態
+        if (c.transcriptStatus === '完了' && c.transcriptFileId) {
+            html += '<div class="audio-transcript-status">';
+            html += '<span class="audio-status-badge completed"><i class="fas fa-check-circle"></i> 文字起こし完了</span>';
+            html += '<a href="https://docs.google.com/document/d/' + escapeHTML(c.transcriptFileId) + '/edit" target="_blank" class="audio-doc-link"><i class="fas fa-external-link-alt"></i> 議事録を開く</a>';
+            html += '</div>';
+        } else if (c.transcriptStatus === '処理中') {
+            html += '<div class="audio-transcript-status">';
+            html += '<span class="audio-status-badge processing"><i class="fas fa-spinner fa-spin"></i> 文字起こし処理中...</span>';
+            html += '</div>';
+        } else if (c.transcriptStatus === 'エラー') {
+            html += '<div class="audio-transcript-status">';
+            html += '<span class="audio-status-badge error"><i class="fas fa-exclamation-triangle"></i> 文字起こしエラー</span>';
+            html += '<button class="audio-transcribe-btn" onclick="requestTranscribe(' + c.row + ', this)"><i class="fas fa-redo"></i> 再実行</button>';
+            html += '</div>';
+        } else {
+            // 未実行
+            html += '<div class="audio-transcript-status">';
+            html += '<button class="audio-transcribe-btn" onclick="requestTranscribe(' + c.row + ', this)"><i class="fas fa-file-alt"></i> 文字起こし実行</button>';
+            html += '</div>';
+        }
+    } else {
+        // 音声なし: アップロードボタン
+        html += '<button class="audio-upload-btn" onclick="openAudioDialog(' + c.row + ',\'' + escapeHTML(c.company || '').replace(/'/g, "\\'") + '\')"><i class="fas fa-microphone"></i> 音声をアップロード</button>';
+    }
+
+    html += '</div>';
+    return html;
+}
+
+/**
+ * 音声アップロードダイアログを開く
+ */
+function openAudioDialog(row, company) {
+    let html = '<div class="venue-overlay" id="audioOverlay" onclick="if(event.target===this)closeAudioDialog()">' +
+        '<div class="venue-dialog audio-dialog">' +
+        '<h3><i class="fas fa-microphone"></i> 音声をアップロード</h3>' +
+        '<p class="venue-company">' + escapeHTML(company) + '</p>' +
+        '<div class="audio-drop-zone" id="audioDropZone">' +
+        '<i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:var(--text-muted);margin-bottom:0.5rem"></i>' +
+        '<p>ファイルをドラッグ＆ドロップ<br>または</p>' +
+        '<label class="audio-file-label">' +
+        '<input type="file" id="audioFileInput" accept=".mp3,.m4a,.wav,.ogg,.webm" onchange="onAudioFileSelected(this)" style="display:none">' +
+        'ファイルを選択</label>' +
+        '<p class="audio-hint">対応形式: MP3, M4A, WAV, OGG, WebM（最大100MB）</p>' +
+        '</div>' +
+        '<div id="audioFileInfo" style="display:none">' +
+        '<div class="audio-file-name" id="audioFileName"></div>' +
+        '<div class="audio-progress" id="audioProgress" style="display:none"><div class="audio-progress-bar" id="audioProgressBar"></div></div>' +
+        '</div>' +
+        '<div class="venue-actions">' +
+        '<button class="venue-cancel-btn" onclick="closeAudioDialog()">キャンセル</button>' +
+        '<button class="venue-confirm-btn" id="audioUploadBtn" onclick="uploadAudio(' + row + ')" disabled>アップロード</button>' +
+        '</div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    // ドラッグ＆ドロップ
+    const dropZone = document.getElementById('audioDropZone');
+    dropZone.addEventListener('dragover', function(ev) {
+        ev.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', function() {
+        dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', function(ev) {
+        ev.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (ev.dataTransfer.files.length > 0) {
+            document.getElementById('audioFileInput').files = ev.dataTransfer.files;
+            onAudioFileSelected(document.getElementById('audioFileInput'));
+        }
+    });
+}
+
+function onAudioFileSelected(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!AUDIO_CONFIG.allowedExts.includes(ext)) {
+        alert('対応していないファイル形式です。\n対応形式: ' + AUDIO_CONFIG.allowedExts.join(', '));
+        input.value = '';
+        return;
+    }
+    if (file.size > AUDIO_CONFIG.maxSize) {
+        alert('ファイルサイズが100MBを超えています。');
+        input.value = '';
+        return;
+    }
+
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    document.getElementById('audioFileName').textContent = file.name + ' (' + sizeMB + ' MB)';
+    document.getElementById('audioFileInfo').style.display = 'block';
+    document.getElementById('audioUploadBtn').disabled = false;
+}
+
+function closeAudioDialog() {
+    const el = document.getElementById('audioOverlay');
+    if (el) el.remove();
+}
+
+/**
+ * 音声ファイルをさくらPHPにアップロード → GASにURL保存
+ */
+async function uploadAudio(row) {
+    const fileInput = document.getElementById('audioFileInput');
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    const btn = document.getElementById('audioUploadBtn');
+    btn.disabled = true;
+    btn.textContent = 'アップロード中...';
+
+    const progressDiv = document.getElementById('audioProgress');
+    const progressBar = document.getElementById('audioProgressBar');
+    progressDiv.style.display = 'block';
+
+    try {
+        // 1. さくらPHPにアップロード
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('row', String(row));
+
+        const audioUrl = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', AUDIO_CONFIG.uploadUrl);
+            xhr.setRequestHeader('X-Audio-Token', AUDIO_CONFIG.apiToken);
+
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = pct + '%';
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const res = JSON.parse(xhr.responseText);
+                    if (res.success) {
+                        resolve(res.url);
+                    } else {
+                        reject(new Error(res.message || 'アップロードに失敗しました'));
+                    }
+                } else {
+                    reject(new Error('HTTP ' + xhr.status));
+                }
+            };
+
+            xhr.onerror = function() {
+                reject(new Error('ネットワークエラー'));
+            };
+
+            xhr.send(formData);
+        });
+
+        // 2. GASにURL保存
+        const res = await portalFetch('portal-save-audio-url', { row: String(row), audioUrl: audioUrl });
+        if (!res.success) {
+            throw new Error(res.message || 'URL保存に失敗しました');
+        }
+
+        closeAudioDialog();
+        alert('音声ファイルをアップロードしました');
+        renderCases(document.getElementById('portalMain'));
+
+    } catch (err) {
+        alert('エラー: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'アップロード';
+        progressDiv.style.display = 'none';
+    }
+}
+
+/**
+ * 音声再生
+ */
+function playAudio(url, btn) {
+    // 既存の再生中プレイヤーを停止
+    const existing = document.getElementById('audioPlayer');
+    if (existing) {
+        existing.pause();
+        existing.remove();
+        // 同じURLなら停止のみ
+        if (existing.dataset.url === url) {
+            btn.innerHTML = '<i class="fas fa-play"></i> 再生';
+            return;
+        }
+    }
+
+    // 新しいプレイヤー作成（トークン付きURL）
+    const tokenUrl = url + (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(AUDIO_CONFIG.apiToken);
+    const audio = document.createElement('audio');
+    audio.id = 'audioPlayer';
+    audio.dataset.url = url;
+    audio.src = tokenUrl;
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+
+    btn.innerHTML = '<i class="fas fa-stop"></i> 停止';
+
+    audio.play().catch(function(e) {
+        alert('再生に失敗しました: ' + e.message);
+        btn.innerHTML = '<i class="fas fa-play"></i> 再生';
+    });
+
+    audio.onended = function() {
+        btn.innerHTML = '<i class="fas fa-play"></i> 再生';
+        audio.remove();
+    };
+}
+
+/**
+ * 音声を削除
+ */
+async function deleteAudio(row, btn) {
+    if (!confirm('音声ファイルの登録を解除しますか？\n（サーバー上のファイルは削除されません）')) return;
+
+    btn.disabled = true;
+    const res = await portalFetch('portal-delete-audio', { row: String(row) });
+    if (res.success) {
+        renderCases(document.getElementById('portalMain'));
+    } else {
+        alert(res.message || 'エラーが発生しました');
+        btn.disabled = false;
+    }
+}
+
+/**
+ * 文字起こしリクエスト
+ */
+async function requestTranscribe(row, btn) {
+    if (!confirm('文字起こしを実行しますか？\n処理には数分〜数十分かかる場合があります。')) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 送信中...';
+
+    const res = await portalFetch('portal-request-transcribe', { row: String(row) });
+    if (res.success) {
+        alert('文字起こし処理を開始しました。完了するまでお待ちください。');
+        renderCases(document.getElementById('portalMain'));
+    } else {
+        alert(res.message || '文字起こしの開始に失敗しました');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-file-alt"></i> 文字起こし実行';
+    }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
