@@ -29,7 +29,7 @@ import mimetypes
 # GCP設定
 GCS_BUCKET = 'kg-consultation-audio'
 GCP_PROJECT = 'kg-consultation-audio'
-GCP_LOCATION = 'asia-northeast1'      # リージョン
+GCP_LOCATION = 'global'  # batchRecognize は global のみ対応
 SERVICE_ACCOUNT_KEY = os.path.expanduser('~/.gcp/speech-to-text-key.json')
 
 # 環境変数からオーバーライド可能
@@ -105,14 +105,14 @@ def transcribe_audio(gcs_uri, token):
 
     recognizer = 'projects/{}/locations/{}/recognizers/_'.format(GCP_PROJECT, GCP_LOCATION)
     url = 'https://speech.googleapis.com/v2/{}:batchRecognize'.format(
-        urllib.parse.quote(recognizer, safe='')
+        urllib.parse.quote(recognizer, safe='/:@')
     )
 
     body = {
         'config': {
             'autoDecodingConfig': {},
             'languageCodes': ['ja-JP'],
-            'model': 'chirp_2',
+            'model': 'long',
             'features': {
                 'enableAutomaticPunctuation': True
             }
@@ -138,7 +138,7 @@ def transcribe_audio(gcs_uri, token):
 
     # オペレーション完了をポーリング
     poll_url = 'https://speech.googleapis.com/v2/{}'.format(
-        urllib.parse.quote(operation_name, safe='')
+        urllib.parse.quote(operation_name, safe='/:@')
     )
 
     for attempt in range(360):  # 最大1時間（10秒 x 360）
