@@ -278,10 +278,105 @@ function setVenueAndConfirm(session, params) {
 
   // 会場をN列にセット
   sheet.getRange(row, COLUMNS.LOCATION + 1).setValue(venue);
+  data.location = venue;
 
-  // ステータスを確定に変更（onSheetEditトリガーが確定メール送信を処理）
+  // ── 確定日時の解決 ──
+  // Q列（確定日時）が空ならK列+日程設定シートから補完
+  if (!data[COLUMNS.CONFIRMED_DATE]) {
+    var fullDateTime = resolveConfirmedDateTime(row, sheet);
+    if (fullDateTime) {
+      sheet.getRange(row, COLUMNS.CONFIRMED_DATE + 1).setValue(fullDateTime);
+    }
+  }
+
+  // ステータスを確定に変更
   sheet.getRange(row, COLUMNS.STATUS + 1).setValue(STATUS.CONFIRMED);
 
-  console.log('会場設定+確定: ' + venue + ' (行' + row + ') by ' + session.name);
+  // ── 以下、メール送信・日程更新をトリガーに依存せず直接実行 ──
+  // getRowDataで最新データを取得（ステータス・確定日時反映済み）
+  var rowData = getRowData(row);
+  rowData.location = venue;
+
+  // 日程設定シートの予約状況を「予約済み」に更新
+  if (rowData.confirmedDate) {
+    var parsed = parseConfirmedDateTime(rowData.confirmedDate);
+    if (parsed.date) {
+      var booked = markAsBooked(parsed.date, parsed.time);
+      console.log('日程設定シート同期: ' + parsed.date + ' ' + (parsed.time || '') + ' → ' + (booked ? '予約済み' : '該当なし'));
+    }
+  }
+
+  // 相談者に確定メール送信
+  try {
+    sendConfirmedEmail(rowData);
+    console.log('確定メール送信完了: ' + rowData.email);
+  } catch (mailErr) {
+    console.error('確定メール送信エラー:', mailErr);
+  }
+
+  // 担当者・参加メンバーへの確定通知
+  try {
+    var emailResult = buildStaffNotificationEmail_(rowData);
+    var sentEmails = {};
+
+    // P列の担当者に通知
+    if (rowData.staff) {
+      sendStaffNotifications(rowData.staff, emailResult.subject, emailResult.body);
+      var staffNames = rowData.staff.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+      staffNames.forEach(function(name) {
+        var m = getMemberByName(name);
+        if (m && m.email) sentEmails[m.email] = true;
+      });
+    }
+
+    // 日程設定シートの参加メンバー全員にも確定通知（P列と重複しない分）
+    var confirmMembers = getScheduleMembersForDate_(rowData.confirmedDate);
+    if (confirmMembers && confirmMembers.length > 0) {
+      confirmMembers.forEach(function(cm) {
+        var m = getMemberByName(cm.name);
+        if (m && m.email && !sentEmails[m.email]) {
+          GmailApp.sendEmail(m.email, emailResult.subject, emailResult.body, {
+            name: emailResult.senderName || CONFIG.SENDER_NAME
+          });
+          sentEmails[m.email] = true;
+          console.log('確定通知（参加メンバー）: ' + cm.name + ' (' + m.email + ')');
+        }
+      });
+    }
+
+    // 誰にも送れなかった場合は管理者にフォールバック
+    if (Object.keys(sentEmails).length === 0) {
+      CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+        GmailApp.sendEmail(adminEmail, emailResult.subject, emailResult.body, {
+          name: emailResult.senderName || CONFIG.SENDER_NAME
+        });
+      });
+      console.log('確定通知: 担当者・メンバー未設定のため管理者にフォールバック');
+    }
+  } catch (staffErr) {
+    console.error('担当者通知エラー:', staffErr);
+  }
+
+  // リーダー自動選定
+  if (!rowData.leader) {
+    try {
+      autoSelectLeaderOnConfirm(row);
+    } catch (leaderErr) {
+      console.error('リーダー選定エラー（ポータル確定時）:', leaderErr);
+    }
+  } else {
+    // リーダー履歴に「予定」として記録
+    var schedMembers = getParticipatingMembers(rowData.confirmedDate) || '';
+    recordLeaderAssignment(rowData, rowData.leader, schedMembers, 0, '手動設定', '予定');
+  }
+
+  // 重複防止フラグをセット（onSheetEditトリガーでの二重送信防止）
+  try {
+    PropertiesService.getScriptProperties().setProperty('VENUE_CONFIRMED_ROW_' + row, String(Date.now()));
+  } catch (propErr) {
+    console.error('PropertiesServiceエラー:', propErr);
+  }
+
+  console.log('会場設定+確定（メール送信済み）: ' + venue + ' (行' + row + ') by ' + session.name);
   return { success: true, message: '会場を「' + venue + '」に設定し、予約を確定しました' };
 }
