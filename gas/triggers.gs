@@ -804,7 +804,7 @@ function sendScheduledStaffNotification() {
  */
 function buildStaffNotificationEmail_(data) {
   var method = data.method || '';
-  var isOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0;
+  var isOnline = method.indexOf('オンライン') >= 0 || method.indexOf('Zoom') >= 0 || method.indexOf('zoom') >= 0;
 
   var subject = '関学無料経営相談依頼案件（' + data.confirmedDate + '）';
 
