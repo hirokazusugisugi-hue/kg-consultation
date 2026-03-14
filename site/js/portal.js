@@ -453,6 +453,9 @@ async function renderCases(container) {
     // Store cases for filtering & update audio token
     window._portalCases = res;
     if (res.audioApiToken) AUDIO_CONFIG.apiToken = res.audioApiToken;
+
+    // 処理中の文字起こしがあればポーリング開始
+    startTranscriptPolling();
 }
 
 function filterCases(status) {
@@ -923,11 +926,12 @@ async function uploadAudio(row) {
 /**
  * 音声再生
  */
-function playAudio(url, btn) {
+async function playAudio(url, btn) {
     // 既存の再生中プレイヤーを停止
     const existing = document.getElementById('audioPlayer');
     if (existing) {
         existing.pause();
+        if (existing._blobUrl) URL.revokeObjectURL(existing._blobUrl);
         existing.remove();
         // 同じURLなら停止のみ
         if (existing.dataset.url === url) {
@@ -936,26 +940,39 @@ function playAudio(url, btn) {
         }
     }
 
-    // 新しいプレイヤー作成（トークン付きURL）
-    const tokenUrl = url + (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(AUDIO_CONFIG.apiToken);
-    const audio = document.createElement('audio');
-    audio.id = 'audioPlayer';
-    audio.dataset.url = url;
-    audio.src = tokenUrl;
-    audio.style.display = 'none';
-    document.body.appendChild(audio);
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 読込中...';
 
-    btn.innerHTML = '<i class="fas fa-stop"></i> 停止';
+    try {
+        // fetch+blobでトークンをURLに露出させない
+        const res = await fetch(url, { headers: { 'X-Audio-Token': AUDIO_CONFIG.apiToken } });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
 
-    audio.play().catch(function(e) {
-        alert('再生に失敗しました: ' + e.message);
+        const audio = document.createElement('audio');
+        audio.id = 'audioPlayer';
+        audio.dataset.url = url;
+        audio._blobUrl = blobUrl;
+        audio.src = blobUrl;
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+
+        btn.innerHTML = '<i class="fas fa-stop"></i> 停止';
+
+        audio.play().catch(function(e) {
+            alert('再生に失敗しました: ' + e.message);
+            btn.innerHTML = '<i class="fas fa-play"></i> 再生';
+        });
+
+        audio.onended = function() {
+            btn.innerHTML = '<i class="fas fa-play"></i> 再生';
+            URL.revokeObjectURL(blobUrl);
+            audio.remove();
+        };
+    } catch (e) {
+        alert('音声の読み込みに失敗しました: ' + e.message);
         btn.innerHTML = '<i class="fas fa-play"></i> 再生';
-    });
-
-    audio.onended = function() {
-        btn.innerHTML = '<i class="fas fa-play"></i> 再生';
-        audio.remove();
-    };
+    }
 }
 
 /**
@@ -991,6 +1008,56 @@ async function requestTranscribe(row, btn) {
         alert(res.message || '文字起こしの開始に失敗しました');
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-file-alt"></i> 文字起こし実行';
+    }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Transcript Status Polling
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+let _transcriptPollTimer = null;
+
+/**
+ * 処理中の文字起こしがあれば30秒ごとにポーリング
+ */
+function startTranscriptPolling() {
+    stopTranscriptPolling();
+    if (!window._portalCases || !window._portalCases.cases) return;
+
+    const hasProcessing = window._portalCases.cases.some(c => c.transcriptStatus === '処理中');
+    if (!hasProcessing) return;
+
+    _transcriptPollTimer = setInterval(async () => {
+        // 案件ページ表示中のみ
+        const { path } = getRoute();
+        if (path !== '/cases') { stopTranscriptPolling(); return; }
+
+        const res = await portalFetch('portal-cases');
+        if (!res.success) return;
+
+        // ステータス変化チェック
+        const oldCases = window._portalCases.cases || [];
+        const changed = res.cases.some(c => {
+            const old = oldCases.find(o => o.row === c.row);
+            return old && old.transcriptStatus !== c.transcriptStatus;
+        });
+
+        if (changed) {
+            window._portalCases = res;
+            if (res.audioApiToken) AUDIO_CONFIG.apiToken = res.audioApiToken;
+            renderCasesFromData(res);
+            // まだ処理中があるか確認
+            if (!res.cases.some(c => c.transcriptStatus === '処理中')) {
+                stopTranscriptPolling();
+            }
+        }
+    }, 30000);
+}
+
+function stopTranscriptPolling() {
+    if (_transcriptPollTimer) {
+        clearInterval(_transcriptPollTimer);
+        _transcriptPollTimer = null;
     }
 }
 

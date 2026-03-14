@@ -471,3 +471,4 @@ const REPORT_COLUMNS = {
   STATUS: 11         // L: ステータス
 };
 
+
