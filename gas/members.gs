@@ -24,13 +24,12 @@ function getAllMembers() {
     if (!row[MEMBER_COLUMNS.NAME]) continue;
 
     members.push({
-      name: row[MEMBER_COLUMNS.NAME],
+      name: (row[MEMBER_COLUMNS.NAME] || '').toString().trim(),
       term: row[MEMBER_COLUMNS.TERM],
       cert: row[MEMBER_COLUMNS.CERT],
       type: row[MEMBER_COLUMNS.TYPE],
       email: row[MEMBER_COLUMNS.EMAIL],
       phone: row[MEMBER_COLUMNS.PHONE],
-      lineId: row[MEMBER_COLUMNS.LINE_ID],
       notes: row[MEMBER_COLUMNS.NOTES],
       specialties: row[MEMBER_COLUMNS.SPECIALTIES] ? row[MEMBER_COLUMNS.SPECIALTIES].toString() : '',
       themes: row[MEMBER_COLUMNS.THEMES] ? row[MEMBER_COLUMNS.THEMES].toString() : '',
@@ -57,8 +56,10 @@ function getScheduleMembers() {
  * @returns {Object|null} メンバー情報
  */
 function getMemberByName(name) {
+  if (!name) return null;
+  const trimmed = name.toString().trim();
   const members = getAllMembers();
-  return members.find(m => m.name === name) || null;
+  return members.find(m => m.name === trimmed) || null;
 }
 
 /**
@@ -84,7 +85,7 @@ function getMembersByNames(memberNames) {
   const allMembers = getAllMembers();
 
   return names.map(name => {
-    return allMembers.find(m => m.name === name) || { name: name, term: '', cert: '', type: '', email: '', phone: '', lineId: '', notes: '', specialties: '', themes: '', active: true, titles: '' };
+    return allMembers.find(m => m.name === name) || { name: name, term: '', cert: '', type: '', email: '', phone: '', notes: '', specialties: '', themes: '', active: true, titles: '' };
   });
 }
 
@@ -153,19 +154,6 @@ function getBookableStatus(score, specialFlag, diagCount) {
 }
 
 /**
- * 担当者のLINE IDを取得
- * @param {string} staffName - 担当者名
- * @returns {string|null} LINE ID
- */
-function getStaffLineId(staffName) {
-  const member = getMemberByName(staffName);
-  if (member && member.lineId) {
-    return member.lineId;
-  }
-  return null;
-}
-
-/**
  * 担当者のメールアドレスを取得
  * @param {string} staffName - 担当者名
  * @returns {string|null} メールアドレス
@@ -190,7 +178,7 @@ function setupMemberSheet() {
   }
 
   // ヘッダー設定
-  const headers = ['氏名', '期', '資格', '区分', 'メール', '電話番号', 'LINE ID', '備考', '得意業種', '得意テーマ', 'システム参加', '肩書き'];
+  const headers = ['氏名', '期', '資格', '区分', 'メール', '電話番号', '', '備考', '得意業種', '得意テーマ', 'システム参加', '肩書き'];
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 
   // ヘッダー行の書式
@@ -206,7 +194,7 @@ function setupMemberSheet() {
   sheet.setColumnWidth(4, 80);   // 区分
   sheet.setColumnWidth(5, 250);  // メール
   sheet.setColumnWidth(6, 120);  // 電話番号
-  sheet.setColumnWidth(7, 200);  // LINE ID
+  sheet.setColumnWidth(7, 200);  // （未使用）
   sheet.setColumnWidth(8, 200);  // 備考
   sheet.setColumnWidth(9, 200);  // 得意業種
   sheet.setColumnWidth(10, 200); // 得意テーマ
