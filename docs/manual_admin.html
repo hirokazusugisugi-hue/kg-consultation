@@ -1915,17 +1915,101 @@ git push origin main</code></pre>
     <li><strong>ダッシュボード:</strong> 直近の相談予定、未対応タスク、最新お知らせ</li>
     <li><strong>シフト管理:</strong> 月次カレンダー表示、参加/取消ボタン、配置点数リアルタイム再計算</li>
     <li><strong>案件管理:</strong> 担当/リーダー案件一覧、ステータスフィルタ</li>
+    <li><strong>音声アップロード・文字起こし:</strong> 対面相談録音のアップロード、再生、AI文字起こし</li>
     <li><strong>お知らせ:</strong> ニュース一覧表示・投稿（リーダー/管理者のみ）</li>
     <li><strong>プロフィール:</strong> メンバー情報表示、ログアウト</li>
   </ul>
 
-  <h3><i class="fas fa-link"></i> 21.4 ポータルURL</h3>
+  <h3><i class="fas fa-microphone"></i> 21.4 音声アップロード・文字起こしシステム</h3>
+
+  <p>対面相談の音声を録音し、ポータルからアップロード・AI文字起こしする機能です。</p>
+
+  <h4>システム構成</h4>
+  <div class="flowchart">
+    <div class="flowchart-step">
+      <strong>ポータル（JS）</strong>
+      <p>音声ファイル選択・チャンクアップロード（2MB単位）</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>さくらサーバー（PHP）</strong>
+      <p>upload.php でファイル受信・結合・保存</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>GAS</strong>
+      <p>スプレッドシートAH列にURL記録</p>
+    </div>
+  </div>
+  <div class="flowchart">
+    <div class="flowchart-step">
+      <strong>文字起こし実行ボタン</strong>
+      <p>ポータルからGAS経由でトリガー</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>さくら Python</strong>
+      <p>GCS一時アップロード→Speech-to-Text API（longモデル）</p>
+    </div>
+    <div class="flowchart-step auto">
+      <strong>GAS Webhook</strong>
+      <p>結果をGoogleドキュメントに保存、AD/AE列更新</p>
+    </div>
+  </div>
+
+  <h4>サーバー側ファイル構成</h4>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>ファイル</th><th>役割</th></tr></thead>
+      <tbody>
+        <tr><td><code>site/api/audio/upload.php</code></td><td>音声アップロードAPI（通常・チャンク対応）</td></tr>
+        <tr><td><code>site/api/audio/download.php</code></td><td>音声ダウンロード/再生API（トークン認証）</td></tr>
+        <tr><td><code>site/api/audio/config.php</code></td><td>API設定（トークン、許可形式等）</td></tr>
+        <tr><td><code>site/api/audio/transcribe.py</code></td><td>文字起こしPythonワーカー（REST API方式）</td></tr>
+        <tr><td><code>site/api/audio/trigger_transcribe.php</code></td><td>文字起こしトリガー（Pythonをバックグラウンド実行）</td></tr>
+        <tr><td><code>site/api/audio/.htaccess</code></td><td>files/ディレクトリ直接アクセス禁止</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>スプレッドシート列</h4>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>列</th><th>名称</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>AD</td><td>文字起こし状態</td><td>処理中 / 完了 / エラー</td></tr>
+        <tr><td>AE</td><td>文字起こしファイルID</td><td>Googleドキュメント ID</td></tr>
+        <tr><td>AH</td><td>音声ファイルURL</td><td>download.php経由のURL</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>GCP設定</h4>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>項目</th><th>値</th></tr></thead>
+      <tbody>
+        <tr><td>GCPプロジェクト</td><td><code>kg-consultation-audio</code></td></tr>
+        <tr><td>GCSバケット</td><td><code>kg-consultation-audio</code>（asia-northeast1）</td></tr>
+        <tr><td>Speech-to-Text API</td><td>V2 / batchRecognize / longモデル / global</td></tr>
+        <tr><td>サービスアカウント</td><td><code>speech-worker@kg-consultation-audio.iam.gserviceaccount.com</code></td></tr>
+        <tr><td>鍵ファイル（さくら）</td><td><code>~/.gcp/speech-to-text-key.json</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>セキュリティ</h4>
+  <ul>
+    <li>APIトークンはGAS ScriptProperties（<code>AUDIO_API_TOKEN</code>）とさくら<code>config.php</code>の両方で管理</li>
+    <li>音声ファイルへの直接URLアクセスは<code>.htaccess</code>で禁止、<code>download.php</code>経由のみ</li>
+    <li>ポータルの音声再生はfetch+Blob方式（トークンがURLに露出しない）</li>
+    <li>認証済みユーザーにのみAPIトークンを返却（GAS portal-casesレスポンス経由）</li>
+  </ul>
+
+  <h3><i class="fas fa-link"></i> 21.5 ポータルURL</h3>
   <p><span class="url-cell">https://iba-consulting.jp/site/portal.html</span></p>
 
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 5.1</span>&emsp;|&emsp;2025年6月 作成 / 2026年3月 更新（会場管理・文字起こし・AI診断・ポータル追加）
+      <span class="version">Version 5.2</span>&emsp;|&emsp;2025年6月 作成 / 2026年3月 更新（会場管理・文字起こし・AI診断・ポータル・音声アップロード追加）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 無料経営相談分科会

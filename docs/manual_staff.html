@@ -856,20 +856,26 @@
 
   <h3><i class="fas fa-microphone"></i> 音声アップロード・文字起こし</h3>
 
-  <p>対面相談の音声録音をポータルからアップロードし、文字起こしすることができます。</p>
+  <p>対面相談の音声録音をポータルからアップロードし、AI文字起こしすることができます。診断報告書の作成に活用できます。</p>
 
   <ol class="step-list">
     <li>スタッフポータルの<strong>「案件」</strong>ページを開く</li>
     <li>該当する案件カード（ステータスが「確定」または「完了」）に表示される<strong>「音声をアップロード」</strong>ボタンをタップ</li>
     <li>録音ファイル（MP3, M4A, WAV, OGG, WebM / 最大100MB）を選択してアップロード</li>
+    <li>大きなファイルも自動分割アップロードされるため、通信が不安定でも安心です</li>
     <li>アップロード後、案件カードに<strong>「再生」</strong>ボタンが表示されます（ブラウザ上で確認再生可能）</li>
-    <li><strong>「文字起こし実行」</strong>ボタンをタップすると、AI文字起こし処理が開始されます</li>
+    <li><strong>「文字起こし実行」</strong>ボタンをタップすると、Google Cloud Speech-to-Text によるAI文字起こし処理が開始されます</li>
     <li>処理完了後、<strong>「議事録を開く」</strong>リンクからGoogleドキュメントで文字起こし結果を確認できます</li>
   </ol>
 
   <div class="info-box note">
     <i class="fas fa-lightbulb"></i>
-    <div>文字起こし処理には数分〜数十分かかる場合があります。処理中は「処理中」バッジが表示され、完了すると自動的に「完了」に更新されます。文字起こし結果はGoogleドキュメントに自動保存されます。</div>
+    <div>文字起こし処理には数分〜数十分かかる場合があります。処理中は「処理中」バッジが表示され、完了すると自動的に「完了」に更新されます（30秒ごとに自動確認）。文字起こし結果はGoogleドキュメントに自動保存されます。</div>
+  </div>
+
+  <div class="info-box note">
+    <i class="fas fa-info-circle"></i>
+    <div><strong>録音のポイント：</strong>できるだけ静かな環境で、相談者とコンサルタントの間にスマートフォンを置いて録音すると、文字起こしの精度が向上します。MP3形式での録音を推奨します。</div>
   </div>
 
   <h3><i class="fas fa-user-group"></i> オブザーバーについて</h3>
@@ -1102,7 +1108,7 @@
   <!-- ===== Footer ===== -->
   <footer class="doc-footer">
     <div>
-      <span class="version">Version 4.1</span>&emsp;|&emsp;2026年2月 作成 / 2026年3月 更新（ポータル追加）
+      <span class="version">Version 4.2</span>&emsp;|&emsp;2026年2月 作成 / 2026年3月 更新（ポータル・音声アップロード・文字起こし追加）
     </div>
     <div>
       <i class="fas fa-university"></i>&ensp;関西学院大学 無料経営相談分科会
