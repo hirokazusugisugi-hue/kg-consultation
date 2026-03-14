@@ -730,7 +730,8 @@ const AUDIO_CONFIG = {
     uploadUrl: 'https://iba-consulting.jp/site/api/audio/upload.php',
     apiToken: '',  // portal.htmlまたはconfig経由で設定
     maxSize: 100 * 1024 * 1024,
-    allowedExts: ['mp3', 'm4a', 'wav', 'ogg', 'webm']
+    allowedExts: ['mp3', 'm4a', 'wav', 'ogg', 'webm'],
+    chunkSize: 2 * 1024 * 1024  // 2MB per chunk
 };
 
 /**
@@ -868,44 +869,18 @@ async function uploadAudio(row) {
     progressDiv.style.display = 'block';
 
     try {
-        // 1. さくらPHPにアップロード
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('row', String(row));
+        let audioUrl;
+        const chunkSize = AUDIO_CONFIG.chunkSize;
 
-        const audioUrl = await new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', AUDIO_CONFIG.uploadUrl);
-            xhr.setRequestHeader('X-Audio-Token', AUDIO_CONFIG.apiToken);
+        if (file.size <= chunkSize) {
+            // 小さいファイル: 通常アップロード
+            audioUrl = await uploadAudioNormal(file, row, progressBar);
+        } else {
+            // 大きいファイル: チャンクアップロード
+            audioUrl = await uploadAudioChunked(file, row, progressBar, btn);
+        }
 
-            xhr.upload.onprogress = function(e) {
-                if (e.lengthComputable) {
-                    const pct = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = pct + '%';
-                }
-            };
-
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    const res = JSON.parse(xhr.responseText);
-                    if (res.success) {
-                        resolve(res.url);
-                    } else {
-                        reject(new Error(res.message || 'アップロードに失敗しました'));
-                    }
-                } else {
-                    reject(new Error('HTTP ' + xhr.status));
-                }
-            };
-
-            xhr.onerror = function() {
-                reject(new Error('ネットワークエラー'));
-            };
-
-            xhr.send(formData);
-        });
-
-        // 2. GASにURL保存
+        // GASにURL保存
         const res = await portalFetch('portal-save-audio-url', { row: String(row), audioUrl: audioUrl });
         if (!res.success) {
             throw new Error(res.message || 'URL保存に失敗しました');
@@ -921,6 +896,81 @@ async function uploadAudio(row) {
         btn.textContent = 'アップロード';
         progressDiv.style.display = 'none';
     }
+}
+
+/** 通常アップロード（小さいファイル） */
+function uploadAudioNormal(file, row, progressBar) {
+    return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('row', String(row));
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', AUDIO_CONFIG.uploadUrl);
+        xhr.setRequestHeader('X-Audio-Token', AUDIO_CONFIG.apiToken);
+
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                progressBar.style.width = Math.round((e.loaded / e.total) * 100) + '%';
+            }
+        };
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const res = JSON.parse(xhr.responseText);
+                res.success ? resolve(res.url) : reject(new Error(res.message || 'アップロード失敗'));
+            } else {
+                reject(new Error('HTTP ' + xhr.status));
+            }
+        };
+        xhr.onerror = function() { reject(new Error('ネットワークエラー')); };
+        xhr.send(formData);
+    });
+}
+
+/** チャンクアップロード（大きいファイル） */
+async function uploadAudioChunked(file, row, progressBar, btn) {
+    const chunkSize = AUDIO_CONFIG.chunkSize;
+    const totalChunks = Math.ceil(file.size / chunkSize);
+    const uploadId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
+    for (let i = 0; i < totalChunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
+        const chunk = file.slice(start, end);
+
+        btn.textContent = 'アップロード中... (' + (i + 1) + '/' + totalChunks + ')';
+        progressBar.style.width = Math.round(((i + 1) / totalChunks) * 100) + '%';
+
+        const formData = new FormData();
+        formData.append('chunk', chunk);
+        formData.append('row', String(row));
+        formData.append('chunkIndex', String(i));
+        formData.append('totalChunks', String(totalChunks));
+        formData.append('fileName', file.name);
+        formData.append('uploadId', uploadId);
+
+        const resp = await fetch(AUDIO_CONFIG.uploadUrl, {
+            method: 'POST',
+            headers: { 'X-Audio-Token': AUDIO_CONFIG.apiToken },
+            body: formData
+        });
+
+        if (!resp.ok) {
+            const errText = await resp.text();
+            let msg = 'HTTP ' + resp.status;
+            try { msg = JSON.parse(errText).message || msg; } catch(e) {}
+            throw new Error(msg);
+        }
+
+        const result = await resp.json();
+        if (!result.success) throw new Error(result.message || 'チャンクアップロード失敗');
+
+        // 最後のチャンクで完了
+        if (result.complete && result.url) {
+            return result.url;
+        }
+    }
+    throw new Error('アップロード完了レスポンスが取得できませんでした');
 }
 
 /**
