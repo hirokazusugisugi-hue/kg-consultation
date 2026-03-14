@@ -419,8 +419,8 @@ async function renderCases(container) {
     } else {
         filtered.forEach(c => {
             const statusCls = STATUS_MAP[c.status] || 'tentative';
-            const isOffline = c.method && c.method !== 'オンライン' && c.method !== 'Zoom';
-            const needsVenue = isOffline && !c.location && c.status !== '確定' && c.status !== '完了' && c.status !== 'キャンセル';
+            const isOnline = c.method && (c.method.indexOf('オンライン') >= 0 || c.method.indexOf('Zoom') >= 0 || c.method.indexOf('zoom') >= 0);
+            const needsVenue = !isOnline && !c.location && c.status !== '確定' && c.status !== '完了' && c.status !== 'キャンセル';
             html += '<div class="case-item"><div class="case-item-header"><h4>' + escapeHTML(c.company || '企業名不明') + '</h4>' +
                 '<span class="case-status ' + statusCls + '">' + escapeHTML(c.status) + '</span></div>' +
                 '<div class="case-meta">' +
@@ -515,8 +515,8 @@ function renderCasesFromData(res) {
     } else {
         filtered.forEach(c => {
             const statusCls = STATUS_MAP[c.status] || 'tentative';
-            const isOffline = c.method && c.method !== 'オンライン' && c.method !== 'Zoom';
-            const needsVenue = isOffline && !c.location && c.status !== '確定' && c.status !== '完了' && c.status !== 'キャンセル';
+            const isOnline = c.method && (c.method.indexOf('オンライン') >= 0 || c.method.indexOf('Zoom') >= 0 || c.method.indexOf('zoom') >= 0);
+            const needsVenue = !isOnline && !c.location && c.status !== '確定' && c.status !== '完了' && c.status !== 'キャンセル';
             html += '<div class="case-item"><div class="case-item-header"><h4>' + escapeHTML(c.company || '企業名不明') + '</h4>' +
                 '<span class="case-status ' + statusCls + '">' + escapeHTML(c.status) + '</span></div>' +
                 '<div class="case-meta">' +
