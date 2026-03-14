@@ -27,8 +27,8 @@ import urllib.parse
 import mimetypes
 
 # GCP設定
-GCS_BUCKET = 'kg-consultation-audio'  # GCSバケット名（要変更）
-GCP_PROJECT = 'your-gcp-project-id'   # GCPプロジェクトID（要変更）
+GCS_BUCKET = 'kg-consultation-audio'
+GCP_PROJECT = 'kg-consultation-audio'
 GCP_LOCATION = 'asia-northeast1'      # リージョン
 SERVICE_ACCOUNT_KEY = os.path.expanduser('~/.gcp/speech-to-text-key.json')
 
