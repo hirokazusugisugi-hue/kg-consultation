@@ -174,12 +174,20 @@ async function handleLogin(e) {
     if (res.success) {
         msg.className = 'login-msg success';
         msg.innerHTML = '<i class="fas fa-check-circle"></i> ' + escapeHTML(res.message);
+        msg.style.display = 'block';
+        btn.textContent = '送信しました';
+        // 5秒後にボタンをリセット（再送信可能に）
+        setTimeout(function() {
+            btn.disabled = false;
+            btn.textContent = 'ログインリンクを送信';
+        }, 5000);
     } else {
         msg.className = 'login-msg error';
         msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + escapeHTML(res.message || 'エラーが発生しました');
         btn.disabled = false;
         btn.textContent = 'ログインリンクを送信';
     }
+    msg.style.display = 'block';
 }
 
 async function portalLogout() {
