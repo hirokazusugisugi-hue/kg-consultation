@@ -23,7 +23,8 @@ jobs:
         run: |
           ssh ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} \
             "mkdir -p /home/${{ secrets.SERVER_USERNAME }}/www/iba-consulting.jp/site/api/audio/files && \
-             mkdir -p /home/${{ secrets.SERVER_USERNAME }}/www/iba-consulting.jp/site/api/audio/logs"
+             mkdir -p /home/${{ secrets.SERVER_USERNAME }}/www/iba-consulting.jp/site/api/audio/logs && \
+             mkdir -p /home/${{ secrets.SERVER_USERNAME }}/www/iba-consulting.jp/site/api/image/files"
 
       - name: Deploy with rsync
         run: |
@@ -46,6 +47,7 @@ jobs:
             --exclude 'site/api/audio/files/' \
             --exclude 'site/api/audio/logs/' \
             --exclude 'site/api/audio/tmp/' \
+            --exclude 'site/api/image/files/' \
             --exclude 'calculator.py' \
             --exclude 'todo_app.py' \
             ./ \

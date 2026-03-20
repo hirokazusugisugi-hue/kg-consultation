@@ -1,0 +1,21 @@
+# 画像アップロードAPI アクセス制御
+
+# ディレクトリ一覧を禁止
+Options -Indexes
+
+# config.php への直接アクセスを禁止
+<Files "config.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+# files/ ディレクトリは公開アクセス許可（画像は公開コンテンツ）
+# ただしディレクトリ一覧は禁止（上記 Options -Indexes で対応）
+
+# PHP設定（Apache mod_php の場合）
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 60
+    php_value max_input_time 60
+</IfModule>

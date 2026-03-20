@@ -304,6 +304,78 @@ function getArticleCategories() {
   });
 }
 
+/**
+ * 記事を更新
+ * @param {string} articleId - 記事ID
+ * @param {Object} params - 更新するフィールド
+ * @returns {Object}
+ */
+function updateArticle(articleId, params) {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(ARTICLE_SHEET_NAME);
+  if (!sheet || sheet.getLastRow() < 2) {
+    return { success: false, message: '記事管理シートが見つかりません' };
+  }
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][ARTICLE_COLUMNS.ID]) === articleId) {
+      var rowNum = i + 1;
+      if (params.title !== undefined) sheet.getRange(rowNum, ARTICLE_COLUMNS.TITLE + 1).setValue(params.title);
+      if (params.category !== undefined) sheet.getRange(rowNum, ARTICLE_COLUMNS.CATEGORY + 1).setValue(params.category);
+      if (params.tags !== undefined) sheet.getRange(rowNum, ARTICLE_COLUMNS.TAGS + 1).setValue(params.tags);
+      if (params.body !== undefined) sheet.getRange(rowNum, ARTICLE_COLUMNS.BODY + 1).setValue(params.body);
+      if (params.author !== undefined) sheet.getRange(rowNum, ARTICLE_COLUMNS.AUTHOR + 1).setValue(params.author);
+      if (params.thumbnail !== undefined) sheet.getRange(rowNum, ARTICLE_COLUMNS.THUMBNAIL + 1).setValue(params.thumbnail);
+      if (params.status !== undefined) sheet.getRange(rowNum, ARTICLE_COLUMNS.STATUS + 1).setValue(params.status);
+      if (params.publishDate !== undefined) sheet.getRange(rowNum, ARTICLE_COLUMNS.PUBLISH_DATE + 1).setValue(params.publishDate);
+      if (params.summary !== undefined) sheet.getRange(rowNum, ARTICLE_COLUMNS.SUMMARY + 1).setValue(params.summary);
+      console.log('記事更新: ' + articleId + ' - ' + (params.title || ''));
+      return { success: true, articleId: articleId, message: '記事を更新しました' };
+    }
+  }
+  return { success: false, message: '記事が見つかりません: ' + articleId };
+}
+
+/**
+ * 著者名で記事を取得（ポータル用、draft含む）
+ * @param {string} authorName - 著者名
+ * @param {boolean} isAdmin - 管理者かどうか
+ * @returns {Object}
+ */
+function getArticlesByAuthor(authorName, isAdmin) {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(ARTICLE_SHEET_NAME);
+  if (!sheet || sheet.getLastRow() < 2) return { articles: [], total: 0 };
+
+  var data = sheet.getDataRange().getValues();
+  var articles = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var author = String(data[i][ARTICLE_COLUMNS.AUTHOR]);
+    // 管理者は全件、それ以外は自分の記事のみ
+    if (!isAdmin && author !== authorName) continue;
+
+    articles.push({
+      id: String(data[i][ARTICLE_COLUMNS.ID]),
+      title: String(data[i][ARTICLE_COLUMNS.TITLE]),
+      category: String(data[i][ARTICLE_COLUMNS.CATEGORY]),
+      tags: String(data[i][ARTICLE_COLUMNS.TAGS]),
+      author: author,
+      thumbnail: String(data[i][ARTICLE_COLUMNS.THUMBNAIL]),
+      status: String(data[i][ARTICLE_COLUMNS.STATUS]),
+      publishDate: String(data[i][ARTICLE_COLUMNS.PUBLISH_DATE]),
+      summary: String(data[i][ARTICLE_COLUMNS.SUMMARY]),
+      row: i + 1
+    });
+  }
+
+  // 作成日降順（行番号逆順で代用）
+  articles.sort(function(a, b) { return b.row - a.row; });
+
+  return { articles: articles, total: articles.length };
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 管理画面
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━

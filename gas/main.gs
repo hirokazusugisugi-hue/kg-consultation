@@ -9,11 +9,60 @@
  */
 function doPost(e) {
   try {
-    // JSON POSTリクエスト（文字起こしコールバック等）
-    if (e.postData && e.postData.type === 'application/json') {
-      var jsonBody = JSON.parse(e.postData.contents);
-      if (jsonBody.action === 'transcribe-callback') {
+    // JSON POSTリクエスト（文字起こしコールバック、記事保存等）
+    // text/plain は CORS preflight を回避するためブラウザから送信される場合がある
+    if (e.postData && (e.postData.type === 'application/json' || e.postData.type === 'text/plain')) {
+      var jsonBody;
+      try { jsonBody = JSON.parse(e.postData.contents); } catch(parseErr) { jsonBody = null; }
+      if (jsonBody && jsonBody.action === 'transcribe-callback') {
         return handleTranscribeCallback(jsonBody);
+      }
+      // ポータル記事保存（JSON POST）
+      if (jsonBody && jsonBody.action === 'portal-article-save') {
+        var artSession = validateSession(jsonBody.sessionId || '');
+        if (!artSession) {
+          return ContentService
+            .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+        if (!hasRole(artSession.role, 'member')) {
+          return ContentService
+            .createTextOutput(JSON.stringify({ success: false, message: '権限がありません' }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+        var artParams = {
+          title: jsonBody.title || '',
+          category: jsonBody.category || 'コラム',
+          tags: jsonBody.tags || '',
+          body: jsonBody.body || '',
+          author: artSession.name,
+          thumbnail: jsonBody.thumbnail || '',
+          status: jsonBody.status || 'draft',
+          publishDate: jsonBody.publishDate || '',
+          summary: jsonBody.summary || ''
+        };
+        var artResult;
+        if (jsonBody.articleId) {
+          // 既存記事の更新 — 著者本人 or admin のみ
+          var existingArt = getArticleById(jsonBody.articleId);
+          if (!existingArt) {
+            return ContentService
+              .createTextOutput(JSON.stringify({ success: false, message: '記事が見つかりません' }))
+              .setMimeType(ContentService.MimeType.JSON);
+          }
+          if (existingArt.author !== artSession.name && artSession.role !== 'admin') {
+            return ContentService
+              .createTextOutput(JSON.stringify({ success: false, message: '他の著者の記事は編集できません' }))
+              .setMimeType(ContentService.MimeType.JSON);
+          }
+          artResult = updateArticle(jsonBody.articleId, artParams);
+        } else {
+          // 新規記事追加
+          artResult = addArticle(artParams);
+        }
+        return ContentService
+          .createTextOutput(JSON.stringify(artResult))
+          .setMimeType(ContentService.MimeType.JSON);
       }
     }
 
@@ -1646,6 +1695,120 @@ function doGet(e) {
       var memData = getPortalMembers();
       return ContentService
         .createTextOutput(JSON.stringify(memData))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ポータル: コラム（記事）管理
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // コラム一覧（自分の記事、adminは全件）+ imageApiToken
+    if (action === 'portal-article-list') {
+      var artListSession = requireAuth(e);
+      if (!artListSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var isAdmin = artListSession.role === 'admin';
+      var artListResult = getArticlesByAuthor(artListSession.name, isAdmin);
+      artListResult.imageApiToken = PropertiesService.getScriptProperties().getProperty('IMAGE_API_TOKEN') || '';
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, articles: artListResult.articles, total: artListResult.total, imageApiToken: artListResult.imageApiToken }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // コラム詳細（本文含む）
+    if (action === 'portal-article-detail') {
+      var artDetailSession = requireAuth(e);
+      if (!artDetailSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var artDetailId = e.parameter.id;
+      if (!artDetailId) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'id パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var artDetail = getArticleById(artDetailId);
+      if (!artDetail) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '記事が見つかりません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      // 下書きは著者 or admin のみ
+      if (artDetail.status === 'draft' && artDetail.author !== artDetailSession.name && artDetailSession.role !== 'admin') {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '下書き記事の閲覧権限がありません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, article: artDetail }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // コラム削除（著者 or admin のみ）
+    if (action === 'portal-article-delete') {
+      var artDelSession = requireAuth(e);
+      if (!artDelSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var artDelId = e.parameter.id;
+      if (!artDelId) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'id パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var artDelDetail = getArticleById(artDelId);
+      if (!artDelDetail) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '記事が見つかりません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (artDelDetail.author !== artDelSession.name && artDelSession.role !== 'admin') {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '他の著者の記事は削除できません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      deleteArticle(artDelDetail.row);
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: '記事を削除しました' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // コラム公開/非公開切替（著者 or admin のみ）
+    if (action === 'portal-article-toggle') {
+      var artToggleSession = requireAuth(e);
+      if (!artToggleSession) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '認証が必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var artToggleId = e.parameter.id;
+      if (!artToggleId) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'id パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var artToggleDetail = getArticleById(artToggleId);
+      if (!artToggleDetail) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '記事が見つかりません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (artToggleDetail.author !== artToggleSession.name && artToggleSession.role !== 'admin') {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '権限がありません' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      toggleArticleStatus(artToggleDetail.row);
+      var newStatus = artToggleDetail.status === 'published' ? 'draft' : 'published';
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: (newStatus === 'published' ? '公開' : '非公開') + 'にしました' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 

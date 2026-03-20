@@ -128,6 +128,7 @@ async function router() {
         case '/shifts': await renderShifts(main); break;
         case '/cases': await renderCases(main); break;
         case '/news': await renderNews(main); break;
+        case '/columns': await renderColumns(main, params); break;
         case '/profile': await renderProfile(main); break;
         default: window.location.hash = '#/dashboard';
     }
@@ -1108,6 +1109,443 @@ function stopTranscriptPolling() {
     if (_transcriptPollTimer) {
         clearInterval(_transcriptPollTimer);
         _transcriptPollTimer = null;
+    }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Columns (コラム編集)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const IMAGE_CONFIG = {
+    uploadUrl: 'https://iba-consulting.jp/site/api/image/upload.php',
+    apiToken: '',
+    maxSize: 10 * 1024 * 1024,
+    allowedExts: ['jpg', 'jpeg', 'png', 'gif', 'webp']
+};
+
+const COLUMN_CATEGORIES = ['経営戦略', '財務・会計', 'マーケティング', '組織・人材', 'DX・IT', '事例紹介', 'コラム', 'その他'];
+
+/**
+ * GAS doPost に JSON 送信（記事本文がURL長制限を超えるため）
+ * Content-Type は text/plain を使用（application/json だと CORS preflight が発生しGASで処理不可）
+ */
+async function portalPostAPI(payload) {
+    if (PORTAL.sessionId) payload.sessionId = PORTAL.sessionId;
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            redirect: 'follow'
+        });
+        return await res.json();
+    } catch (e) {
+        return { success: false, message: 'ネットワークエラー: ' + e.message };
+    }
+}
+
+/**
+ * コラムルーター
+ */
+async function renderColumns(container, params) {
+    if (params && params.edit !== undefined) {
+        await renderColumnEditor(container, params.edit || null);
+    } else {
+        await renderColumnList(container);
+    }
+}
+
+/**
+ * コラム一覧画面
+ */
+async function renderColumnList(container) {
+    container.innerHTML = '<div class="portal-container"><div class="loading" style="padding:3rem 0;text-align:center"><i class="fas fa-spinner fa-spin"></i> コラムを読み込み中...</div></div>';
+
+    const res = await portalFetch('portal-article-list');
+
+    let html = '<div class="portal-container">';
+    html += '<h2 class="portal-page-title"><i class="fas fa-pen-fancy"></i> コラム管理</h2>';
+
+    // 新規作成ボタン
+    html += '<button class="col-new-btn" onclick="window.location.hash=\'#/columns?edit=\'"><i class="fas fa-plus"></i> 新規作成</button>';
+
+    if (!res.success || !res.articles || res.articles.length === 0) {
+        html += '<div class="empty-state"><i class="fas fa-file-alt"></i>コラムがありません</div>';
+    } else {
+        // imageApiToken を保存
+        if (res.imageApiToken) IMAGE_CONFIG.apiToken = res.imageApiToken;
+
+        res.articles.forEach(a => {
+            const badgeCls = a.status === 'published' ? 'published' : 'draft';
+            const badgeLabel = a.status === 'published' ? '公開中' : '下書き';
+            html += '<div class="col-article-card">' +
+                '<div class="col-article-info">' +
+                '<div class="col-article-title">' + escapeHTML(a.title || '（無題）') + '</div>' +
+                '<div class="col-article-meta">' +
+                '<span class="col-badge ' + badgeCls + '">' + badgeLabel + '</span>' +
+                '<span>' + escapeHTML(a.category || '') + '</span>' +
+                '<span>' + escapeHTML(a.publishDate || '') + '</span>' +
+                '<span>' + escapeHTML(a.author || '') + '</span>' +
+                '</div></div>' +
+                '<div class="col-article-actions">' +
+                '<button class="col-action-btn" onclick="window.location.hash=\'#/columns?edit=' + escapeHTML(a.id) + '\'" title="編集"><i class="fas fa-edit"></i></button>' +
+                '<button class="col-action-btn" onclick="toggleColumnStatus(\'' + escapeHTML(a.id) + '\',this)" title="' + (a.status === 'published' ? '非公開にする' : '公開する') + '">' +
+                '<i class="fas fa-' + (a.status === 'published' ? 'eye-slash' : 'eye') + '"></i></button>' +
+                '<button class="col-action-btn danger" onclick="deleteColumn(\'' + escapeHTML(a.id) + '\')" title="削除"><i class="fas fa-trash-alt"></i></button>' +
+                '</div></div>';
+        });
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+/**
+ * コラム編集画面
+ */
+async function renderColumnEditor(container, articleId) {
+    container.innerHTML = '<div class="portal-container"><div class="loading" style="padding:3rem 0;text-align:center"><i class="fas fa-spinner fa-spin"></i> 読み込み中...</div></div>';
+
+    let article = null;
+    if (articleId) {
+        const res = await portalFetch('portal-article-detail', { id: articleId });
+        if (res.success && res.article) {
+            article = res.article;
+        }
+    }
+
+    // imageApiToken がなければ一覧から取得
+    if (!IMAGE_CONFIG.apiToken) {
+        const listRes = await portalFetch('portal-article-list');
+        if (listRes.imageApiToken) IMAGE_CONFIG.apiToken = listRes.imageApiToken;
+    }
+
+    const isNew = !article;
+    const title = isNew ? '' : (article.title || '');
+    const category = isNew ? 'コラム' : (article.category || 'コラム');
+    const tags = isNew ? '' : (article.tags || '');
+    const status = isNew ? 'draft' : (article.status || 'draft');
+    const publishDate = isNew ? '' : (article.publishDate || '');
+    const summary = isNew ? '' : (article.summary || '');
+    const thumbnail = isNew ? '' : (article.thumbnail || '');
+    const body = isNew ? '' : (article.body || '');
+
+    let html = '<div class="portal-container">';
+    html += '<h2 class="portal-page-title"><i class="fas fa-pen-fancy"></i> ' + (isNew ? '新規コラム作成' : 'コラム編集') + '</h2>';
+
+    html += '<div class="portal-card"><div class="col-editor-form">';
+
+    // タイトル
+    html += '<div class="col-form-group"><label>タイトル *</label>' +
+        '<input type="text" class="col-form-input" id="colTitle" value="' + escapeHTML(title) + '" placeholder="記事タイトルを入力"></div>';
+
+    // カテゴリ + 状態
+    html += '<div class="col-form-row">' +
+        '<div class="col-form-group"><label>カテゴリ</label><select class="col-form-select" id="colCategory">';
+    COLUMN_CATEGORIES.forEach(c => {
+        html += '<option value="' + c + '"' + (c === category ? ' selected' : '') + '>' + c + '</option>';
+    });
+    html += '</select></div>' +
+        '<div class="col-form-group"><label>状態</label><select class="col-form-select" id="colStatus">' +
+        '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>下書き</option>' +
+        '<option value="published"' + (status === 'published' ? ' selected' : '') + '>公開</option></select></div></div>';
+
+    // タグ + 公開日
+    html += '<div class="col-form-row">' +
+        '<div class="col-form-group"><label>タグ（カンマ区切り）</label>' +
+        '<input type="text" class="col-form-input" id="colTags" value="' + escapeHTML(tags) + '" placeholder="経営戦略, DX"></div>' +
+        '<div class="col-form-group"><label>公開日</label>' +
+        '<input type="text" class="col-form-input" id="colPublishDate" value="' + escapeHTML(publishDate) + '" placeholder="2026.04.01"></div></div>';
+
+    // 要約
+    html += '<div class="col-form-group"><label>要約（一覧表示用）</label>' +
+        '<input type="text" class="col-form-input" id="colSummary" value="' + escapeHTML(summary) + '" placeholder="記事の要約"></div>';
+
+    // サムネイル
+    html += '<div class="col-thumbnail-row">' +
+        '<div class="col-form-group"><label>サムネイルURL</label>' +
+        '<input type="text" class="col-form-input" id="colThumbnail" value="' + escapeHTML(thumbnail) + '" placeholder="https://..."></div>' +
+        '<button type="button" class="col-thumbnail-upload-btn" onclick="uploadImageForField(\'colThumbnail\')"><i class="fas fa-upload"></i> 画像UP</button></div>';
+
+    // 本文エリア
+    html += '<div class="col-form-group"><label>本文（Markdown）</label>';
+
+    // タブ
+    html += '<div class="col-editor-tabs">' +
+        '<button class="col-editor-tab active" id="colTabEdit" onclick="switchColumnTab(\'edit\')">編集</button>' +
+        '<button class="col-editor-tab" id="colTabPreview" onclick="switchColumnTab(\'preview\')">プレビュー</button></div>';
+
+    // ツールバー
+    html += '<div class="col-md-toolbar" id="colToolbar">' +
+        '<button class="col-md-btn" onclick="insertMd(\'bold\')" title="太字"><b>B</b></button>' +
+        '<button class="col-md-btn" onclick="insertMd(\'italic\')" title="斜体"><i>I</i></button>' +
+        '<span class="col-md-btn sep"></span>' +
+        '<button class="col-md-btn" onclick="insertMd(\'h2\')" title="見出し2">H2</button>' +
+        '<button class="col-md-btn" onclick="insertMd(\'h3\')" title="見出し3">H3</button>' +
+        '<span class="col-md-btn sep"></span>' +
+        '<button class="col-md-btn" onclick="insertMd(\'ul\')" title="箇条書き"><i class="fas fa-list-ul"></i></button>' +
+        '<button class="col-md-btn" onclick="insertMd(\'ol\')" title="番号リスト"><i class="fas fa-list-ol"></i></button>' +
+        '<button class="col-md-btn" onclick="insertMd(\'quote\')" title="引用"><i class="fas fa-quote-right"></i></button>' +
+        '<span class="col-md-btn sep"></span>' +
+        '<button class="col-md-btn" onclick="insertMd(\'link\')" title="リンク"><i class="fas fa-link"></i></button>' +
+        '<button class="col-md-btn" onclick="uploadImageForMarkdown()" title="画像挿入"><i class="fas fa-image"></i></button>' +
+        '</div>';
+
+    // テキストエリア（編集）
+    html += '<textarea class="col-body-textarea" id="colBody" placeholder="## 見出し\n\n本文テキスト\n\n- リスト項目">' + escapeHTML(body) + '</textarea>';
+
+    // プレビュー
+    html += '<div class="col-preview" id="colPreview" style="display:none"></div>';
+
+    html += '</div>';  // form-group
+
+    // 保存バー
+    html += '<div class="col-save-bar">' +
+        '<button class="col-back-btn" onclick="window.location.hash=\'#/columns\'"><i class="fas fa-arrow-left" style="margin-right:0.3rem"></i>戻る</button>' +
+        '<button class="col-save-btn" id="colSaveBtn" onclick="saveColumn(\'' + (articleId || '') + '\')"><i class="fas fa-save" style="margin-right:0.3rem"></i>保存</button></div>';
+
+    html += '</div></div>';  // card, container
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+/**
+ * 編集/プレビュー切替
+ */
+function switchColumnTab(tab) {
+    const editTab = document.getElementById('colTabEdit');
+    const previewTab = document.getElementById('colTabPreview');
+    const toolbar = document.getElementById('colToolbar');
+    const textarea = document.getElementById('colBody');
+    const preview = document.getElementById('colPreview');
+
+    if (tab === 'edit') {
+        editTab.classList.add('active');
+        previewTab.classList.remove('active');
+        toolbar.style.display = '';
+        textarea.style.display = '';
+        preview.style.display = 'none';
+    } else {
+        editTab.classList.remove('active');
+        previewTab.classList.add('active');
+        toolbar.style.display = 'none';
+        textarea.style.display = 'none';
+        preview.style.display = '';
+        preview.innerHTML = markdownToHtml(textarea.value);
+    }
+}
+
+/**
+ * 簡易Markdown→HTML変換
+ */
+function markdownToHtml(md) {
+    if (!md) return '<p style="color:var(--text-muted)">プレビューする内容がありません</p>';
+    let html = md;
+    // 画像
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+    // リンク
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    // 見出し
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    // 太字・斜体
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // コード
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // 引用
+    html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+    // 箇条書き
+    html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+    // 番号付きリスト
+    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+    // 段落
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = '<p>' + html + '</p>';
+    // 連続blockquoteをまとめる
+    html = html.replace(/<\/blockquote><p><\/p><p><blockquote>/g, '<br>');
+    return html;
+}
+
+/**
+ * Markdownツールバー挿入ヘルパー
+ */
+function insertMd(type) {
+    const ta = document.getElementById('colBody');
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const sel = ta.value.substring(start, end);
+    let before = '', after = '';
+
+    switch (type) {
+        case 'bold': before = '**'; after = '**'; break;
+        case 'italic': before = '*'; after = '*'; break;
+        case 'h2': before = '## '; break;
+        case 'h3': before = '### '; break;
+        case 'ul': before = '- '; break;
+        case 'ol': before = '1. '; break;
+        case 'quote': before = '> '; break;
+        case 'link': before = '['; after = '](url)'; break;
+    }
+
+    const replacement = before + (sel || 'テキスト') + after;
+    ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
+    ta.focus();
+    ta.selectionStart = start + before.length;
+    ta.selectionEnd = start + before.length + (sel || 'テキスト').length;
+}
+
+/**
+ * 画像アップロード → さくらPHP API
+ */
+async function uploadImageFile(file) {
+    if (!IMAGE_CONFIG.apiToken) {
+        throw new Error('画像APIトークンが未設定です。管理者に連絡してください。');
+    }
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!IMAGE_CONFIG.allowedExts.includes(ext)) {
+        throw new Error('対応していないファイル形式です。対応形式: ' + IMAGE_CONFIG.allowedExts.join(', '));
+    }
+    if (file.size > IMAGE_CONFIG.maxSize) {
+        throw new Error('ファイルサイズが10MBを超えています。');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const resp = await fetch(IMAGE_CONFIG.uploadUrl, {
+        method: 'POST',
+        headers: { 'X-Image-Token': IMAGE_CONFIG.apiToken },
+        body: formData
+    });
+
+    if (!resp.ok) {
+        const errText = await resp.text();
+        let msg = 'HTTP ' + resp.status;
+        try { msg = JSON.parse(errText).message || msg; } catch(e) {}
+        throw new Error(msg);
+    }
+
+    const result = await resp.json();
+    if (!result.success) throw new Error(result.message || 'アップロード失敗');
+    return result.url;
+}
+
+/**
+ * 画像アップロード → Markdown本文に挿入
+ */
+function uploadImageForMarkdown() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async function() {
+        const file = input.files[0];
+        if (!file) return;
+        try {
+            const ta = document.getElementById('colBody');
+            const pos = ta.selectionStart;
+            const insertText = '![アップロード中...]()\n';
+            ta.value = ta.value.substring(0, pos) + insertText + ta.value.substring(pos);
+
+            const url = await uploadImageFile(file);
+
+            // プレースホルダーを実際のURLに置換
+            ta.value = ta.value.replace('![アップロード中...]()', '![' + (file.name || '画像') + '](' + url + ')');
+        } catch (err) {
+            alert('画像アップロードエラー: ' + err.message);
+            const ta = document.getElementById('colBody');
+            ta.value = ta.value.replace('![アップロード中...]()\n', '');
+        }
+    };
+    input.click();
+}
+
+/**
+ * サムネイル用画像アップロード → URL欄にセット
+ */
+function uploadImageForField(fieldId) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async function() {
+        const file = input.files[0];
+        if (!file) return;
+        try {
+            const url = await uploadImageFile(file);
+            document.getElementById(fieldId).value = url;
+        } catch (err) {
+            alert('画像アップロードエラー: ' + err.message);
+        }
+    };
+    input.click();
+}
+
+/**
+ * コラム保存
+ */
+async function saveColumn(articleId) {
+    const title = document.getElementById('colTitle').value.trim();
+    if (!title) {
+        alert('タイトルを入力してください');
+        return;
+    }
+
+    const btn = document.getElementById('colSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+
+    const payload = {
+        action: 'portal-article-save',
+        title: title,
+        category: document.getElementById('colCategory').value,
+        status: document.getElementById('colStatus').value,
+        tags: document.getElementById('colTags').value.trim(),
+        publishDate: document.getElementById('colPublishDate').value.trim(),
+        summary: document.getElementById('colSummary').value.trim(),
+        thumbnail: document.getElementById('colThumbnail').value.trim(),
+        body: document.getElementById('colBody').value
+    };
+    if (articleId) payload.articleId = articleId;
+
+    const res = await portalPostAPI(payload);
+
+    if (res.success) {
+        alert(res.message || '保存しました');
+        window.location.hash = '#/columns';
+    } else {
+        alert(res.message || '保存に失敗しました');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save" style="margin-right:0.3rem"></i>保存';
+    }
+}
+
+/**
+ * コラム公開/非公開切替
+ */
+async function toggleColumnStatus(articleId, btn) {
+    if (btn) { btn.disabled = true; }
+    const res = await portalFetch('portal-article-toggle', { id: articleId });
+    if (res.success) {
+        renderColumnList(document.getElementById('portalMain'));
+    } else {
+        alert(res.message || 'エラーが発生しました');
+        if (btn) btn.disabled = false;
+    }
+}
+
+/**
+ * コラム削除
+ */
+async function deleteColumn(articleId) {
+    if (!confirm('この記事を削除しますか？')) return;
+    const res = await portalFetch('portal-article-delete', { id: articleId });
+    if (res.success) {
+        renderColumnList(document.getElementById('portalMain'));
+    } else {
+        alert(res.message || '削除に失敗しました');
     }
 }
 
