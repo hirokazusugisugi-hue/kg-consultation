@@ -1266,36 +1266,9 @@ async function renderColumnEditor(container, articleId) {
         '<input type="text" class="col-form-input" id="colThumbnail" value="' + escapeHTML(thumbnail) + '" placeholder="https://..."></div>' +
         '<button type="button" class="col-thumbnail-upload-btn" onclick="uploadImageForField(\'colThumbnail\')"><i class="fas fa-upload"></i> 画像UP</button></div>';
 
-    // 本文エリア
-    html += '<div class="col-form-group"><label>本文（Markdown）</label>';
-
-    // タブ
-    html += '<div class="col-editor-tabs">' +
-        '<button class="col-editor-tab active" id="colTabEdit" onclick="switchColumnTab(\'edit\')">編集</button>' +
-        '<button class="col-editor-tab" id="colTabPreview" onclick="switchColumnTab(\'preview\')">プレビュー</button></div>';
-
-    // ツールバー
-    html += '<div class="col-md-toolbar" id="colToolbar">' +
-        '<button class="col-md-btn" onclick="insertMd(\'bold\')" title="太字"><b>B</b></button>' +
-        '<button class="col-md-btn" onclick="insertMd(\'italic\')" title="斜体"><i>I</i></button>' +
-        '<span class="col-md-btn sep"></span>' +
-        '<button class="col-md-btn" onclick="insertMd(\'h2\')" title="見出し2">H2</button>' +
-        '<button class="col-md-btn" onclick="insertMd(\'h3\')" title="見出し3">H3</button>' +
-        '<span class="col-md-btn sep"></span>' +
-        '<button class="col-md-btn" onclick="insertMd(\'ul\')" title="箇条書き"><i class="fas fa-list-ul"></i></button>' +
-        '<button class="col-md-btn" onclick="insertMd(\'ol\')" title="番号リスト"><i class="fas fa-list-ol"></i></button>' +
-        '<button class="col-md-btn" onclick="insertMd(\'quote\')" title="引用"><i class="fas fa-quote-right"></i></button>' +
-        '<span class="col-md-btn sep"></span>' +
-        '<button class="col-md-btn" onclick="insertMd(\'link\')" title="リンク"><i class="fas fa-link"></i></button>' +
-        '<button class="col-md-btn" onclick="uploadImageForMarkdown()" title="画像挿入"><i class="fas fa-image"></i></button>' +
-        '</div>';
-
-    // テキストエリア（編集）
-    html += '<textarea class="col-body-textarea" id="colBody" placeholder="## 見出し\n\n本文テキスト\n\n- リスト項目">' + escapeHTML(body) + '</textarea>';
-
-    // プレビュー
-    html += '<div class="col-preview" id="colPreview" style="display:none"></div>';
-
+    // 本文エリア（Quill WYSIWYGエディタ）
+    html += '<div class="col-form-group"><label>本文</label>';
+    html += '<div class="col-quill-container"><div id="colBody"></div></div>';
     html += '</div>';  // form-group
 
     // 保存バー
@@ -1306,33 +1279,64 @@ async function renderColumnEditor(container, articleId) {
     html += '</div></div>';  // card, container
     html += '</div>';
     container.innerHTML = html;
+
+    // Quill初期化
+    const quill = new Quill('#colBody', {
+        theme: 'snow',
+        placeholder: '本文を入力してください...',
+        modules: {
+            toolbar: {
+                container: [
+                    [{ 'header': [2, 3, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['blockquote'],
+                    ['link', 'image'],
+                    ['clean']
+                ],
+                handlers: {
+                    image: function() { uploadImageForQuill(quill); }
+                }
+            }
+        }
+    });
+
+    // 既存記事の読み込み（HTML or Markdown自動判定）
+    if (body) {
+        const isHtml = /^<[a-z][\s\S]*>/i.test(body.trim());
+        const htmlContent = isHtml ? body : markdownToHtml(body);
+        quill.clipboard.dangerouslyPasteHTML(htmlContent);
+    }
+
+    // saveColumnからアクセスできるようグローバルに保持
+    window._columnQuill = quill;
 }
 
 /**
- * 編集/プレビュー切替
+ * Quillエディタ用画像アップロード
  */
-function switchColumnTab(tab) {
-    const editTab = document.getElementById('colTabEdit');
-    const previewTab = document.getElementById('colTabPreview');
-    const toolbar = document.getElementById('colToolbar');
-    const textarea = document.getElementById('colBody');
-    const preview = document.getElementById('colPreview');
-
-    if (tab === 'edit') {
-        editTab.classList.add('active');
-        previewTab.classList.remove('active');
-        toolbar.style.display = '';
-        textarea.style.display = '';
-        preview.style.display = 'none';
-    } else {
-        editTab.classList.remove('active');
-        previewTab.classList.add('active');
-        toolbar.style.display = 'none';
-        textarea.style.display = 'none';
-        preview.style.display = '';
-        preview.innerHTML = markdownToHtml(textarea.value);
-    }
+function uploadImageForQuill(quill) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async function() {
+        const file = input.files[0];
+        if (!file) return;
+        try {
+            const url = await uploadImageFile(file);
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, 'image', url);
+            quill.setSelection(range.index + 1);
+        } catch (err) {
+            alert('画像アップロードエラー: ' + err.message);
+        }
+    };
+    input.click();
 }
+
+// 以下の関数は不要になったため削除済み:
+// switchColumnTab(), insertMd(), uploadImageForMarkdown()
+
 
 /**
  * 簡易Markdown→HTML変換
@@ -1368,34 +1372,6 @@ function markdownToHtml(md) {
     return html;
 }
 
-/**
- * Markdownツールバー挿入ヘルパー
- */
-function insertMd(type) {
-    const ta = document.getElementById('colBody');
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const sel = ta.value.substring(start, end);
-    let before = '', after = '';
-
-    switch (type) {
-        case 'bold': before = '**'; after = '**'; break;
-        case 'italic': before = '*'; after = '*'; break;
-        case 'h2': before = '## '; break;
-        case 'h3': before = '### '; break;
-        case 'ul': before = '- '; break;
-        case 'ol': before = '1. '; break;
-        case 'quote': before = '> '; break;
-        case 'link': before = '['; after = '](url)'; break;
-    }
-
-    const replacement = before + (sel || 'テキスト') + after;
-    ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
-    ta.focus();
-    ta.selectionStart = start + before.length;
-    ta.selectionEnd = start + before.length + (sel || 'テキスト').length;
-}
 
 /**
  * 画像アップロード → さくらPHP API
@@ -1434,34 +1410,6 @@ async function uploadImageFile(file) {
     return result.url;
 }
 
-/**
- * 画像アップロード → Markdown本文に挿入
- */
-function uploadImageForMarkdown() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async function() {
-        const file = input.files[0];
-        if (!file) return;
-        try {
-            const ta = document.getElementById('colBody');
-            const pos = ta.selectionStart;
-            const insertText = '![アップロード中...]()\n';
-            ta.value = ta.value.substring(0, pos) + insertText + ta.value.substring(pos);
-
-            const url = await uploadImageFile(file);
-
-            // プレースホルダーを実際のURLに置換
-            ta.value = ta.value.replace('![アップロード中...]()', '![' + (file.name || '画像') + '](' + url + ')');
-        } catch (err) {
-            alert('画像アップロードエラー: ' + err.message);
-            const ta = document.getElementById('colBody');
-            ta.value = ta.value.replace('![アップロード中...]()\n', '');
-        }
-    };
-    input.click();
-}
 
 /**
  * サムネイル用画像アップロード → URL欄にセット
@@ -1484,9 +1432,14 @@ function uploadImageForField(fieldId) {
 }
 
 /**
- * コラム保存
+ * コラム保存（重複送信防止付き）
  */
+let _columnSaving = false;
+
 async function saveColumn(articleId) {
+    // 重複送信ガード
+    if (_columnSaving) return;
+
     const title = document.getElementById('colTitle').value.trim();
     if (!title) {
         alert('タイトルを入力してください');
@@ -1496,6 +1449,7 @@ async function saveColumn(articleId) {
     const btn = document.getElementById('colSaveBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+    _columnSaving = true;
 
     const payload = {
         action: 'portal-article-save',
@@ -1506,21 +1460,32 @@ async function saveColumn(articleId) {
         publishDate: document.getElementById('colPublishDate').value.trim(),
         summary: document.getElementById('colSummary').value.trim(),
         thumbnail: document.getElementById('colThumbnail').value.trim(),
-        body: document.getElementById('colBody').value
+        body: window._columnQuill ? window._columnQuill.getSemanticHTML() : ''
     };
     if (articleId) payload.articleId = articleId;
 
-    const res = await portalPostAPI(payload);
+    try {
+        const res = await portalPostAPI(payload);
 
-    if (res.success) {
-        alert(res.message || '保存しました');
-        window.location.hash = '#/columns';
-    } else {
-        alert(res.message || '保存に失敗しました');
+        if (res.success) {
+            // 保存成功 → 即座にリダイレクト（戻って再保存を防止）
+            window.location.hash = '#/columns';
+        } else {
+            alert(res.message || '保存に失敗しました');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save" style="margin-right:0.3rem"></i>保存';
+            _columnSaving = false;
+        }
+    } catch (err) {
+        alert('保存中にエラーが発生しました: ' + err.message);
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-save" style="margin-right:0.3rem"></i>保存';
+        _columnSaving = false;
     }
 }
+
+// ページ遷移時に保存フラグをリセット
+window.addEventListener('hashchange', function() { _columnSaving = false; });
 
 /**
  * コラム公開/非公開切替

@@ -2,8 +2,9 @@
  * KG中小企業経営診断研究会 メディアサイト — JS
  */
 
-const MEDIA_API_URL = 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec';
-const LP_URL = 'https://iba-consulting.jp/index15.html';
+// main.js の API_URL / LP_URL を再利用（main.js が先に読み込まれる前提）
+const MEDIA_API_URL = typeof API_URL !== 'undefined' ? API_URL : 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec';
+// LP_URL は main.js で定義済み
 
 /**
  * GAS APIからデータ取得
@@ -59,6 +60,11 @@ function truncate(str, len) {
  */
 function renderMarkdown(md) {
     if (!md) return '';
+    // HTML自動判定: HTMLタグで始まる場合はそのまま表示（Quillエディタ出力）
+    var trimmed = md.trim();
+    if (/^<(?:p|h[1-6]|div|ul|ol|blockquote|figure|img|table)\b/i.test(trimmed)) {
+        return trimmed;
+    }
     if (typeof marked !== 'undefined') {
         return marked.parse(md);
     }

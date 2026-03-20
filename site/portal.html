@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -53,6 +54,7 @@
         </a>
     </nav>
 
+    <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
     <script src="js/main.js"></script>
     <script src="js/portal.js"></script>
 
@@ -520,52 +522,36 @@
         }
         .col-thumbnail-upload-btn:hover { background: rgba(15,35,80,0.08); }
 
-        .col-editor-tabs {
-            display: flex; border-bottom: 2px solid var(--border-light); margin-bottom: 0;
+        /* ── QUILL WYSIWYG EDITOR ── */
+        .col-quill-container {
+            border: 2px solid var(--border-light); border-radius: 8px; overflow: hidden;
         }
-        .col-editor-tab {
-            padding: 6px 16px; font-size: 0.8rem; font-weight: 600; border: none;
-            background: none; color: var(--text-muted); cursor: pointer;
-            border-bottom: 2px solid transparent; margin-bottom: -2px;
-            font-family: var(--font-sans); transition: all 0.2s;
+        .col-quill-container .ql-toolbar.ql-snow {
+            border: none; border-bottom: 1px solid var(--border-light);
+            background: var(--bg-light);
         }
-        .col-editor-tab.active { color: var(--kgu-blue); border-bottom-color: var(--kgu-blue); }
-
-        .col-md-toolbar {
-            display: flex; flex-wrap: wrap; gap: 2px; padding: 6px; background: var(--bg-light);
-            border: 2px solid var(--border-light); border-bottom: none; border-radius: 8px 8px 0 0;
+        .col-quill-container .ql-container.ql-snow {
+            border: none; font-family: var(--font-sans); font-size: 0.9rem;
         }
-        .col-md-btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 30px; height: 30px; border-radius: 4px; border: none;
-            background: var(--white); color: var(--text-dark); cursor: pointer;
-            font-size: 0.78rem; font-family: var(--font-sans); transition: all 0.15s;
+        .col-quill-container .ql-editor {
+            min-height: 350px; line-height: 1.9; padding: 1rem 1.2rem;
         }
-        .col-md-btn:hover { background: var(--kgu-gold-dim); color: var(--kgu-blue); }
-        .col-md-btn.sep { width: 1px; background: var(--border-light); cursor: default; margin: 0 3px; }
-        .col-md-btn.sep:hover { background: var(--border-light); }
-
-        .col-body-textarea {
-            width: 100%; min-height: 300px; padding: 12px; border: 2px solid var(--border-light);
-            border-radius: 0 0 8px 8px; font-size: 0.85rem; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-            outline: none; resize: vertical; line-height: 1.7; box-sizing: border-box;
+        .col-quill-container .ql-editor h2 {
+            font-size: 1.15rem; margin: 1rem 0 0.5rem;
+            border-bottom: 1px solid var(--border-light); padding-bottom: 0.3rem;
         }
-        .col-body-textarea:focus { border-color: var(--kgu-blue); }
-
-        .col-preview {
-            padding: 12px; border: 2px solid var(--border-light); border-radius: 0 0 8px 8px;
-            min-height: 300px; font-size: 0.85rem; line-height: 1.8;
-            overflow-y: auto;
+        .col-quill-container .ql-editor h3 { font-size: 1rem; margin: 0.8rem 0 0.4rem; }
+        .col-quill-container .ql-editor img { max-width: 100%; border-radius: 8px; margin: 0.5rem 0; }
+        .col-quill-container .ql-editor blockquote {
+            border-left: 3px solid var(--kgu-blue); padding-left: 1rem;
+            color: var(--text-muted); margin: 0.5rem 0;
         }
-        .col-preview h1 { font-size: 1.3rem; margin: 1rem 0 0.5rem; }
-        .col-preview h2 { font-size: 1.15rem; margin: 1rem 0 0.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.3rem; }
-        .col-preview h3 { font-size: 1rem; margin: 0.8rem 0 0.4rem; }
-        .col-preview p { margin: 0.5rem 0; }
-        .col-preview ul, .col-preview ol { padding-left: 1.5rem; margin: 0.5rem 0; }
-        .col-preview blockquote { border-left: 3px solid var(--kgu-blue); padding-left: 1rem; color: var(--text-muted); margin: 0.5rem 0; }
-        .col-preview img { max-width: 100%; border-radius: 8px; margin: 0.5rem 0; }
-        .col-preview code { background: var(--bg-light); padding: 1px 4px; border-radius: 3px; font-size: 0.82rem; }
-        .col-preview strong { font-weight: 700; }
+        .col-quill-container .ql-editor:focus { outline: none; }
+        .col-quill-container:focus-within { border-color: var(--kgu-blue); }
+        @media (max-width: 768px) {
+            .col-quill-container .ql-toolbar .ql-formats { margin-right: 4px; }
+            .col-quill-container .ql-editor { min-height: 250px; padding: 0.8rem; }
+        }
 
         .col-save-bar {
             display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.5rem;
