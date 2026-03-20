@@ -62,22 +62,6 @@
                         組織・人材、DX推進など幅広いテーマに対応します。
                     </p>
                 </div>
-                <div class="about-detail-visual reveal-right">
-                    <div class="about-value-card">
-                        <div class="about-value-item">
-                            <div class="about-value-num">100%</div>
-                            <div class="about-value-label">完全無料</div>
-                        </div>
-                        <div class="about-value-item">
-                            <div class="about-value-num">1:N</div>
-                            <div class="about-value-label">チーム体制</div>
-                        </div>
-                        <div class="about-value-item">
-                            <div class="about-value-num">90min</div>
-                            <div class="about-value-label">相談時間</div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -181,12 +165,9 @@
 
     <script src="js/main.js"></script>
     <style>
-        .about-detail-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 3rem; align-items: center; }
+        .about-detail-grid { max-width: 800px; }
         .about-detail-title { font-size: 1.6rem; font-weight: 900; margin-bottom: 1rem; }
         .about-detail-text p { font-size: 0.95rem; color: var(--text-light); line-height: 1.9; margin-bottom: 1rem; }
-        .about-value-card { background: var(--kgu-blue); border-radius: 16px; padding: 2rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center; color: #fff; }
-        .about-value-num { font-size: 1.8rem; font-weight: 900; color: var(--kgu-gold); }
-        .about-value-label { font-size: 0.75rem; margin-top: 0.3rem; opacity: 0.7; }
 
         .timeline { max-width: 700px; margin: 0 auto; }
         .timeline-item { display: flex; gap: 1.5rem; margin-bottom: 2rem; }
@@ -209,8 +190,6 @@
         .flow-step p { font-size: 0.82rem; color: var(--text-muted); }
 
         @media (max-width: 768px) {
-            .about-detail-grid { grid-template-columns: 1fr; }
-            .about-value-card { grid-template-columns: repeat(3, 1fr); }
             .flow-steps { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
