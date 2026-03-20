@@ -837,6 +837,85 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // ━━━ Podcast ━━━
+
+    // Podcast管理ページ
+    if (action === 'podcast-admin') {
+      return generatePodcastAdminPage();
+    }
+
+    // Podcast一覧API（JSON）
+    if (action === 'podcasts') {
+      var podResult = getPodcasts({
+        limit: e.parameter.limit || '20',
+        offset: e.parameter.offset || '0'
+      });
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, podcasts: podResult.podcasts, total: podResult.total }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Podcast詳細API（JSON）
+    if (action === 'podcast') {
+      var podId = e.parameter.id;
+      if (!podId) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'id パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var podDetail = getPodcastById(podId);
+      if (!podDetail) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'Podcastが見つかりません: ' + podId }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, podcast: podDetail }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Podcast追加
+    if (action === 'podcast-add') {
+      addPodcast({
+        title: e.parameter.title,
+        description: e.parameter.description,
+        publishDate: e.parameter.publishDate,
+        status: e.parameter.status,
+        spotifyUrl: e.parameter.spotifyUrl,
+        appleUrl: e.parameter.appleUrl,
+        youtubeUrl: e.parameter.youtubeUrl,
+        thumbnail: e.parameter.thumbnail,
+        relatedArticleId: e.parameter.relatedArticleId
+      });
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=podcast-admin";</script>'
+      );
+    }
+
+    // Podcastステータス切替
+    if (action === 'podcast-toggle') {
+      togglePodcastStatus(e.parameter.row);
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=podcast-admin";</script>'
+      );
+    }
+
+    // Podcast削除
+    if (action === 'podcast-delete') {
+      deletePodcast(e.parameter.row);
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=podcast-admin";</script>'
+      );
+    }
+
+    // Podcastシートセットアップ（管理用）
+    if (action === 'setup-podcasts') {
+      var podSetupResult = setupPodcastSheet();
+      return ContentService
+        .createTextOutput(JSON.stringify(podSetupResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 日程修復（管理用）
     if (action === 'repair-schedule') {
       var repairYear = parseInt(e.parameter.year) || 2026;
