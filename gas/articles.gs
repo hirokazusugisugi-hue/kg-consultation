@@ -280,6 +280,18 @@ function deleteArticle(row) {
 }
 
 /**
+ * 記事IDで削除（clasp run用ユーティリティ）
+ * @param {string} articleId
+ * @returns {Object} 結果
+ */
+function deleteArticleById(articleId) {
+  var article = getArticleById(articleId);
+  if (!article) return { success: false, message: '記事が見つかりません: ' + articleId };
+  deleteArticle(article.row);
+  return { success: true, message: '記事を削除しました: ' + articleId + ' (行' + article.row + ')' };
+}
+
+/**
  * カテゴリ一覧を取得（記事が存在するカテゴリのみ）
  * @returns {Array}
  */
