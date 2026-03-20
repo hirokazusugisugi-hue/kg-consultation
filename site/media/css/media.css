@@ -373,6 +373,24 @@
     color: var(--kgu-gold);
 }
 
+/* ── CTA BANNER OVERRIDE ── */
+.cta-banner {
+    background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%);
+    color: var(--kgu-blue);
+}
+.cta-banner .section-title { color: var(--kgu-blue); }
+.cta-banner .section-subtitle { color: #4a6fa5; }
+.cta-banner .btn-gold {
+    background: linear-gradient(135deg, #5ba4c9 0%, #3d8eb4 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 2px 8px rgba(59, 142, 180, 0.3);
+}
+.cta-banner .btn-gold:hover {
+    background: linear-gradient(135deg, #4a93b8 0%, #2d7ea4 100%);
+    box-shadow: 0 4px 12px rgba(59, 142, 180, 0.4);
+}
+
 /* ── LOADING SPINNER ── */
 .media-loading {
     text-align: center;
