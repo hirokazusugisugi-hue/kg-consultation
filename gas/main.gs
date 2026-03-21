@@ -941,6 +941,29 @@ function doGet(e) {
       );
     }
 
+    // Podcast更新
+    if (action === 'podcast-update') {
+      var podUpdateResult = updatePodcast(e.parameter.podcastId, {
+        title: e.parameter.title,
+        description: e.parameter.description,
+        publishDate: e.parameter.publishDate,
+        status: e.parameter.status,
+        spotifyUrl: e.parameter.spotifyUrl,
+        appleUrl: e.parameter.appleUrl,
+        youtubeUrl: e.parameter.youtubeUrl,
+        thumbnail: e.parameter.thumbnail,
+        relatedArticleId: e.parameter.relatedArticleId
+      });
+      if (e.parameter.format === 'json') {
+        return ContentService
+          .createTextOutput(JSON.stringify(podUpdateResult))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput(
+        '<script>window.location.href="' + CONFIG.CONSENT.WEB_APP_URL + '?action=podcast-admin";</script>'
+      );
+    }
+
     // Podcastステータス切替
     if (action === 'podcast-toggle') {
       togglePodcastStatus(e.parameter.row);

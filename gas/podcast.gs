@@ -222,6 +222,55 @@ function addPodcast(params) {
 }
 
 /**
+ * Podcastを更新
+ * @param {string} podcastId - 更新対象のエピソードID
+ * @param {Object} params - 更新フィールド
+ * @returns {Object}
+ */
+function updatePodcast(podcastId, params) {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(PODCAST_SHEET_NAME);
+  if (!sheet || sheet.getLastRow() < 2) {
+    return { success: false, message: 'Podcastシートが見つかりません' };
+  }
+
+  var data = sheet.getDataRange().getValues();
+  var targetRow = -1;
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][PODCAST_COLUMNS.ID]) === podcastId) {
+      targetRow = i + 1;
+      break;
+    }
+  }
+
+  if (targetRow === -1) {
+    return { success: false, message: 'エピソードが見つかりません: ' + podcastId };
+  }
+
+  // 指定されたフィールドのみ更新
+  var fieldMap = {
+    title: PODCAST_COLUMNS.TITLE,
+    description: PODCAST_COLUMNS.DESCRIPTION,
+    publishDate: PODCAST_COLUMNS.PUBLISH_DATE,
+    status: PODCAST_COLUMNS.STATUS,
+    spotifyUrl: PODCAST_COLUMNS.SPOTIFY_URL,
+    appleUrl: PODCAST_COLUMNS.APPLE_URL,
+    youtubeUrl: PODCAST_COLUMNS.YOUTUBE_URL,
+    thumbnail: PODCAST_COLUMNS.THUMBNAIL,
+    relatedArticleId: PODCAST_COLUMNS.RELATED_ARTICLE
+  };
+
+  for (var key in params) {
+    if (params.hasOwnProperty(key) && fieldMap.hasOwnProperty(key) && params[key] !== undefined && params[key] !== null) {
+      sheet.getRange(targetRow, fieldMap[key] + 1).setValue(params[key]);
+    }
+  }
+
+  console.log('Podcast更新: ' + podcastId);
+  return { success: true, podcastId: podcastId, message: 'Podcastを更新しました: ' + podcastId };
+}
+
+/**
  * Podcastのステータスを切り替え
  * @param {number} row
  */

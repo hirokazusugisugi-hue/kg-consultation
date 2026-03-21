@@ -394,11 +394,13 @@ img { max-width: 100%; height: auto; display: block; }
     color: #fff;
 }
 .btn-gold {
-    background: var(--kgu-gold);
+    background: linear-gradient(135deg, #5ba4c9 0%, #3d8eb4 100%);
     color: #fff;
+    box-shadow: 0 2px 8px rgba(59, 142, 180, 0.3);
 }
 .btn-gold:hover {
-    background: var(--kgu-gold-light);
+    background: linear-gradient(135deg, #4a93b8 0%, #2d7ea4 100%);
+    box-shadow: 0 4px 12px rgba(59, 142, 180, 0.4);
     transform: translateY(-2px);
 }
 
@@ -494,13 +496,13 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* ── CTA BANNER ── */
 .cta-banner {
-    background: var(--kgu-blue);
+    background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%);
     padding: 3rem 0;
     text-align: center;
-    color: var(--white);
+    color: var(--kgu-blue);
 }
-.cta-banner .section-title { color: var(--white); margin-bottom: 0.8rem; }
-.cta-banner .section-subtitle { color: rgba(255,255,255,0.7); margin-bottom: 1.5rem; }
+.cta-banner .section-title { color: var(--kgu-blue); margin-bottom: 0.8rem; }
+.cta-banner .section-subtitle { color: #4a6fa5; margin-bottom: 1.5rem; }
 
 /* ── LOADING ── */
 .loading {
