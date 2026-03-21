@@ -553,9 +553,6 @@
             .col-quill-container .ql-editor { min-height: 250px; padding: 0.8rem; }
         }
 
-        .col-save-bar {
-            display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.5rem;
-        }
         .col-save-btn {
             padding: 10px 24px; background: var(--kgu-blue); color: var(--white); border: none;
             border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
@@ -577,6 +574,92 @@
             font-family: var(--font-sans); margin-bottom: 1rem;
         }
         .col-new-btn:hover { background: var(--kgu-blue-light); }
+
+        /* ── COLUMN ACTION BUTTONS WITH TEXT ── */
+        .col-action-btn {
+            width: auto; height: auto;
+            padding: 6px 12px; gap: 0.3rem;
+            font-size: 0.72rem; font-weight: 600;
+            white-space: nowrap;
+        }
+        .col-action-btn i { font-size: 0.7rem; }
+
+        /* ── COLUMN EDITOR HINT ── */
+        .col-editor-hint {
+            font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;
+            padding: 0.4rem 0.6rem; background: var(--bg-light); border-radius: 6px;
+        }
+
+        /* ── THUMBNAIL PREVIEW ── */
+        .col-thumb-preview {
+            margin-top: 0.5rem; max-width: 200px;
+        }
+        .col-thumb-preview img {
+            width: 100%; border-radius: 8px; border: 1px solid var(--border-light);
+        }
+
+        /* ── IMAGE UPLOAD PLACEHOLDER ── */
+        .col-img-placeholder {
+            display: inline-block; padding: 8px 16px; margin: 4px 0;
+            background: #f0f4ff; border: 1px dashed var(--kgu-blue); border-radius: 6px;
+            font-size: 0.8rem; color: var(--kgu-blue); font-weight: 600;
+        }
+
+        /* ── COLUMN PREVIEW SCREEN ── */
+        .col-preview {
+            max-width: 720px; margin: 0 auto;
+        }
+        .col-preview-header {
+            margin-bottom: 1.5rem;
+        }
+        .col-preview-header h1 {
+            font-size: 1.4rem; font-weight: 900; color: var(--text-dark);
+            margin: 0.8rem 0 0.5rem; line-height: 1.5;
+        }
+        .col-preview-meta {
+            font-size: 0.8rem; color: var(--text-muted);
+        }
+        .col-preview-thumb {
+            margin-bottom: 1.5rem;
+        }
+        .col-preview-thumb img {
+            width: 100%; max-height: 400px; object-fit: cover;
+            border-radius: 10px; border: 1px solid var(--border-light);
+        }
+        .col-preview-body {
+            font-size: 0.95rem; line-height: 2; color: var(--text-dark);
+        }
+        .col-preview-body img {
+            max-width: 100%; border-radius: 8px; margin: 0.5rem 0;
+        }
+        .col-preview-body h2 {
+            font-size: 1.15rem; margin: 1.5rem 0 0.5rem;
+            border-bottom: 1px solid var(--border-light); padding-bottom: 0.3rem;
+        }
+        .col-preview-body h3 { font-size: 1rem; margin: 1rem 0 0.4rem; }
+        .col-preview-body blockquote {
+            border-left: 3px solid var(--kgu-blue); padding-left: 1rem;
+            color: var(--text-muted); margin: 0.5rem 0;
+        }
+        .col-preview-actions {
+            display: flex; gap: 0.8rem; justify-content: center;
+            margin-top: 2rem; padding-top: 1.5rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* ── SAVE BAR: DRAFT/PUBLISH ── */
+        .col-save-bar {
+            display: flex; gap: 0.5rem; justify-content: space-between;
+            align-items: center; margin-top: 0.5rem;
+        }
+        .col-save-bar-right { display: flex; gap: 0.5rem; }
+        .col-draft-btn {
+            padding: 10px 20px; background: #6c757d; color: var(--white); border: none;
+            border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+            font-family: var(--font-sans); transition: all 0.2s;
+        }
+        .col-draft-btn:hover { background: #5a6268; }
+        .col-draft-btn:disabled, .col-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </body>
 </html>
