@@ -168,6 +168,34 @@
         </div>
     </section>
 
+    <!-- PODCAST -->
+    <section class="section" id="podcast">
+        <div class="container">
+            <div class="section-header reveal">
+                <p class="section-label">PODCAST</p>
+                <h2 class="section-title">Podcast</h2>
+                <p class="section-subtitle">経営のヒントをお届けします</p>
+            </div>
+            <div class="podcast-feature reveal delay-1">
+                <a href="https://open.spotify.com/episode/0kjblUuedgghQNSNDakC65" target="_blank" rel="noopener" class="podcast-feature-link">
+                    <div class="podcast-feature-img">
+                        <img src="https://i.scdn.co/image/ab67656300005f1f3a5e98daac0bf9d67e4263f4" alt="中小企業診断士小椋さん、養成課程を語る。">
+                        <div class="podcast-play-overlay"><i class="fab fa-spotify"></i></div>
+                    </div>
+                    <div class="podcast-feature-info">
+                        <div class="podcast-feature-badge"><i class="fab fa-spotify" style="margin-right:0.3rem"></i>Spotify</div>
+                        <h3 class="podcast-feature-title">中小企業診断士小椋さん、養成課程を語る。</h3>
+                        <p class="podcast-feature-show">関西学院大学中小企業診断士養成課程 無料経営相談室Bside</p>
+                        <p class="podcast-feature-meta">2026.03.09 | 14分</p>
+                    </div>
+                </a>
+            </div>
+            <div style="text-align:center;margin-top:2rem" class="reveal delay-2">
+                <a href="media/podcast.html" class="btn btn-outline">Podcast一覧を見る</a>
+            </div>
+        </div>
+    </section>
+
     <!-- CTA BANNER -->
     <section class="cta-banner">
         <div class="container reveal">
@@ -296,11 +324,58 @@
         .service-item h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
         .service-item p { font-size: 0.78rem; color: var(--text-muted); }
 
+        /* ── PODCAST FEATURE ── */
+        .podcast-feature {
+            max-width: 640px; margin: 0 auto;
+        }
+        .podcast-feature-link {
+            display: flex; gap: 1.5rem; align-items: center;
+            background: var(--white); border-radius: 16px; padding: 1.2rem;
+            box-shadow: var(--shadow-sm); text-decoration: none; color: inherit;
+            transition: all 0.4s var(--ease-out-expo);
+        }
+        .podcast-feature-link:hover {
+            box-shadow: var(--shadow-md); transform: translateY(-4px);
+        }
+        .podcast-feature-img {
+            position: relative; flex-shrink: 0;
+            width: 140px; height: 140px; border-radius: 12px; overflow: hidden;
+        }
+        .podcast-feature-img img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .podcast-play-overlay {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.3); opacity: 0;
+            transition: opacity 0.3s; font-size: 2.5rem; color: #1DB954;
+        }
+        .podcast-feature-link:hover .podcast-play-overlay { opacity: 1; }
+        .podcast-feature-info { flex: 1; min-width: 0; }
+        .podcast-feature-badge {
+            display: inline-block; font-size: 0.65rem; font-weight: 700;
+            padding: 3px 10px; border-radius: 100px;
+            background: #1DB954; color: var(--white); margin-bottom: 0.5rem;
+        }
+        .podcast-feature-title {
+            font-size: 1.05rem; font-weight: 700; line-height: 1.5;
+            margin-bottom: 0.3rem;
+        }
+        .podcast-feature-show {
+            font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;
+            margin-bottom: 0.3rem;
+        }
+        .podcast-feature-meta {
+            font-size: 0.72rem; color: var(--text-muted);
+        }
+
         @media (max-width: 768px) {
             .hero-top { padding: calc(var(--header-height) + 2rem) 0 4rem; min-height: auto; }
             .hero-top-actions { flex-direction: column; }
             .hero-top-actions .btn { text-align: center; }
             .service-grid { grid-template-columns: repeat(2, 1fr); }
+            .podcast-feature-link { flex-direction: column; text-align: center; }
+            .podcast-feature-img { width: 120px; height: 120px; }
         }
     </style>
 </body>
