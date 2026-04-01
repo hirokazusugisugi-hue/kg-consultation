@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- GA4 基本タグ -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GELJ4GB33D"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GELJ4GB33D');
+    </script>
     <title>無料経営相談 | 関西学院大学 中小企業経営診断研究会</title>
     <meta name="description" content="「Mastery for Service」の実践。関西学院大学 経営戦略研究科（IBA）中小企業診断士養成課程の分科会による、中小企業向け無料経営相談プロジェクト。">
 
@@ -3896,5 +3904,195 @@
         });
     })();
     </script>
+<!-- GA4 コンバージョン追跡（iba-consulting.jp 専用） -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  // ① 予約フォーム送信の追跡
+  var reservationForm = document.querySelector('form')
+    || document.querySelector('[class*="reservation"], [class*="contact"], [id*="reservation"], [id*="contact"]');
+
+  if (reservationForm) {
+    reservationForm.addEventListener('submit', function(e) {
+      var industry = '';
+      var selects = reservationForm.querySelectorAll('select');
+      selects.forEach(function(s) { if (s.value) industry = s.value; });
+
+      var method = '';
+      var radios = reservationForm.querySelectorAll('input[type="radio"]:checked');
+      radios.forEach(function(r) {
+        method = r.value || (r.parentElement ? r.parentElement.textContent.trim() : '');
+      });
+
+      gtag('event', 'reservation_submit', {
+        event_category: 'conversion',
+        event_label: '予約フォーム送信',
+        consultation_method: method.substring(0, 30),
+        industry: industry.substring(0, 30)
+      });
+    });
+  }
+
+  // 送信ボタンのクリックも追跡
+  document.querySelectorAll('button[type="submit"], input[type="submit"], button:not([type])').forEach(function(btn) {
+    var text = (btn.textContent || btn.value || '').trim();
+    if (text.indexOf('送信') !== -1 || text.indexOf('予約') !== -1) {
+      btn.addEventListener('click', function() {
+        gtag('event', 'submit_button_click', {
+          event_category: 'conversion',
+          event_label: text.substring(0, 50)
+        });
+      });
+    }
+  });
+
+  // ② CTAボタンのクリック追跡
+  var ctaKeywords = ['無料相談', '相談をする', '予約', '申込', '申し込', '詳細を見る', '一覧を見る'];
+
+  document.querySelectorAll('a, button').forEach(function(el) {
+    var text = (el.textContent || '').trim();
+    var href = el.getAttribute('href') || '';
+
+    var isCTA = ctaKeywords.some(function(kw) { return text.indexOf(kw) !== -1; });
+    if (href === '#contact') isCTA = true;
+
+    if (isCTA) {
+      el.addEventListener('click', function() {
+        gtag('event', 'cta_click', {
+          event_category: 'engagement',
+          event_label: text.substring(0, 50),
+          link_url: href || 'button',
+          link_destination: href.startsWith('#') ? 'internal_anchor' : 'external'
+        });
+      });
+    }
+  });
+
+  // ナビメニューのクリック追跡
+  document.querySelectorAll('nav a[href^="#"], [class*="nav"] a[href^="#"]').forEach(function(navLink) {
+    navLink.addEventListener('click', function() {
+      gtag('event', 'nav_click', {
+        event_category: 'navigation',
+        event_label: (navLink.textContent || '').trim(),
+        section: navLink.getAttribute('href')
+      });
+    });
+  });
+
+  // ③ 特定ページ・外部リンクへの遷移追跡
+  var trackedLinks = [
+    { pattern: 'news.html',              label: 'ニュース一覧' },
+    { pattern: 'manual_consultee',       label: '相談者マニュアル' },
+    { pattern: 'manual_consultant',      label: '相談員マニュアル' },
+    { pattern: '/docs/',                 label: 'ドキュメント' },
+    { pattern: 'iba.kwansei.ac.jp/knowledge/forum', label: 'IBA研究フォーラム' },
+    { pattern: 'iba.kwansei.ac.jp/chusho',          label: 'IBA養成課程' },
+    { pattern: 'forms.gle',              label: 'Googleフォーム' },
+    { pattern: 'docs.google.com/forms',  label: 'Googleフォーム' }
+  ];
+
+  document.querySelectorAll('a[href]').forEach(function(link) {
+    var href = link.getAttribute('href') || '';
+    if (href.startsWith('#')) return;
+
+    trackedLinks.forEach(function(tracked) {
+      if (href.indexOf(tracked.pattern) !== -1) {
+        link.addEventListener('click', function() {
+          gtag('event', 'outbound_click', {
+            event_category: 'navigation',
+            event_label: tracked.label,
+            link_url: href
+          });
+        });
+      }
+    });
+  });
+
+  // ④ スクロール率 + セクション到達の追跡
+  var scrollThresholds = [25, 50, 75, 100];
+  var scrollFired = {};
+  var sections = ['about', 'service', 'flow', 'members', 'faq', 'contact'];
+  var sectionFired = {};
+
+  function throttle(fn, wait) {
+    var last = 0;
+    return function() {
+      var now = Date.now();
+      if (now - last >= wait) { last = now; fn(); }
+    };
+  }
+
+  window.addEventListener('scroll', throttle(function() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    if (docHeight <= 0) return;
+    var pct = Math.round((scrollTop / docHeight) * 100);
+
+    scrollThresholds.forEach(function(t) {
+      if (pct >= t && !scrollFired[t]) {
+        scrollFired[t] = true;
+        gtag('event', 'scroll_depth', {
+          event_category: 'engagement',
+          event_label: t + '%到達',
+          value: t
+        });
+      }
+    });
+
+    sections.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el || sectionFired[id]) return;
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.8) {
+        sectionFired[id] = true;
+        gtag('event', 'section_view', {
+          event_category: 'engagement',
+          event_label: id + 'セクション到達',
+          section_id: id
+        });
+      }
+    });
+  }, 200));
+
+  // ⑤ 滞在時間の追跡
+  [30, 60, 180].forEach(function(sec) {
+    setTimeout(function() {
+      gtag('event', 'time_on_page', {
+        event_category: 'engagement',
+        event_label: sec + '秒滞在',
+        value: sec
+      });
+    }, sec * 1000);
+  });
+
+  // ⑥ FAQ開閉の追跡
+  var faqSection = document.getElementById('faq');
+  if (faqSection) {
+    faqSection.addEventListener('click', function(e) {
+      var target = e.target.closest(
+        '[class*="accordion"], [class*="faq"], summary, dt, h3, h4, button, [class*="toggle"]'
+      );
+      if (!target) return;
+      var question = (target.textContent || '').trim().substring(0, 60);
+      gtag('event', 'faq_click', {
+        event_category: 'engagement',
+        event_label: question
+      });
+    });
+  }
+
+  // ⑦ 相談方法（対面/オンライン）選択追跡
+  document.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      var label = radio.value
+        || (radio.parentElement ? radio.parentElement.textContent.trim() : '');
+      gtag('event', 'consultation_method_select', {
+        event_category: 'engagement',
+        event_label: label.substring(0, 50)
+      });
+    });
+  });
+});
+</script>
 </body>
 </html>
