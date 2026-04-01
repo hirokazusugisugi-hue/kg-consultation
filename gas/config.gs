@@ -175,6 +175,14 @@ const CONFIG = {
     TRANSCRIPT_FOLDER_ID: ''   // 文字起こしドキュメント保存先フォルダID
   },
 
+  // 担当者自動選定設定
+  STAFF_LIMITS: {
+    SELECT: 4,               // 第一段階の選出人数
+    FINAL: 3,                // 最終確定人数
+    MIN_SPECIAL: 2,          // 特別対応時の最小人数
+    REQUIRE_SHINDANSHI: 1    // 必須診断士数（1期/2期）
+  },
+
   // 返信先メールアドレス
   REPLY_TO: 'kgibaconsultant@gmail.com',
 

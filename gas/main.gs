@@ -313,6 +313,15 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 特定予約の確定通知を手動再送（管理用）
+    if (action === 'resend-confirm-notify') {
+      var targetDate = e.parameter.date; // yyyy/MM/dd
+      var result = resendConfirmNotifyForDate_(targetDate);
+      return ContentService
+        .createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 24時間未同意自動解放トリガー設定（管理用）
     if (action === 'setup-expired-trigger') {
       setupExpiredBookingTrigger();

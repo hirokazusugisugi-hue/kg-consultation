@@ -146,6 +146,45 @@ function processNdaConsent(e) {
       const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
         .getSheetByName(CONFIG.SHEET_NAME);
 
+      // ── 担当者自動選定（P列が未設定の場合のみ） ──
+      var existingStaff = (data.staff || '').toString().trim();
+      if (!existingStaff) {
+        var zoomConsultTheme = (data.theme || '').toString();
+        var zoomSpecialFlag = false;
+        try {
+          var zoomSchedSheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(CONFIG.SCHEDULE_SHEET_NAME);
+          if (zoomSchedSheet && data.confirmedDate) {
+            var zoomSchedData = zoomSchedSheet.getDataRange().getValues();
+            var zoomConfDate = data.confirmedDate instanceof Date
+              ? Utilities.formatDate(data.confirmedDate, 'Asia/Tokyo', 'yyyy-MM-dd')
+              : data.confirmedDate.toString().substring(0, 10);
+            for (var zsd = 1; zsd < zoomSchedData.length; zsd++) {
+              if (zoomSchedData[zsd][SCHEDULE_COLUMNS.SPECIAL_FLAG] === true) {
+                var zsdDate = zoomSchedData[zsd][SCHEDULE_COLUMNS.DATE];
+                var zsdDateStr = zsdDate instanceof Date
+                  ? Utilities.formatDate(zsdDate, 'Asia/Tokyo', 'yyyy-MM-dd')
+                  : (zsdDate || '').toString().substring(0, 10);
+                if (zsdDateStr === zoomConfDate) { zoomSpecialFlag = true; break; }
+              }
+            }
+          }
+        } catch (zse) { console.log('Zoom確定: 特別対応フラグ確認スキップ:', zse.message); }
+
+        var zoomStaffResult = selectStaffMembers(zoomConsultTheme, zoomSpecialFlag);
+        if (zoomStaffResult.success) {
+          sheet.getRange(rowIndex, COLUMNS.STAFF + 1).setValue(zoomStaffResult.confirmed.join(', '));
+          if (zoomStaffResult.reserve.length > 0) {
+            var zoomNotes = (sheet.getRange(rowIndex, COLUMNS.NOTES + 1).getValue() || '').toString();
+            var zoomReserveNote = '予備: ' + zoomStaffResult.reserve.join(', ');
+            sheet.getRange(rowIndex, COLUMNS.NOTES + 1).setValue(zoomNotes ? zoomNotes + '\n' + zoomReserveNote : zoomReserveNote);
+          }
+          console.log('相談者同意[Zoom]: 担当者自動選定 確定=' + zoomStaffResult.confirmed.join(',') + ' 予備=' + zoomStaffResult.reserve.join(','));
+          data = getRowData(rowIndex); // 選定結果を反映
+        } else {
+          console.error('相談者同意[Zoom]: 担当者選定失敗: ' + zoomStaffResult.message);
+        }
+      }
+
       // ステータスを「確定」に変更
       sheet.getRange(rowIndex, COLUMNS.STATUS + 1).setValue(STATUS.CONFIRMED);
       console.log('相談者同意[Zoom]: ステータス→確定');
@@ -182,15 +221,28 @@ function processNdaConsent(e) {
       // 管理者に通知（Zoom自動確定）
       notifyConsentAgreedAutoConfirmed(data, signature);
 
-      // 担当者への確定通知（リーダー情報付き）
-      var staffTarget = data.leader || data.staff;
+      // 担当者（P列の確定メンバーのみ）に確定通知を送信
+      var emailResult = buildStaffNotificationEmail_(data);
+      var zoomSentEmails = {};
+
+      var staffTarget = data.staff;
       if (staffTarget) {
-        var emailResult = buildStaffNotificationEmail_(data);
-        sendStaffNotifications(
-          staffTarget,
-          emailResult.subject,
-          emailResult.body
-        );
+        sendStaffNotifications(staffTarget, emailResult.subject, emailResult.body);
+        var zoomStaffNames = staffTarget.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+        zoomStaffNames.forEach(function(name) {
+          var m = getMemberByName(name);
+          if (m && m.email) zoomSentEmails[m.email] = true;
+        });
+      }
+
+      // 誰にも送れなかった場合は管理者にフォールバック
+      if (Object.keys(zoomSentEmails).length === 0) {
+        CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+          GmailApp.sendEmail(adminEmail, emailResult.subject, emailResult.body, {
+            name: emailResult.senderName || CONFIG.SENDER_NAME
+          });
+        });
+        console.log('相談者同意[Zoom]: 担当者未設定のため管理者にフォールバック');
       }
 
       console.log('相談者同意[Zoom]: 自動確定完了 ' + data.email);
@@ -228,15 +280,46 @@ function processNdaConsent(e) {
       // 管理者に通知（当日予約・同意完了で自動確定）
       notifyWalkInConsentConfirmed(data, signature);
 
-      // 担当者への確定通知
+      // 担当者・参加メンバーへの確定通知
+      var emailResult = buildStaffNotificationEmail_(data);
+      var walkInSentEmails = {};
+
       var staffTarget = data.leader || data.staff;
       if (staffTarget) {
-        var emailResult = buildStaffNotificationEmail_(data);
         sendStaffNotifications(
           staffTarget,
           emailResult.subject,
           emailResult.body
         );
+        var wiStaffNames = staffTarget.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+        wiStaffNames.forEach(function(name) {
+          var m = getMemberByName(name);
+          if (m && m.email) walkInSentEmails[m.email] = true;
+        });
+      }
+
+      // 日程設定シートの参加メンバー全員にも確定通知（重複除外）
+      var wiMembers = getScheduleMembersForDate_(data.confirmedDate);
+      if (wiMembers && wiMembers.length > 0) {
+        wiMembers.forEach(function(cm) {
+          var m = getMemberByName(cm.name);
+          if (m && m.email && !walkInSentEmails[m.email]) {
+            GmailApp.sendEmail(m.email, emailResult.subject, emailResult.body, {
+              name: emailResult.senderName || CONFIG.SENDER_NAME
+            });
+            walkInSentEmails[m.email] = true;
+            console.log('相談者同意[当日予約] 確定通知（参加メンバー）: ' + cm.name + ' (' + m.email + ')');
+          }
+        });
+      }
+
+      if (Object.keys(walkInSentEmails).length === 0) {
+        CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+          GmailApp.sendEmail(adminEmail, emailResult.subject, emailResult.body, {
+            name: emailResult.senderName || CONFIG.SENDER_NAME
+          });
+        });
+        console.log('相談者同意[当日予約]: 担当者・メンバー未設定のため管理者にフォールバック');
       }
 
       console.log('相談者同意[当日予約]: 自動確定完了 ' + data.email);

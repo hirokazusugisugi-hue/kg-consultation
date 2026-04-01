@@ -1017,9 +1017,10 @@
   <h4><i class="fas fa-video"></i> オンライン相談（Zoom）の場合</h4>
   <ol class="step-list">
     <li>相談者が相談同意書への同意を完了 &rarr; <strong>自動で</strong>ステータスが <span class="status-badge confirmed">確定</span> に更新されます</li>
+    <li><strong>担当者が自動選定</strong>されます（詳細は下記「担当者自動選定」参照）</li>
     <li>同意完了＋予約確定メールが相談者に自動送信されます</li>
     <li>Zoomミーティングが <strong>自動作成</strong> され、R列にURLが保存されます（パスコード付き、待機室なし）</li>
-    <li>日程設定シートH列の<strong>参加メンバー全員</strong>に確定通知メールが送信されます</li>
+    <li><strong>自動選定された確定メンバー（P列）のみ</strong>に確定通知メールが送信されます</li>
     <li>ミーティング終了後、<strong>録画の共有リンクがAB列に自動保存</strong>され、リーダーにメール通知されます</li>
     <li>【YouTube連携有効時】録画がYouTubeに<strong>非公開</strong>で自動アップロードされ、AC列にURLが保存されます。管理者に共有依頼メール（リーダー・管理者メールアドレス＋Studio共有リンク付き）が届きます</li>
   </ol>
@@ -1030,8 +1031,9 @@
     <li>相談者に同意完了確認メール（会場確保待ち案内）が自動送信されます</li>
     <li>管理者に「会場確保依頼」の通知が届きます</li>
     <li>スタッフポータルの「案件」ページから「会場未設定」をタップし、会場を選択して確定します（N列に自動反映されます）</li>
+    <li><strong>担当者が自動選定</strong>されます（詳細は下記「担当者自動選定」参照）</li>
     <li>ステータスを <span class="status-badge confirmed">確定</span> に変更 &rarr; 確定メールが相談者に自動送信されます</li>
-    <li>日程設定シートH列の<strong>参加メンバー全員</strong>に確定通知メールが送信されます</li>
+    <li><strong>自動選定された確定メンバー（P列）のみ</strong>に確定通知メールが送信されます</li>
   </ol>
 
   <div class="info-box note">
@@ -1039,9 +1041,49 @@
     <div><strong>Zoomの場合</strong>は相談同意書への同意完了時に自動確定され、Zoomミーティングも自動作成されます。管理者による手動操作は不要です。自動作成に失敗した場合のみR列にURLを手動入力してください。<br><strong>当日予約（備考欄9999）の場合</strong>は相談同意書への同意完了で即確定されます。会場確保メールのやり取りは不要です。<br><strong>対面（通常予約）の場合</strong>は同意完了時に相談者へ会場確保待ち案内メールが自動送信されます。管理者は会場確保後、ステータスを「確定」に変更してください。</div>
   </div>
 
+  <h4><i class="fas fa-users-gear"></i> 担当者自動選定</h4>
+  <p>確定時に、システムが<strong>全アクティブメンバー</strong>（顧問を除く）から自動的に担当者を選定します。日程ごとの事前参加表明は不要です。</p>
+
+  <div class="score-box">
+    <div class="score-item">
+      <span>選出人数（第一段階）</span>
+      <span class="score-value">4名</span>
+    </div>
+    <div class="score-item">
+      <span>確定人数</span>
+      <span class="score-value">3名</span>
+    </div>
+    <div class="score-item">
+      <span>予備メンバー</span>
+      <span class="score-value">1名</span>
+    </div>
+  </div>
+
+  <p><strong>選定ロジック:</strong></p>
+  <ol>
+    <li><strong>診断士（1期/2期）から1名以上</strong>を選出。相談テーマ（I列）と得意テーマが<strong>マッチする診断士を優先</strong>。マッチ者がいない場合はランダム</li>
+    <li>残り枠を全メンバーから<strong>ランダム</strong>に選出し、合計4名にする</li>
+    <li>配置点数が4点以上になるよう自動調整</li>
+    <li>4名から<strong>3名を確定、1名を予備</strong>に振り分け（条件を崩さない範囲でOBを優先的に予備に）</li>
+  </ol>
+
+  <p><strong>結果の記録:</strong></p>
+  <ul>
+    <li>確定メンバー &rarr; <strong>P列（担当者）</strong>に自動書き込み</li>
+    <li>予備メンバー &rarr; <strong>T列（備考）</strong>に「予備: ○○」と追記</li>
+    <li>確定通知は<strong>確定メンバーのみ</strong>に送信されます</li>
+  </ul>
+
+  <p><strong>特別対応時（J列=TRUE）:</strong> 最低2名・2点以上で確定可能です。</p>
+
+  <div class="info-box note">
+    <i class="fas fa-lightbulb"></i>
+    <div><strong>手動設定の優先:</strong> P列に担当者を事前に手動入力済みの場合、自動選定はスキップされます。<br><strong>予備メンバーの繰り上げ:</strong> 確定メンバーに欠員が出た場合、備考欄の予備メンバーをP列に手動追加してください。</div>
+  </div>
+
   <div class="info-box success">
     <i class="fas fa-circle-check"></i>
-    <div><strong>確定通知・リマインドの送信先:</strong> 日程設定シートのH列（参加メンバー）に登録されている全メンバーに送信されます。メンバーが未登録の場合のみ管理者メールアドレスにフォールバックします。</div>
+    <div><strong>確定通知・リマインドの送信先:</strong> P列（担当者）に記録された<strong>確定メンバーのみ</strong>に送信されます。メンバーが未登録の場合のみ管理者メールアドレスにフォールバックします。</div>
   </div>
 
   <!-- 6.3 当日受付 -->

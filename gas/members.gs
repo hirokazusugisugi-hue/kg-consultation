@@ -215,7 +215,7 @@ function setupMemberSheet() {
     ['野田 慎士', '3期', '', 'オブザーバー', 'jimi320320320@gmail.com', '', '', '', '', '', true, ''],
     ['高山 佳樹', '3期', '', 'オブザーバー', 'gaoshanjiashu@gmail.com', '', '', 'Zoom参加のみ', '', '', true, ''],
     ['高乘 麻美', '4期', '', 'オブザーバー', 'asami.koujou@gmail.com', '', '', '', '', '', true, ''],
-    ['村本 将之', '4期', '', 'オブザーバー', 'kastu.mura3.teru@gmail.com', '', '', '', '', '', true, ''],
+    ['村本 将之', '4期', '', 'オブザーバー', 'katsu.mura3.teru@gmail.com', '', '', '', '', '', true, ''],
     ['織田 美智子', '4期', '', 'オブザーバー', 'amdt.ked@gmail.com', '', '', '', '', '', true, '']
   ];
 
@@ -237,4 +237,249 @@ function getLeaderCandidates(memberNames) {
     var term = m.term ? m.term.toString() : '';
     return term === '1期' || term === '2期';
   });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 担当者自動選定
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * 相談テーマと得意テーマのマッチング判定
+ * @param {string} memberThemes - メンバーの得意テーマ（カンマ区切り）
+ * @param {string} consultTheme - 相談テーマ
+ * @returns {boolean} マッチするかどうか
+ */
+function matchTheme(memberThemes, consultTheme) {
+  if (!memberThemes || !consultTheme) return false;
+  var themes = memberThemes.split(',').map(function(t) { return t.trim().toLowerCase(); }).filter(Boolean);
+  var target = consultTheme.toString().trim().toLowerCase();
+  if (!target) return false;
+  for (var i = 0; i < themes.length; i++) {
+    if (target.indexOf(themes[i]) >= 0 || themes[i].indexOf(target) >= 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * 配列をランダムにシャッフル（Fisher-Yates）
+ * @param {Array} arr - シャッフルする配列
+ * @returns {Array} シャッフルされた新しい配列
+ */
+function shuffleArray(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i];
+    a[i] = a[j];
+    a[j] = tmp;
+  }
+  return a;
+}
+
+/**
+ * メンバーリストの配置点数を計算
+ * @param {Array<Object>} members - メンバー情報の配列
+ * @returns {number} 配置点数
+ */
+function calculateMemberScore(members) {
+  var score = 0;
+  members.forEach(function(m) {
+    var term = m.term ? m.term.toString() : '';
+    if (term === '1期' || term === '2期') {
+      score += 2;
+    } else if (term === '3期' || term === '4期') {
+      score += 1;
+    }
+  });
+  return score;
+}
+
+/**
+ * メンバーリスト中の診断士（1期/2期）の人数
+ * @param {Array<Object>} members - メンバー情報の配列
+ * @returns {number}
+ */
+function countShindanshi(members) {
+  return members.filter(function(m) {
+    var term = m.term ? m.term.toString() : '';
+    return term === '1期' || term === '2期';
+  }).length;
+}
+
+/**
+ * 確定時に全アクティブメンバーから担当者を自動選定
+ *
+ * ロジック:
+ * 1. 全アクティブメンバー（顧問除外）を候補プールとする
+ * 2. 診断士（1期/2期）からテーママッチ優先で1名以上選出
+ * 3. 残り枠をランダムで充填し合計SELECT名
+ * 4. SELECT名から FINAL名を確定、残りを予備
+ *
+ * @param {string} consultTheme - 相談テーマ
+ * @param {boolean} specialFlag - 特別対応フラグ
+ * @returns {Object} { success, confirmed: [name], reserve: [name], score, message }
+ */
+function selectStaffMembers(consultTheme, specialFlag) {
+  var limits = CONFIG.STAFF_LIMITS;
+  var selectCount = limits.SELECT;   // 4
+  var finalCount = limits.FINAL;     // 3
+  var minSpecial = limits.MIN_SPECIAL; // 2
+  var reqShindanshi = limits.REQUIRE_SHINDANSHI; // 1
+
+  // ── 候補プールの構築 ──
+  var allMembers = getAllMembers();
+  var pool = allMembers.filter(function(m) {
+    return m.active !== false && m.type !== '顧問';
+  });
+
+  var shindanshiPool = pool.filter(function(m) {
+    var term = m.term ? m.term.toString() : '';
+    return term === '1期' || term === '2期';
+  });
+  var obPool = pool.filter(function(m) {
+    var term = m.term ? m.term.toString() : '';
+    return term !== '1期' && term !== '2期';
+  });
+
+  // 診断士が最低人数に満たない場合
+  if (shindanshiPool.length < reqShindanshi) {
+    return { success: false, confirmed: [], reserve: [], score: 0,
+      message: '診断士（1期/2期）が' + reqShindanshi + '名以上必要ですが、有効な診断士が' + shindanshiPool.length + '名しかいません。' };
+  }
+
+  // ── ステップ2: 診断士の選定（テーママッチ優先） ──
+  var matchedShindanshi = [];
+  var unmatchedShindanshi = [];
+  shindanshiPool.forEach(function(m) {
+    if (matchTheme(m.themes, consultTheme)) {
+      matchedShindanshi.push(m);
+    } else {
+      unmatchedShindanshi.push(m);
+    }
+  });
+
+  matchedShindanshi = shuffleArray(matchedShindanshi);
+  unmatchedShindanshi = shuffleArray(unmatchedShindanshi);
+
+  // 診断士選出: テーマ一致を優先し最低1名
+  var selected = [];
+  if (matchedShindanshi.length > 0) {
+    selected.push(matchedShindanshi[0]);
+  } else {
+    selected.push(unmatchedShindanshi[0]);
+    unmatchedShindanshi = unmatchedShindanshi.slice(1);
+  }
+
+  // ── ステップ3: 残り枠の充填 ──
+  // 残り候補（選出済みを除く）をシャッフル
+  var selectedNames = {};
+  selected.forEach(function(m) { selectedNames[m.name] = true; });
+
+  var remaining = [];
+  // 未選出の診断士（テーマ一致）
+  matchedShindanshi.forEach(function(m) {
+    if (!selectedNames[m.name]) remaining.push(m);
+  });
+  // 未選出の診断士（テーマ不一致）
+  unmatchedShindanshi.forEach(function(m) {
+    if (!selectedNames[m.name]) remaining.push(m);
+  });
+  // OB（シャッフル済み）
+  var shuffledOb = shuffleArray(obPool);
+  remaining = remaining.concat(shuffledOb);
+
+  // selectCount名まで追加
+  for (var i = 0; i < remaining.length && selected.length < selectCount; i++) {
+    selected.push(remaining[i]);
+  }
+
+  // 候補が足りない場合はそのまま進む
+
+  // ── 点数チェック＋調整 ──
+  var score = calculateMemberScore(selected);
+  var minScore = specialFlag ? 2 : 4;
+
+  // 点数不足時: OBを診断士に入れ替え
+  if (score < minScore) {
+    var unselectedShindanshi = [];
+    var allSelectedNames = {};
+    selected.forEach(function(m) { allSelectedNames[m.name] = true; });
+    shindanshiPool.forEach(function(m) {
+      if (!allSelectedNames[m.name]) unselectedShindanshi.push(m);
+    });
+
+    // OBを後ろから入れ替え
+    for (var s = selected.length - 1; s >= 0 && score < minScore && unselectedShindanshi.length > 0; s--) {
+      var t = selected[s].term ? selected[s].term.toString() : '';
+      if (t !== '1期' && t !== '2期') {
+        var replacement = unselectedShindanshi.shift();
+        score = score - 1 + 2; // OB(1pt) → 診断士(2pt)
+        selected[s] = replacement;
+      }
+    }
+  }
+
+  // ── ステップ4: 確定 + 予備の振り分け ──
+  var confirmed = [];
+  var reserve = [];
+  var minFinal = specialFlag ? minSpecial : finalCount;
+
+  if (selected.length <= minFinal) {
+    // 人数が確定人数以下ならそのまま全員確定
+    confirmed = selected;
+  } else {
+    // 4名から1名を予備に（OB優先、条件を崩さない範囲で）
+    var bestReserveIdx = -1;
+    for (var r = selected.length - 1; r >= 0; r--) {
+      var without = selected.filter(function(_, idx) { return idx !== r; });
+      var wScore = calculateMemberScore(without);
+      var wShindanshi = countShindanshi(without);
+      if (wShindanshi >= reqShindanshi && wScore >= minScore && without.length >= minFinal) {
+        var rTerm = selected[r].term ? selected[r].term.toString() : '';
+        // OBを優先的に予備にする
+        if (rTerm !== '1期' && rTerm !== '2期') {
+          bestReserveIdx = r;
+          break;
+        }
+        // 診断士でも条件を満たすなら候補に（OBが見つからなかった場合のフォールバック）
+        if (bestReserveIdx < 0) bestReserveIdx = r;
+      }
+    }
+
+    if (bestReserveIdx >= 0) {
+      reserve.push(selected[bestReserveIdx]);
+      confirmed = selected.filter(function(_, idx) { return idx !== bestReserveIdx; });
+    } else {
+      // 誰も予備にできない場合は全員確定
+      confirmed = selected;
+    }
+  }
+
+  // ── ステップ5: 最終バリデーション ──
+  var finalScore = calculateMemberScore(confirmed);
+  var finalShindanshi = countShindanshi(confirmed);
+
+  if (finalShindanshi < reqShindanshi) {
+    return { success: false, confirmed: [], reserve: [], score: finalScore,
+      message: '確定メンバーに診断士（1期/2期）が含まれていません。メンバーマスタを確認してください。' };
+  }
+  if (finalScore < minScore) {
+    return { success: false, confirmed: [], reserve: [], score: finalScore,
+      message: '配置点数が' + minScore + '点以上必要ですが、' + finalScore + '点です。' };
+  }
+
+  var confirmedNames = confirmed.map(function(m) { return m.name; });
+  var reserveNames = reserve.map(function(m) { return m.name; });
+
+  console.log('担当者自動選定完了: 確定=' + confirmedNames.join(',') + ' 予備=' + reserveNames.join(',') + ' スコア=' + finalScore);
+
+  return {
+    success: true,
+    confirmed: confirmedNames,
+    reserve: reserveNames,
+    score: finalScore,
+    message: '担当者選定完了（確定' + confirmedNames.length + '名、予備' + reserveNames.length + '名、' + finalScore + '点）'
+  };
 }
