@@ -1,0 +1,206 @@
+# KG中小企業経営相談システム 改定履歴
+# 内部管理用 — 各改定の概要と変更内容を記録
+
+revisions:
+
+  - date: "2026-04-01"
+    title: GA4アナリティクス導入（LPアクセス監視）
+    summary: >
+      無料経営相談LP（iba-consulting.jp）にGA4タグを埋め込み、アクセスを監視できるようにした。
+      Looker Studioダッシュボード作成、週次レポートのメール配信設定。
+    changes:
+      - GA4プロパティ作成（測定ID: G-GELJ4GB33D、KG-IBAアカウント）
+      - index15.html にGA4基本タグ＋コンバージョン追跡スクリプト7種埋め込み
+      - index.html（リダイレクト元）にもGA4タグ追加
+      - 追跡対象：フォーム送信、CTAクリック、外部リンク、スクロール率、滞在時間、FAQ、相談方法選択
+      - Looker Studioダッシュボード作成（GA4テンプレートベース）
+      - 週次レポート配信設定（毎週火曜20時、PDF形式）
+    files:
+      - index15.html
+      - index.html
+
+  - date: "2026-04-01"
+    title: 参加メンバーの絞り込み（担当者自動選定）
+    summary: >
+      確定時に日程参加表明者ではなく全アクティブメンバーから自動選定する仕組みを導入。
+      テーママッチ優先＋ランダムで4名選出→3名確定＋1名予備。
+    changes:
+      - 確定時に全アクティブメンバー（顧問除く）から自動選定
+      - 相談テーマと得意テーマの部分一致マッチング導入
+      - 4名選出→3名確定＋1名予備の2段階方式
+      - 対面確定（portal.gs）・Zoom自動確定（nda.gs）の両方に適用
+      - config.gs に STAFF_LIMITS 設定追加
+      - 管理者マニュアル・スタッフマニュアル更新
+    files:
+      - gas/config.gs
+      - gas/members.gs
+      - gas/portal.gs
+      - gas/nda.gs
+      - gas/test_staff_selection.gs
+      - docs/manual_admin.html
+      - docs/manual_staff.html
+      - docs/requirements_staff_selection.md
+
+  - date: "2026-03-21"
+    title: コラム管理＋Podcast＋メディアサイト整備
+    summary: >
+      コラムエディタのWYSIWYG化、Podcast Spotifyセクション追加、
+      CTAボタン色統一、メディアサイトパイロット版。
+    changes:
+      - コラムエディタWYSIWYG化（リッチテキスト編集対応）
+      - ポータルにコラム編集機能＋画像アップロードAPI追加
+      - トップページにPodcast Spotifyセクション追加
+      - CTAボタンを金色→水色グラデーションに統一
+      - メディアサイト パイロット版（site/media/）追加
+      - 研究会ページからミッション数値ボックス削除
+    files:
+      - gas/articles.gs
+      - gas/main.gs
+      - site/media/
+
+  - date: "2026-03-14"
+    title: 音声アップロード・文字起こし機能
+    summary: >
+      相談音声のアップロードとGCP Speech-to-Textによる文字起こし機能を追加。
+      チャンクアップロードでPHP制限を回避。
+    changes:
+      - 音声ファイルアップロード機能追加
+      - GCP Speech-to-Text連携（REST API方式）
+      - チャンクアップロード対応（PHP upload_max_filesize回避）
+      - マニュアル3件に音声機能の記載追加
+    files:
+      - transcribe.py
+      - docs/manual_admin.html
+      - docs/manual_staff.html
+
+  - date: "2026-03-14"
+    title: ポータル各種バグ修正
+    summary: >
+      ログインリンク送信後のボタン状態、会場確定メール送信、
+      Zoom判定、名前表記の統一など複数の不具合修正。
+    changes:
+      - ログインリンク送信後のボタン状態修正
+      - 会場ボタン表示判定をindexOfベースに修正
+      - Zoom判定に小文字チェック追加
+      - 会場確定時にメール送信を直接実行
+      - 名前表記を「姓 半角スペース 名」に統一
+    files:
+      - gas/portal.gs
+      - gas/notification.gs
+
+  - date: "2026-03-12"
+    title: 当日予約フロー＋NDA・組織名整備
+    summary: >
+      当日予約(コード9999)のNDA同意即確定フロー追加、
+      NDA誓約書テキスト復元、組織名の統一。
+    changes:
+      - 当日予約(9999)のNDA同意で即確定フロー追加
+      - 会場確保依頼メール不要化（当日予約時）
+      - SENDER_NAMEとNDA文書の組織名を「中小企業経営診断研究会」に統一
+      - オブザーバーNDA誓約書テキストを更新前の文言に復元
+    files:
+      - gas/nda.gs
+      - gas/config.gs
+      - gas/notification.gs
+
+  - date: "2026-03-11"
+    title: リーダー選定・自動解放・会場確保依頼
+    summary: >
+      リーダー選定タイミング前倒し、仮予約24時間未同意の自動解放、
+      会場確保依頼メール手動送信、各種設定整備。
+    changes:
+      - リーダー選定を前倒し（対面=確定時、Zoom=3日前リマインド時）
+      - 仮予約24時間未同意の自動解放機能追加
+      - 会場確保依頼メール手動送信エンドポイント追加
+      - NDA同意完了通知を担当者・参加メンバーにも送信
+      - 同意書URL修正、組織名統一
+      - GitHub Actionsデプロイドキュメント追加
+    files:
+      - gas/members.gs
+      - gas/triggers.gs
+      - gas/notification.gs
+      - gas/main.gs
+
+  - date: "2026-03-11"
+    title: マニュアル・サイトナビゲーション整備
+    summary: >
+      未実装セクション削除、工事中ページ追加、全ページLP誘導整備。
+    changes:
+      - マニュアルから未実装セクション削除
+      - 工事中ページ追加・全ページLP誘導
+      - 管理者マニュアルにCloud Functions詳細追記
+    files:
+      - docs/manual_admin.html
+      - docs/manual_staff.html
+      - site/
+
+  - date: "2026-03-07"
+    title: NDA同意書PDF・オブザーバーページ
+    summary: >
+      NDA同意書PDFの6条構成化、オブザーバー用NDA PDF追加、
+      アンケートシステム追加。
+    changes:
+      - NDA同意書PDFを6条構成に改訂
+      - オブザーバー（養成課程在学生）用NDA PDF追加
+      - アンケートシステム追加
+      - オブザーバーページのNDA署名・スケジュール詳細改善
+    files:
+      - gas/nda.gs
+      - docs/manual_observer.html
+
+  - date: "2026-03-05"
+    title: 日程管理・予約確定フロー改善
+    summary: >
+      会場列移動、NDA同意時の自動ステータス更新、リマインダー有効化。
+    changes:
+      - 会場列をN列に移動（相談方法の後ろ）
+      - NDA同意時にステータス・確定日時を自動更新
+      - リマインダー有効化
+      - スケジュールシート同期改善
+    files:
+      - gas/schedule.gs
+      - gas/spreadsheet.gs
+      - gas/nda.gs
+
+  - date: "2026-03-04"
+    title: ニュースページ・同意確認メール
+    summary: >
+      news.htmlページ追加、同意確認メール追加、Zoom案内追加。
+    changes:
+      - news.htmlページ追加・ニュースバーからリンク
+      - 同意確認メール送信機能追加
+      - Zoom案内を通知に追加
+      - ヒアリングシート参照を削除
+    files:
+      - site/news.html
+      - gas/notification.gs
+      - gas/templates.gs
+
+  - date: "2026-03-03"
+    title: メンバー名簿更新・PR資料
+    summary: >
+      メンバー名簿にメールアドレス・電話番号列追加、
+      PR資料追加、スケジュール時間修正。
+    changes:
+      - メンバー名簿にメール・電話列追加、顧問をスケジュール対象外に
+      - PR資料（SNS用テキスト等）追加
+      - 組織名修正（経営診断研究会無料経営診断分科会→無料経営診断分科会）
+    files:
+      - gas/members.gs
+      - docs/sns_facebook.html
+      - docs/sns_instagram.html
+
+  - date: "2026-03-01"
+    title: 初期構築
+    summary: >
+      KG中小企業経営相談システムの初期構築。LP、GASバックエンド、
+      フォームポーリング、ニュース管理、各種ドキュメント。
+    changes:
+      - LP（index14.html）作成
+      - GASバックエンド一式（config/main/schedule/spreadsheet/notification/templates/triggers）
+      - フォームポーリングv2
+      - 相談者ガイド・管理者マニュアル・システム概要
+    files:
+      - gas/
+      - site/
+      - docs/
