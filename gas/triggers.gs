@@ -1056,7 +1056,9 @@ function buildStaffNotificationEmail_(data) {
     '■ 担当\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
     'リーダー：' + (data.leader || '未定') + '\n' +
-    '参加メンバー：' + (getParticipatingMembers(data.confirmedDate) || '未定') + '\n' +
+    // 表示は担当者(P列)のみ。未設定時のみ枠の参加可能メンバーにフォールバック。
+    // ※通知の送信先(周知)は別途、枠の参加可能メンバー全員のまま（handleStatusChange参照）
+    '参加メンバー：' + (data.staff || getParticipatingMembers(data.confirmedDate) || '未定') + '\n' +
     '\n' +
     (data.companyUrl ? '※事前に企業URLを確認し、リサーチをお願いします。\n\n' : '') +
     'よろしくお願いいたします。\n' +
