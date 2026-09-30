@@ -334,29 +334,50 @@ function sendDailyReminders() {
 
     // ── 相談者 + 担当者向け: 3日前リマインド ──
     if (dateStr === threeDaysLaterStr) {
-      // リーダー未選定なら3日前リマインド時に選定
-      if (!rowData.leader) {
-        try {
-          autoSelectLeaderOnReminder(i + 1);
-          rowData = getRowData(i + 1);  // リーダー名を再取得
-        } catch (leaderError) {
-          console.error('リーダー選定エラー（3日前リマインド）:', leaderError);
+      // 既に送信済みならスキップ
+      var remind3day = data[i][COLUMNS.REMIND_3DAY];
+      if (remind3day && remind3day.toString().indexOf('送信済') >= 0) {
+        console.log('3日前リマインド送信済みのためスキップ: ' + rowData.id);
+      } else {
+        // リーダー未選定なら3日前リマインド時に選定
+        if (!rowData.leader) {
+          try {
+            autoSelectLeaderOnReminder(i + 1);
+            rowData = getRowData(i + 1);  // リーダー名を再取得
+          } catch (leaderError) {
+            console.error('リーダー選定エラー（3日前リマインド）:', leaderError);
+          }
         }
+
+        // 相談者向け（メール）
+        sendReminderEmail3DaysBefore(rowData);
+
+        // 担当者向け
+        sendStaffReminderWithMembers_(rowData, '3日前');
+
+        // AI列に送信済み記録
+        var now3 = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+        sheet.getRange(i + 1, COLUMNS.REMIND_3DAY + 1).setValue('送信済 ' + now3);
+
+        console.log(`3日前リマインド送信: ${rowData.email}`);
       }
-
-      // 相談者向け（メール）
-      sendReminderEmail3DaysBefore(rowData);
-
-      // 担当者向け
-      sendStaffReminderWithMembers_(rowData, '3日前');
-
-      console.log(`3日前リマインド送信: ${rowData.email}`);
     }
 
     // ── 相談者向け: 前日リマインド ──
     if (dateStr === oneDayLaterStr) {
-      sendReminderEmailDayBefore(rowData);
-      console.log(`前日リマインド送信: ${rowData.email}`);
+      // 既に送信済みならスキップ
+      var remind1day = data[i][COLUMNS.REMIND_1DAY];
+      if (remind1day && remind1day.toString().indexOf('送信済') >= 0) {
+        console.log('前日リマインド送信済みのためスキップ: ' + rowData.id);
+      } else {
+        sendReminderEmailDayBefore(rowData);
+
+        // AJ列に送信済み記録
+        var now1 = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+        sheet.getRange(i + 1, COLUMNS.REMIND_1DAY + 1).setValue('送信済 ' + now1);
+
+        console.log(`前日リマインド送信: ${rowData.email}`);
+      }
     }
   }
 }
@@ -654,6 +675,8 @@ function checkCancellationEmails() {
   var sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
   var data = sheet.getDataRange().getValues();
 
+  var now = new Date();
+
   // メールアドレスをキーにした予約マップ（アクティブなもののみ）
   var activeBookings = {};
   var activeStatuses = [STATUS.PENDING, STATUS.CONSENT_AGREED, STATUS.NDA_AGREED, STATUS.RECEIVED, STATUS.CONFIRMED];
@@ -661,6 +684,17 @@ function checkCancellationEmails() {
     var email = (data[i][COLUMNS.EMAIL] || '').toString().toLowerCase().trim();
     var status = data[i][COLUMNS.STATUS];
     if (email && activeStatuses.indexOf(status) >= 0) {
+      // 確定日時の10分前以降はキャンセル受付しない
+      var confirmedDate = data[i][COLUMNS.CONFIRMED_DATE];
+      if (confirmedDate) {
+        var cd = confirmedDate instanceof Date ? confirmedDate : new Date(confirmedDate);
+        var cutoff = new Date(cd.getTime() - 10 * 60 * 1000); // 10分前
+        if (now >= cutoff) {
+          console.log('キャンセル受付期限超過のためスキップ: 行' + (i + 1) + ' 確定日時=' + confirmedDate);
+          continue;
+        }
+      }
+
       if (!activeBookings[email]) activeBookings[email] = [];
       activeBookings[email].push({
         rowIndex: i + 1,
@@ -668,7 +702,7 @@ function checkCancellationEmails() {
         name: data[i][COLUMNS.NAME],
         company: data[i][COLUMNS.COMPANY],
         status: status,
-        confirmedDate: data[i][COLUMNS.CONFIRMED_DATE]
+        confirmedDate: confirmedDate
       });
     }
   }
@@ -687,6 +721,16 @@ function checkCancellationEmails() {
 
       if (!bookings || bookings.length === 0) continue;
 
+      // メール本文から引用部分を除外してキャンセルキーワードを再チェック
+      var bodyText = message.getPlainBody() || '';
+      var originalBody = stripQuotedText_(bodyText);
+
+      // 引用を除外した本文にキャンセルキーワードが含まれるか確認
+      if (!containsCancelKeyword_(originalBody)) {
+        console.log('引用除外後キャンセルキーワードなし、スキップ: ' + senderEmail);
+        continue;
+      }
+
       // 最新の予約を対象にキャンセル処理
       var booking = bookings[bookings.length - 1];
       var rowData = getRowData(booking.rowIndex);
@@ -704,6 +748,51 @@ function checkCancellationEmails() {
     thread.addLabel(label);
     thread.markRead();
   }
+}
+
+/**
+ * メール本文から引用部分（返信時の元メール）を除外する
+ * 返信メールの新規本文のみを返す
+ * @param {string} body - メール本文（プレーンテキスト）
+ * @returns {string} 引用を除外した本文
+ */
+function stripQuotedText_(body) {
+  if (!body) return '';
+
+  var lines = body.split('\n');
+  var result = [];
+
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var trimmed = line.trim();
+
+    // 引用ヘッダーの検知（これ以降を全て除外）
+    // Gmail形式: "2026年3月31日(火) 9:23 関西学院大学 ... <xxx@gmail.com>:"
+    // "On ... wrote:" / "差出人:" / "From:" / "---------- Forwarded message"
+    if (trimmed.match(/^差出人[:：]/)) break;
+    if (trimmed.match(/^From[:：]/i)) break;
+    if (trimmed.match(/^On .+ wrote:$/i)) break;
+    if (trimmed.match(/^20\d{2}年.+<.+@.+>[:：]?\s*$/)) break;
+    if (trimmed.match(/^-{5,}\s*(Forwarded|転送|元のメッセージ)/)) break;
+    if (trimmed.match(/^>{2,}/)) break;  // 深い引用（>>以上）は除外
+
+    // ">" で始まる行（引用行）は除外
+    if (trimmed.match(/^>/)) continue;
+
+    result.push(line);
+  }
+
+  return result.join('\n');
+}
+
+/**
+ * テキストにキャンセルキーワードが含まれるか判定
+ * @param {string} text - チェック対象テキスト
+ * @returns {boolean} キャンセルキーワードが含まれる場合true
+ */
+function containsCancelKeyword_(text) {
+  if (!text) return false;
+  return /キャンセル|取消|取り消し|中止/.test(text);
 }
 
 /**
@@ -795,6 +884,133 @@ function sendScheduledStaffNotification() {
   }
 
   console.log('スケジュール確定通知完了: 行' + rowIndex + ', 送信数: ' + Object.keys(sentEmails).length);
+}
+
+/**
+ * 汎用メール送信（トリガー経由）
+ * ScriptPropertiesの PENDING_EMAIL_TO, PENDING_EMAIL_SUBJECT, PENDING_EMAIL_BODY をセットして呼び出す
+ */
+function sendPendingEmail() {
+  var props = PropertiesService.getScriptProperties();
+  var to = props.getProperty('PENDING_EMAIL_TO');
+  var subject = props.getProperty('PENDING_EMAIL_SUBJECT');
+  var body = props.getProperty('PENDING_EMAIL_BODY');
+  props.deleteProperty('PENDING_EMAIL_TO');
+  props.deleteProperty('PENDING_EMAIL_SUBJECT');
+  props.deleteProperty('PENDING_EMAIL_BODY');
+
+  ScriptApp.getProjectTriggers().forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'sendPendingEmail') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  if (!to || !subject || !body) {
+    console.log('PENDING_EMAIL パラメータが不足しています');
+    return;
+  }
+
+  GmailApp.sendEmail(to, subject, body, {
+    name: CONFIG.SENDER_NAME,
+    replyTo: CONFIG.REPLY_TO
+  });
+  console.log('メール送信完了: ' + to + ' / ' + subject);
+}
+
+/**
+ * 4/10全メンバーに確定通知を即時送信（手動実行用）
+ * GASエディタから▶実行してください
+ */
+function sendApril10NotifyAll() {
+  var data = getRowData(5);
+  if (!data.id) { console.log('行5にデータなし'); return; }
+
+  var emailResult = buildStaffNotificationEmail_(data);
+  var senderName = emailResult.senderName || CONFIG.SENDER_NAME;
+
+  var memberList = getScheduleMembersForDate_(data.confirmedDate);
+  var sentEmails = {};
+  var sentCount = 0;
+
+  // P列の担当者
+  if (data.staff) {
+    var staffNames = data.staff.split(',').map(function(n){ return n.trim(); }).filter(function(n){ return n; });
+    staffNames.forEach(function(name) {
+      var m = getMemberByName(name);
+      if (m && m.email && !sentEmails[m.email]) {
+        GmailApp.sendEmail(m.email, emailResult.subject, emailResult.body, { name: senderName });
+        sentEmails[m.email] = true;
+        sentCount++;
+        console.log('送信: ' + name + ' (' + m.email + ')');
+      }
+    });
+  }
+
+  // 日程設定シートの参加メンバー全員
+  if (memberList && memberList.length > 0) {
+    memberList.forEach(function(cm) {
+      var m = getMemberByName(cm.name);
+      if (m && m.email && !sentEmails[m.email]) {
+        GmailApp.sendEmail(m.email, emailResult.subject, emailResult.body, { name: senderName });
+        sentEmails[m.email] = true;
+        sentCount++;
+        console.log('送信: ' + cm.name + ' (' + m.email + ')');
+      }
+    });
+  }
+
+  // 土田さん（日程シートに未登録の場合の追加送信）
+  var tsuchida = getMemberByName('土田雄一郎');
+  if (tsuchida && tsuchida.email && !sentEmails[tsuchida.email]) {
+    GmailApp.sendEmail(tsuchida.email, emailResult.subject, emailResult.body, { name: senderName });
+    sentEmails[tsuchida.email] = true;
+    sentCount++;
+    console.log('送信: 土田雄一郎 (' + tsuchida.email + ')');
+  }
+
+  console.log('4/10通知完了: ' + sentCount + '名に送信');
+}
+
+/**
+ * 指定メンバー1名に確定通知を送信（トリガー経由）
+ * ScriptPropertiesの PENDING_NOTIFY_ROW, PENDING_NOTIFY_TARGET に値をセットして呼び出す
+ */
+function sendNotifyToMember() {
+  var props = PropertiesService.getScriptProperties();
+  var rowStr = props.getProperty('PENDING_NOTIFY_ROW');
+  var targetName = props.getProperty('PENDING_NOTIFY_TARGET');
+  props.deleteProperty('PENDING_NOTIFY_ROW');
+  props.deleteProperty('PENDING_NOTIFY_TARGET');
+
+  // 一回限りのトリガーを削除
+  ScriptApp.getProjectTriggers().forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'sendNotifyToMember') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  if (!rowStr || !targetName) {
+    console.log('PENDING_NOTIFY_ROW or PENDING_NOTIFY_TARGET が未設定です');
+    return;
+  }
+
+  var rowIndex = parseInt(rowStr);
+  var data = getRowData(rowIndex);
+  if (!data.id) {
+    console.log('行 ' + rowIndex + ' にデータがありません');
+    return;
+  }
+
+  var emailResult = buildStaffNotificationEmail_(data);
+  var senderName = emailResult.senderName || CONFIG.SENDER_NAME;
+
+  var member = getMemberByName(targetName);
+  if (member && member.email) {
+    GmailApp.sendEmail(member.email, emailResult.subject, emailResult.body, { name: senderName });
+    console.log('個別通知送信完了: ' + targetName + ' (' + member.email + '), 行' + rowIndex);
+  } else {
+    console.log('メンバーが見つかりません: ' + targetName);
+  }
 }
 
 /**
@@ -1016,4 +1232,97 @@ function setupExpiredBookingTrigger() {
     .create();
 
   console.log('24時間未同意チェックトリガーをセットアップしました（1時間おき）');
+}
+
+/**
+ * 指定日の予約について確定通知を手動再送
+ * @param {string} targetDate - yyyy/MM/dd形式の日付
+ * @returns {Object} 結果
+ */
+function resendConfirmNotifyForDate_(targetDate) {
+  if (!targetDate) {
+    return { success: false, message: 'dateパラメータが必要です' };
+  }
+
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  if (!sheet) return { success: false, message: '予約管理シートが見つかりません' };
+
+  var data = sheet.getDataRange().getValues();
+  var sentLog = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var confirmedDate = data[i][COLUMNS.CONFIRMED_DATE];
+    var status = data[i][COLUMNS.STATUS];
+
+    // 確定ステータスのみ
+    if (status !== STATUS.CONFIRMED && status !== '確定') continue;
+
+    // 確定日時から日付部分を抽出して比較
+    var dateStr = '';
+    if (confirmedDate instanceof Date) {
+      dateStr = Utilities.formatDate(confirmedDate, 'Asia/Tokyo', 'yyyy/MM/dd');
+    } else if (confirmedDate) {
+      var match = String(confirmedDate).match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+      if (match) {
+        dateStr = match[1] + '/' + ('0' + match[2]).slice(-2) + '/' + ('0' + match[3]).slice(-2);
+      }
+    }
+
+    if (dateStr !== targetDate) continue;
+
+    // 該当行のデータ取得
+    var rowData = getRowData(i + 1);
+    var emailResult = buildStaffNotificationEmail_(rowData);
+    var sentEmails = {};
+
+    // P列の担当者 / リーダーに通知
+    var staffTarget = rowData.leader || rowData.staff;
+    if (staffTarget) {
+      sendStaffNotifications(staffTarget, emailResult.subject, emailResult.body);
+      var staffNames = staffTarget.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+      staffNames.forEach(function(name) {
+        var m = getMemberByName(name);
+        if (m && m.email) sentEmails[m.email] = true;
+      });
+    }
+
+    // 日程設定シートの参加メンバー全員にも通知（重複除外）
+    var members = getScheduleMembersForDate_(rowData.confirmedDate);
+    if (members && members.length > 0) {
+      members.forEach(function(cm) {
+        var m = getMemberByName(cm.name);
+        if (m && m.email && !sentEmails[m.email]) {
+          GmailApp.sendEmail(m.email, emailResult.subject, emailResult.body, {
+            name: emailResult.senderName || CONFIG.SENDER_NAME
+          });
+          sentEmails[m.email] = true;
+        }
+      });
+    }
+
+    // 管理者にもフォールバック
+    if (Object.keys(sentEmails).length === 0) {
+      CONFIG.ADMIN_EMAILS.forEach(function(adminEmail) {
+        GmailApp.sendEmail(adminEmail, emailResult.subject, emailResult.body, {
+          name: emailResult.senderName || CONFIG.SENDER_NAME
+        });
+        sentEmails[adminEmail] = true;
+      });
+    }
+
+    sentLog.push({
+      row: i + 1,
+      id: rowData.id,
+      name: rowData.name,
+      confirmedDate: rowData.confirmedDate,
+      sentTo: Object.keys(sentEmails)
+    });
+  }
+
+  if (sentLog.length === 0) {
+    return { success: false, message: targetDate + ' の確定済み予約が見つかりません' };
+  }
+
+  return { success: true, sent: sentLog.length, details: sentLog };
 }

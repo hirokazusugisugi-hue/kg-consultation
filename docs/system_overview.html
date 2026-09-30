@@ -1401,7 +1401,7 @@
         </li>
         <li>
           <i class="fa-solid fa-envelope comp-icon" style="color: var(--red);"></i>
-          <div><strong>Gmail</strong> &mdash; 確認メール・同意書確認リンク・リマインダー・管理者通知・アンケート配信を自動送信。GASの<code>GmailApp</code>/<code>MailApp</code>を利用。</div>
+          <div><strong>Gmail</strong> &mdash; 確認メール・同意書確認リンク・リマインダー・管理者通知・アンケート配信を自動送信。GASの<code>GmailApp</code>/<code>MailApp</code>を利用。リマインド送信結果はスプレッドシートAI列（3日前）・AJ列（前日）に自動記録され、送信状況を確認可能。</div>
         </li>
         <li>
           <i class="fa-solid fa-clipboard-check comp-icon" style="color: var(--orange);"></i>
@@ -1425,7 +1425,7 @@
         </li>
         <li>
           <i class="fa-solid fa-envelope-open comp-icon" style="color: #dc2626;"></i>
-          <div><strong>キャンセル自動検知</strong> &mdash; Gmail受信箱を10分おきにスキャンし、相談者からのキャンセルメールを自動検知。ステータスを「キャンセル」に更新し、日程解放・Zoom削除・メンバー全員通知・確認メール送信を自動実行。<code>triggers.gs</code>で実装。</div>
+          <div><strong>キャンセル自動検知</strong> &mdash; Gmail受信箱を10分おきにスキャンし、相談者からのキャンセルメールを自動検知。返信メールの引用部分は除外し新規本文のみでキーワード判定。確定日時の10分前以降はキャンセル受付対象外。ステータスを「キャンセル」に更新し、日程解放・Zoom削除・メンバー全員通知・確認メール送信を自動実行。<code>triggers.gs</code>で実装。</div>
         </li>
         <li>
           <i class="fa-solid fa-cloud-arrow-up comp-icon" style="color: #059669;"></i>

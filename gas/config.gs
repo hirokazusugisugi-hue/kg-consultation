@@ -246,7 +246,9 @@ const COLUMNS = {
   TRANSCRIPT_FILE_ID: 30,   // AE: 文字起こしファイルID（Drive）
   REPORT_DRAFT_ID: 31,      // AF: 報告書ドラフトID（Google Docs ID）
   NOTION_PAGE_ID: 32,       // AG: Notion Page ID
-  AUDIO_URL: 33             // AH: 音声ファイルURL
+  AUDIO_URL: 33,            // AH: 音声ファイルURL
+  REMIND_3DAY: 34,          // AI: 3日前リマインド送信
+  REMIND_1DAY: 35           // AJ: 前日リマインド送信
 };
 
 /**

@@ -3,6 +3,40 @@
 
 revisions:
 
+  - date: "2026-04-11"
+    title: キャンセル自動検知の誤検知防止改善
+    summary: >
+      相談後のお礼メール返信で引用された確認メール内の「キャンセル」キーワードにより
+      誤ってキャンセル処理が実行される問題を修正。2つの対策を実施。
+    changes:
+      - 確定日時の10分前以降はキャンセル検知対象外にする時間制限を追加
+      - 返信メールの引用部分（差出人・From・>行等）を除外し、新規本文のみでキャンセルキーワードを判定する stripQuotedText_() を追加
+      - containsCancelKeyword_() でキーワード判定を関数化
+    files:
+      - gas/triggers.gs
+
+  - date: "2026-04-10"
+    title: リマインド送信ログ記録機能追加 + トリガー権限修正
+    summary: >
+      リマインドメール（3日前・前日）の送信結果をスプレッドシートAI列・AJ列に自動記録する機能を追加。
+      送信済みの行はスキップし重複送信を防止。GAS Gmail権限の未承認によるサイレント失敗を解消。
+    changes:
+      - 予約管理シートにAI列「3日前リマインド」・AJ列「前日リマインド」を追加
+      - sendDailyReminders に送信ログ書き込み処理を追加（送信日時を自動記録）
+      - 送信済みの行はスキップする重複防止ロジックを追加
+      - GASエディタから手動実行によるGmail OAuth権限の承認を実施
+      - sendDailyRemindersトリガーを最新権限で再作成
+      - 管理用アクション追加（setup-daily-reminder, setup-all-triggers, notify-member）
+      - 管理マニュアル・スタッフマニュアル・システム概要を更新
+    files:
+      - gas/config.gs
+      - gas/triggers.gs
+      - gas/main.gs
+      - gas/spreadsheet.gs
+      - docs/manual_admin.html
+      - docs/manual_staff.html
+      - docs/system_overview.html
+
   - date: "2026-04-01"
     title: GA4アナリティクス導入（LPアクセス監視）
     summary: >

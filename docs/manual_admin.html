@@ -1108,6 +1108,8 @@
   <ul>
     <li>Gmail受信トレイを <strong>10分おき</strong> にスキャン</li>
     <li>「キャンセル」「取消」「取り消し」「中止」を含むメールを検知</li>
+    <li><strong>返信メールの引用部分は除外し、新規本文のみで判定</strong>（お礼メール返信の確認メール引用による誤検知を防止）</li>
+    <li><strong>確定日時の10分前以降はキャンセル受付対象外</strong>（相談終了後の誤キャンセルを防止）</li>
     <li>該当予約のステータスを <span class="status-badge cancel">キャンセル</span> に自動更新</li>
     <li>日程枠の解放 + Zoomミーティング削除（該当する場合）</li>
     <li>担当者・リーダー・参加予定メンバー全員にメール通知</li>
@@ -1277,7 +1279,7 @@
     </div>
     <div class="trigger-item">
       <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> sendDailyReminders</span>
-      <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 毎日 9:00（担当者: 1週間前・3日前 / 相談者: 3日前・前日リマインド）</span>
+      <span class="trigger-schedule"><i class="fas fa-clock" style="margin-right: 4px;"></i> 毎日 9:00（担当者: 1週間前・3日前 / 相談者: 3日前・前日リマインド）<br>※送信結果はAI列（3日前）・AJ列（前日）に自動記録。空欄＝未送信。</span>
     </div>
     <div class="trigger-item">
       <span class="trigger-name"><i class="fas fa-play" style="color: var(--accent); margin-right: 6px;"></i> processZoomRecordings</span>
@@ -2019,6 +2021,8 @@ git push origin main</code></pre>
         <tr><td>AD</td><td>文字起こし状態</td><td>処理中 / 完了 / エラー</td></tr>
         <tr><td>AE</td><td>文字起こしファイルID</td><td>Googleドキュメント ID</td></tr>
         <tr><td>AH</td><td>音声ファイルURL</td><td>download.php経由のURL</td></tr>
+        <tr><td>AI</td><td>3日前リマインド</td><td>「送信済 yyyy/MM/dd HH:mm」自動記録。空欄＝未送信</td></tr>
+        <tr><td>AJ</td><td>前日リマインド</td><td>「送信済 yyyy/MM/dd HH:mm」自動記録。空欄＝未送信</td></tr>
       </tbody>
     </table>
   </div>

@@ -142,7 +142,14 @@ function setupSpreadsheetHeaders() {
     'レポート状態',      // Z
     'ファイルID',        // AA
     '録画URL',           // AB
-    'YouTube URL'        // AC
+    'YouTube URL',        // AC
+    '文字起こし状態',      // AD
+    '文字起こしID',        // AE
+    '報告書ドラフトID',    // AF
+    'Notion Page ID',     // AG
+    '音声URL',            // AH
+    '3日前リマインド',     // AI
+    '前日リマインド'       // AJ
   ];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
