@@ -142,6 +142,41 @@ function doGet(e) {
   try {
     const action = e.parameter.action || 'status';
 
+    // ===== 管理/デバッグ専用APIのトークン認証ゲート =====
+    // どのフロント（LP/サイト/管理画面/ポータル）からも呼ばれない、
+    // 機密取得・破壊的操作・保守用のactionは ADMIN_API_TOKEN を必須にする。
+    // ・ポータル系(portal-*)は独自セッション認証があるため対象外
+    // ・記事/会場/podcastの作成(*-add)や管理画面リンクのaction(*-toggle/*-delete)も
+    //   画面が壊れるため対象外（別途トークン化を検討）
+    // トークン未設定時はfail-closed（=これらは403）にして安全側に倒す。
+    var ADMIN_ONLY_ACTIONS = {
+      'read-sheet': 1, 'row-info': 1, 'write-cell': 1, 'retry-zoom': 1,
+      'check-cancel-emails': 1, 'delete-articles-sheet': 1,
+      'backfill-leader-history': 1, 'dedup-schedule': 1, 'repair-schedule': 1,
+      'migrate-location': 1, 'register-members': 1, 'setup-members': 1,
+      'run-first-polling': 1, 'resend-confirm-notify': 1, 'schedule-notify': 1,
+      'send-venue-request': 1, 'consent-debug': 1, 'list-triggers': 1,
+      'cleanup-form-triggers': 1,
+      'zoom-status': 1, 'polling-status': 1, 'generate-summary': 1,
+      'sync-summary': 1, 'update-pdf': 1, 'add-schedule': 1, 'add-march18': 1,
+      'set-march18-members': 1, 'set-slot-members': 1,
+      'setup-all-triggers': 1, 'setup-daily-reminder': 1,
+      'setup-cancel-trigger': 1, 'setup-expired-trigger': 1,
+      'setup-summary-trigger': 1, 'setup-podcasts': 1
+    };
+    if (ADMIN_ONLY_ACTIONS[action]) {
+      var _adminToken = PropertiesService.getScriptProperties().getProperty('ADMIN_API_TOKEN');
+      if (!_adminToken || e.parameter.token !== _adminToken) {
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: false,
+            error: 'unauthorized',
+            message: 'このAPIには管理トークン(token パラメータ)が必要です'
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     // 同意書ページ
     if (action === 'nda') {
       return generateNdaPage(e);
@@ -699,6 +734,14 @@ function doGet(e) {
       });
       return ContentService
         .createTextOutput(JSON.stringify({ success: true, count: result.length, triggers: result }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 累積したポーリング用フォーム送信トリガーを整理（管理用・上限到達の解消）
+    if (action === 'cleanup-form-triggers') {
+      var cleanupResult = cleanupPollingFormTriggers();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, result: cleanupResult }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -2104,6 +2147,94 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 汎用メール送信（トリガー経由・管理用）
+    // ?action=send-email&to=xxx@example.com&subject=件名&body=本文
+    if (action === 'send-email') {
+      var seTo = e.parameter.to || '';
+      var seSubject = e.parameter.subject || '';
+      var seBody = e.parameter.body || '';
+      if (!seTo || !seSubject || !seBody) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'to, subject, body パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      PropertiesService.getScriptProperties().setProperties({
+        'PENDING_EMAIL_TO': seTo,
+        'PENDING_EMAIL_SUBJECT': seSubject,
+        'PENDING_EMAIL_BODY': seBody
+      });
+      ScriptApp.getProjectTriggers().forEach(function(t) {
+        if (t.getHandlerFunction() === 'sendPendingEmail') {
+          ScriptApp.deleteTrigger(t);
+        }
+      });
+      var seDate = new Date();
+      seDate.setMinutes(seDate.getMinutes() + 1);
+      ScriptApp.newTrigger('sendPendingEmail')
+        .timeBased()
+        .at(seDate)
+        .create();
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          message: seTo + ' へのメールを1分後に送信予約しました',
+          to: seTo,
+          subject: seSubject
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 特定メンバーに確定通知を送信（トリガー経由・管理用）
+    // ?action=notify-member&row=5&target=土田雄一郎
+    if (action === 'notify-member') {
+      var nmRow = parseInt(e.parameter.row);
+      var nmTarget = e.parameter.target || '';
+      if (!nmRow || nmRow < 2 || !nmTarget) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row と target パラメータが必要です' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      PropertiesService.getScriptProperties().setProperties({
+        'PENDING_NOTIFY_ROW': nmRow.toString(),
+        'PENDING_NOTIFY_TARGET': nmTarget
+      });
+      ScriptApp.getProjectTriggers().forEach(function(t) {
+        if (t.getHandlerFunction() === 'sendNotifyToMember') {
+          ScriptApp.deleteTrigger(t);
+        }
+      });
+      var nmDate = new Date();
+      nmDate.setMinutes(nmDate.getMinutes() + 1);
+      ScriptApp.newTrigger('sendNotifyToMember')
+        .timeBased()
+        .at(nmDate)
+        .create();
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          message: nmTarget + ' への通知を1分後に送信予約しました',
+          row: nmRow,
+          target: nmTarget
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // リマインドトリガー再設定（管理用）
+    if (action === 'setup-daily-reminder') {
+      setupDailyReminderTrigger();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: 'sendDailyRemindersトリガーを再設定しました（毎日9時）' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 全トリガー再設定（管理用）
+    if (action === 'setup-all-triggers') {
+      setupAllTriggers();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: '全トリガーを再設定しました' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // デフォルト: ステータス確認
     return ContentService
       .createTextOutput(JSON.stringify({
@@ -2502,4 +2633,3 @@ function handleTranscribeCallback(params) {
     .createTextOutput(JSON.stringify({ success: true, message: '文字起こし結果を保存しました', docId: doc.getId() }))
     .setMimeType(ContentService.MimeType.JSON);
 }
-

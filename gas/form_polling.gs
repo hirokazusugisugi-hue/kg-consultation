@@ -1029,11 +1029,14 @@ function setupFinalizeScheduleTrigger() {
  * @param {string} handlerFunction - ハンドラ関数名
  */
 function setupFormSubmitTrigger(formId, handlerFunction) {
-  // このフォーム用の既存トリガーを削除
+  // 同じハンドラのフォーム送信トリガーを「旧フォーム分も含めてすべて」削除する。
+  // 毎月新しいフォームを作る運用のため、同一フォームID分だけ消していると
+  // 旧月のトリガーが残り続け、GASのトリガー上限(20)に達して
+  // newTrigger().create() が例外を投げ、runFirstPolling等が失敗する（=送信停止の原因）。
   var triggers = ScriptApp.getProjectTriggers();
   triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === handlerFunction &&
-        trigger.getTriggerSourceId() === formId) {
+        trigger.getEventType() === ScriptApp.EventType.ON_FORM_SUBMIT) {
       ScriptApp.deleteTrigger(trigger);
     }
   });
@@ -1044,6 +1047,29 @@ function setupFormSubmitTrigger(formId, handlerFunction) {
     .create();
 
   console.log('フォーム送信トリガー設定完了: ' + handlerFunction + ' (' + formId + ')');
+}
+
+/**
+ * 累積したポーリング用フォーム送信トリガーをすべて削除する保守用関数。
+ * 毎月フォームを作り直す運用でトリガーが溜まり、GAS上限(20)に達すると
+ * runFirstPolling 等が失敗するため、その解消に使う。
+ * 削除しても次回ポーリング実行時に必要分が作り直される（予約受付フォームには影響しない）。
+ * @returns {Object} 削除件数と残トリガー数
+ */
+function cleanupPollingFormTriggers() {
+  var handlers = { 'processFormResponse': 0, 'processConfirmationResponse': 0 };
+  var triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(function(trigger) {
+    var h = trigger.getHandlerFunction();
+    if (handlers.hasOwnProperty(h) &&
+        trigger.getEventType() === ScriptApp.EventType.ON_FORM_SUBMIT) {
+      ScriptApp.deleteTrigger(trigger);
+      handlers[h]++;
+    }
+  });
+  var remaining = ScriptApp.getProjectTriggers().length;
+  console.log('フォーム送信トリガー整理: ' + JSON.stringify(handlers) + ' / 残トリガー数=' + remaining);
+  return { deleted: handlers, remainingTriggers: remaining };
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
