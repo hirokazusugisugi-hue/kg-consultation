@@ -2724,10 +2724,35 @@
                 }
 
                 var MEMBERS_API = 'https://script.google.com/macros/s/AKfycbzR7l1lyRF9dNZ0qqIov8LZwxDvkkyT4NNo2LSJKbQR_i46iqLfSRg4EuqQRflP76elAg/exec';
-                fetch(MEMBERS_API + '?action=members')
-                    .then(function(r) { return r.json(); })
-                    .then(function(d) { if (d.success && d.members) renderMembers(d.members); })
-                    .catch(function() {});
+                var MEMBERS_CACHE_KEY = 'kg_members_cache_v1';
+
+                // 1) 前回取得分がキャッシュにあれば即表示（GAS APIが遅い/失敗しても空にしない）
+                try {
+                    var _cached = JSON.parse(localStorage.getItem(MEMBERS_CACHE_KEY) || 'null');
+                    if (_cached && _cached.length) renderMembers(_cached);
+                } catch (e) {}
+
+                // 2) リトライ付きで最新を取得（成功したら再描画＋キャッシュ更新）
+                function fetchMembers(attempt) {
+                    var done = false;
+                    var timer = setTimeout(function() { if (!done) retry(); }, 15000);
+                    function retry() {
+                        done = true; clearTimeout(timer);
+                        if (attempt < 3) setTimeout(function() { fetchMembers(attempt + 1); }, 2000 * attempt);
+                    }
+                    fetch(MEMBERS_API + '?action=members')
+                        .then(function(r) { return r.json(); })
+                        .then(function(d) {
+                            if (done) return;
+                            done = true; clearTimeout(timer);
+                            if (d && d.success && d.members && d.members.length) {
+                                renderMembers(d.members);
+                                try { localStorage.setItem(MEMBERS_CACHE_KEY, JSON.stringify(d.members)); } catch (e) {}
+                            } else { retry(); }
+                        })
+                        .catch(function() { if (!done) retry(); });
+                }
+                fetchMembers(1);
             })();
             </script>
         </div>
