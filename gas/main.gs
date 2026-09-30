@@ -156,7 +156,7 @@ function doGet(e) {
       'migrate-location': 1, 'register-members': 1, 'setup-members': 1,
       'run-first-polling': 1, 'resend-confirm-notify': 1, 'schedule-notify': 1,
       'send-venue-request': 1, 'consent-debug': 1, 'list-triggers': 1,
-      'cleanup-form-triggers': 1,
+      'cleanup-form-triggers': 1, 'admin-confirm': 1,
       'zoom-status': 1, 'polling-status': 1, 'generate-summary': 1,
       'sync-summary': 1, 'update-pdf': 1, 'add-schedule': 1, 'add-march18': 1,
       'set-march18-members': 1, 'set-slot-members': 1,
@@ -620,6 +620,43 @@ function doGet(e) {
       }
       return ContentService
         .createTextOutput(JSON.stringify({ success: true, sheet: wcSheet, row: wcRow, col: wcCol, value: wcVal, formatted: wcFormat === 'header' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 管理用: 指定行を「確定」にして確定フロー（確定メール送信＋担当通知）を実行
+    // ※write-cellでステータスを変えても onSheetEdit は発火しないため、この経路で確定処理を走らせる。
+    //   場所（対面時）・確定日時が未設定だと handleStatusChange 内でステータスが差し戻される。
+    if (action === 'admin-confirm') {
+      var acRow = parseInt(e.parameter.row);
+      if (!acRow || acRow < 2) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: 'row パラメータが必要です（2以上）' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var acSheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(CONFIG.SHEET_NAME);
+      var acOld = acSheet.getRange(acRow, COLUMNS.STATUS + 1).getValue();
+      if (acOld === STATUS.CONFIRMED) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: false, message: '既に確定済みです（重複送信防止）', row: acRow }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      acSheet.getRange(acRow, COLUMNS.STATUS + 1).setValue(STATUS.CONFIRMED);
+      // onSheetEdit と同じ確定処理（確定日時/場所チェック・確定メール・担当通知・リーダー履歴記録）
+      handleStatusChange(acRow, acOld, STATUS.CONFIRMED);
+      var acData = getRowData(acRow);
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          message: acData.status === STATUS.CONFIRMED
+            ? '確定処理を実行しました（確定メール送信）'
+            : 'ステータスが差し戻されました。確定日時・場所（対面時）を確認してください',
+          row: acRow,
+          id: acData.id,
+          status: acData.status,
+          leader: acData.leader,
+          staff: acData.staff,
+          email: acData.email
+        }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
