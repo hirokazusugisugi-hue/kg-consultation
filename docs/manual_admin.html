@@ -1083,8 +1083,30 @@
 
   <div class="info-box success">
     <i class="fas fa-circle-check"></i>
-    <div><strong>確定通知・リマインドの送信先:</strong> P列（担当者）に記録された<strong>確定メンバーのみ</strong>に送信されます。メンバーが未登録の場合のみ管理者メールアドレスにフォールバックします。</div>
+    <div><strong>確定通知の送信先:</strong> P列（担当者）に記録された<strong>確定メンバーのみ</strong>に送信されます。メンバーが未登録の場合のみ管理者メールアドレスにフォールバックします。</div>
   </div>
+
+  <div class="info-box warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div><strong>担当者向けリマインド（1週間前・3日前）の送信先:</strong> P列（担当者）<strong>に加えて</strong>、日程設定シートの該当枠の<strong>H列（参加メンバー）全員</strong>に送信されます。H列には日程アンケートで「参加可」だった人（未回答＝参加可扱い）が全員入っているため、そのままだと<strong>実際に参加しない人にも届きます</strong>。</div>
+  </div>
+
+  <h4><i class="fas fa-user-check"></i> 参加メンバーを特定の人だけに絞る手順（手動）</h4>
+  <p>案件ごとに参加者が決まったら、<strong>3日前リマインドより前に</strong>次の4か所を同じメンバーに揃えてください。氏名はメンバーマスタの表記（例: <code>高乘 麻美</code>）と完全に一致させ、カンマ区切りで入力します。</p>
+  <table>
+    <thead><tr><th>シート</th><th>場所</th><th>入力内容</th></tr></thead>
+    <tbody>
+      <tr><td>予約管理</td><td>該当行のP列（担当者）</td><td>参加者全員（リーダーを含む）</td></tr>
+      <tr><td>日程設定</td><td>該当日時の行のH列（参加メンバー）</td><td>参加者全員。<strong>リマインドの宛先はここで決まります</strong>（配置点数は自動再計算）</td></tr>
+      <tr><td>リーダー履歴</td><td>該当申込IDの行のH列（参加メンバー）</td><td>参加者全員（リーダーはE列で確認）</td></tr>
+      <tr><td>回答集計</td><td>該当日時の行</td><td>参加者は ○、それ以外は ×。参加数の列も人数に合わせる</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li>リーダーを変更する場合は、予約管理の<strong>Y列</strong>とリーダー履歴の<strong>E列</strong>を書き換えます</li>
+    <li>前日リマインドは<strong>相談者向けのみ</strong>で、担当者には自動では届きません。担当者へ前日連絡が必要な場合は個別にメールしてください</li>
+    <li>会場の詳細（例: 「グランフロント大阪 北館7F」）は自動メールに入らないため、必要に応じて相談者・担当者へ個別に案内してください</li>
+  </ul>
 
   <!-- 6.3 当日受付 -->
   <h3><i class="fas fa-bolt"></i> 6.3 当日受付</h3>
