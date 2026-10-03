@@ -4,6 +4,20 @@
 revisions:
 
   - date: "2026-10-03"
+    title: 同意書PDF・オブザーバー誓約書PDFの文字化け修正
+    summary: >
+      相談者から「ChromeでダウンロードしたPDFが文字化けする」との連絡。調査の結果、埋め込みフォントが
+      OpenType(CFF)なのにTrueType(FontFile2/CIDFontType2)として格納されており、Windows等の厳格なPDFビューアで
+      文字化けしていた。文言は変えずに、TrueTypeフォント（BIZ UDPゴシック）で両PDFを作り直した。
+    changes:
+      - consent_updated.pdf（相談者同意書）を再生成（文言は旧版と一致を確認）
+      - observer_nda.pdf（オブザーバー秘密保持誓約書）を再生成（文言は旧版と一致を確認）
+      - さくらサーバーの公開版を差し替え
+    files:
+      - consent_updated.pdf
+      - observer_nda.pdf
+
+  - date: "2026-10-03"
     title: 管理マニュアル修正（担当者リマインドの送信先の誤記訂正＋参加メンバー絞り込み手順を追加）
     summary: >
       管理マニュアルに「リマインドはP列の確定メンバーのみに送信」と記載していたが、実際の担当者向けリマインド
